@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saud — Progress Dashboard</title>
+<style>
+  :root{
+    --night:   #1F1B16;
+    --night2:  #2B241C;
+    --sand:    #E4D5B0;
+    --copper:  #C1701E;
+    --cream:   #FBF6EA;
+    --dark:    #2A2018;
+    --card:    #F5EFE1;
+    --muted:   #A79A82;
+    --border:  rgba(255,255,255,0.08);
+    --good:      #0ca30c;
+    --warning:   #d99a1a;
+    --serious:   #ec835a;
+    --critical:  #d03b3b;
+    --series-blue:   #3987e5;
+    --series-orange: #d95926;
+    --series-aqua:   #199e70;
+    --muted-bar: #6b6456;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Tahoma", sans-serif;
+    background: var(--night); color: var(--cream);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 24px 80px;}
+  header{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:28px; flex-wrap:wrap;}
+  header .brand{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper); font-weight:700; margin-bottom:6px;}
+  header h1{margin:0; font-size:28px; font-weight:700; color:var(--cream);}
+  header p{margin:6px 0 0; color:var(--muted); font-size:14px;}
+  .meta{text-align:right; font-size:12px; color:var(--muted);}
+  .meta span{display:block;}
+  .editbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+  button.editbtn{
+    background:var(--copper); color:var(--cream); border:none; border-radius:8px;
+    padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  button.editbtn.secondary{background:transparent; border:1px solid var(--border); color:var(--sand);}
+  button.editbtn:disabled{opacity:.45; cursor:default;}
+  button.editbtn:hover:not(:disabled){opacity:.9;}
+
+  .sync-panel{
+    background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
+    margin-bottom:24px; display:none; font-size:13px; color:var(--sand); line-height:1.6;
+  }
+  .sync-panel.open{display:block;}
+  .sync-panel .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  .sync-panel input{
+    background:var(--night); border:1px solid #4A3E2C; color:var(--cream); padding:8px 12px; border-radius:6px;
+    font-size:13px;
+  }
+  .sync-panel input.token{width:340px;}
+  .sync-panel input.short{width:150px;}
+  .sync-status{margin-top:10px; font-size:12px; color:var(--muted);}
+  .sync-status.ok{color:#5fd3a8;}
+  .sync-status.err{color:#f0a06f;}
+
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
+  .stat-tile{
+    background:var(--night2); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px;
+  }
+  .stat-tile .label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
+  .stat-tile .value{font-size:26px; font-weight:700; color:var(--cream); font-variant-numeric:proportional-nums; border:none; background:none; width:100%; font-family:inherit;}
+  .stat-tile .value[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .stat-tile .sub{font-size:12px; color:var(--muted); margin-top:4px;}
+  .stat-tile .sub[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+
+  section{margin-bottom:32px;}
+  section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px;}
+  section h2{
+    font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--sand);
+    margin:0;
+  }
+  .addbtn{background:none; border:1px dashed var(--copper); color:var(--sand); font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;}
+  .addbtn.show{display:inline-block;}
+
+  .phase-row{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+  .phase-row .pname{width:230px; flex-shrink:0; font-size:14px; color:var(--cream); background:none; border:none; font-family:inherit;}
+  .phase-row .pname[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .phase-row .barbg{flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden;}
+  .phase-row .barfill{height:100%; border-radius:6px; transition:width .2s;}
+  .phase-row .pct{width:180px; flex-shrink:0; font-size:12px; text-align:right; color:var(--muted); display:flex; align-items:center; justify-content:flex-end; gap:6px;}
+  .phase-row .pct input[type=range]{width:70px;}
+  .phase-row .pct .plabel{background:none; border:none; color:var(--muted); font-size:12px; font-family:inherit; text-align:right;}
+  .phase-row .pct .plabel[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
+
+  .cap-chart{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .cap-card{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .cap-card .team{font-size:13px; font-weight:700; color:var(--cream); margin-bottom:2px; background:none; border:none; font-family:inherit; width:100%;}
+  .cap-card .role{font-size:11px; color:var(--muted); margin-bottom:12px; background:none; border:none; font-family:inherit; width:100%;}
+  .cap-card [contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .cap-card .num{font-size:22px; font-weight:700; font-variant-numeric:proportional-nums;}
+  .cap-card .barbg{height:8px; background:rgba(255,255,255,.07); border-radius:5px; margin-top:8px; overflow:hidden;}
+  .cap-card .barfill{height:100%; border-radius:5px;}
+  .cap-card .caption{font-size:11px; color:var(--muted); margin-top:6px; background:none; border:none; font-family:inherit; width:100%;}
+
+  table{width:100%; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden;}
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600;
+  }
+  thead th.actions{width:36px;}
+  tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px;}
+  select.status-select, select.tier-select{
+    background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:12px;
+  }
+  .tier{display:inline-block; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:700;}
+  .tier1{background:rgba(25,158,112,.18); color:#5fd3a8;}
+  .tier2{background:rgba(217,89,38,.2); color:#f0a06f;}
+  .badge-live{background:rgba(25,158,112,.18); color:#5fd3a8; padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
+  .badge-paper{background:rgba(217,89,38,.18); color:#f0a06f; padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
+  .badge-none{background:rgba(255,255,255,.06); color:var(--muted); padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
+  .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px;}
+  .rowdel:hover{color:var(--critical);}
+
+  .gaps{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
+  .gaps .item{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--cream); padding:8px 0; border-bottom:1px solid var(--border);}
+  .gaps .item .dot{margin-top:5px;}
+  .gaps .item .txt{flex:1; background:none; border:none; color:var(--cream); font-family:inherit; font-size:13.5px;}
+  .gaps .item .txt[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .gaps .item select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:5px; font-size:11px;}
+
+  .steps{list-style:none; margin:0; padding:0;}
+  .steps li{display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);}
+  .steps li:last-child{border-bottom:none;}
+  .steps .num{
+    width:24px; height:24px; border-radius:50%; background:var(--copper); color:var(--night);
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
+  }
+  .steps .txt{font-size:14px; color:var(--cream); line-height:1.5; flex:1; background:none; border:none; font-family:inherit;}
+  .steps .txt[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+
+  .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
+  .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6;}
+
+  @media (max-width:820px){
+    .stat-row{grid-template-columns:repeat(2,1fr);}
+    .cap-chart{grid-template-columns:1fr;}
+    .gaps{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">Midwam · Saud</div>
+      <h1>Saud — Progress Dashboard</h1>
+      <p>The Creative Intelligence Agent — where things stand, what's proven, what's next.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+      <div class="meta">
+        <span id="lastUpdated">Last updated: —</span>
+        <span>Owner: Harith · Koushan / Midwam</span>
+      </div>
+      <div class="editbar">
+        <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
+        <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
+        <button class="editbtn" id="saveBtn" style="display:none;">Save to GitHub</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sync-panel" id="syncPanel">
+    <b>GitHub sync — makes edits permanent and gives you a full history of every change.</b><br>
+    This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal
+    access token with access to that repo (kept in this browser tab's memory only — never saved, never sent
+    anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.
+    <div class="row">
+      <input class="token" type="password" id="ghToken" placeholder="GitHub personal access token (ghp_...)">
+      <input class="short" type="text" id="ghOwner" placeholder="repo owner / org">
+      <input class="short" type="text" id="ghRepo" placeholder="repo name">
+      <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
+      <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
+      <button class="editbtn" onclick="connectGitHub()">Connect &amp; Load</button>
+    </div>
+    <div class="sync-status" id="syncStatus">Not connected — this page shows its built-in starting content until you connect.</div>
+  </div>
+
+  <div class="stat-row" id="statRow"></div>
+
+  <section>
+    <div class="sechead"><h2>Phase progress</h2><button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button></div>
+    <div id="phasesArea"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Capabilities implemented, by team</h2></div>
+    <div class="cap-chart" id="capChart"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Capability &amp; status matrix</h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
+    <table>
+      <thead><tr><th>Capability</th><th>Owner</th><th>Tier</th><th>Status</th><th class="actions"></th></tr></thead>
+      <tbody id="matrixBody"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Known gaps</h2><button class="addbtn" id="addGap" onclick="addGap()">+ add gap</button></div>
+    <div class="gaps" id="gapsArea"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Next steps</h2><button class="addbtn" id="addStep" onclick="addStep()">+ add step</button></div>
+    <ol class="steps" id="stepsList"></ol>
+  </section>
+
+  <section>
+    <h2 style="margin-bottom:14px;">Notes</h2>
+    <div class="notes" id="notesArea" contenteditable="false"></div>
+    <div class="footer-note" id="footerNote">Click "Edit" to change anything on this page, then "Save to GitHub" to make it permanent. Without GitHub connected, edits only last for this browser tab.</div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- default state ----------
+   PUBLIC / PUBLISHABLE VERSION: this is the file meant to be committed to a
+   PUBLIC repo or GitHub Pages. It deliberately ships with no real Midwam data —
+   only this generic placeholder shell. Real content only ever appears in a
+   visitor's browser after THEY connect their own token to your PRIVATE data
+   repo (see the "GitHub sync" panel) — it is fetched client-side, never baked
+   into this file, so nothing sensitive is exposed to a public visitor. */
+const DEFAULT_STATE = {
+  lastUpdated: "—",
+  stats: [
+    { label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
+    { label:"Stat 2", value:"—", sub:"Connect GitHub to load real data" },
+    { label:"Stat 3", value:"—", sub:"Connect GitHub to load real data" },
+    { label:"Stat 4", value:"—", sub:"Connect GitHub to load real data" }
+  ],
+  phases: [
+    { name:"Not connected", pct:0, label:"—", color:"muted" }
+  ],
+  capTeams: [
+    { team:"Not connected", role:"—", num:"—", pct:0, color:"blue", caption:"Connect GitHub sync above to load this team's real data" }
+  ],
+  matrix: [
+    { cap:"Connect GitHub sync above to load the real capability matrix", owner:"—", tier:"1", status:"none" }
+  ],
+  gaps: [
+    { text:"Connect GitHub sync above to load the real gap list", sev:"warning" }
+  ],
+  steps: [
+    "Connect GitHub sync above (top right) to load the real next-steps list from your private data repo."
+  ],
+  notes: "This is the public shell of Saud's dashboard — it ships with no real Midwam data. Connect your GitHub token above to load and edit the real content, which lives only in your private repo."
+};
+
+const SEV_COLOR = { warning:"var(--warning)", critical:"var(--critical)", blue:"var(--series-blue)", good:"var(--good)" };
+const BAR_COLOR = { good:"var(--good)", warning:"var(--warning)", blue:"var(--series-blue)", muted:"var(--muted-bar)", critical:"var(--critical)" };
+const CAP_COLOR = { blue:"var(--series-blue)", orange:"var(--series-orange)", aqua:"var(--series-aqua)" };
+const STATUS_META = {
+  live:  { label:"Live in console",         cls:"badge-live"  },
+  paper: { label:"Framework only",          cls:"badge-paper" },
+  none:  { label:"Not in either version",   cls:"badge-none"  }
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+let editing = false;
+let gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
+
+/* ---------- rendering ---------- */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
+function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
+
+function renderAll(){
+  document.getElementById("lastUpdated").innerText = "Last updated: " + state.lastUpdated;
+  renderStats();
+  renderPhases();
+  renderCapChart();
+  renderMatrix();
+  renderGaps();
+  renderSteps();
+  renderNotes();
+  applyEditMode();
+}
+
+function renderStats(){
+  const row = document.getElementById("statRow"); row.innerHTML = "";
+  state.stats.forEach((s,i)=>{
+    row.appendChild(el(`
+      <div class="stat-tile">
+        <div class="label">${escapeHtml(s.label)}</div>
+        <div class="value" data-bind="stats.${i}.value">${escapeHtml(s.value)}</div>
+        <div class="sub" data-bind="stats.${i}.sub">${escapeHtml(s.sub)}</div>
+      </div>`));
+  });
+}
+
+function renderPhases(){
+  const area = document.getElementById("phasesArea"); area.innerHTML = "";
+  state.phases.forEach((p,i)=>{
+    const color = BAR_COLOR[p.color] || BAR_COLOR.muted;
+    area.appendChild(el(`
+      <div class="phase-row">
+        <div class="pname" data-bind="phases.${i}.name">${escapeHtml(p.name)}</div>
+        <div class="barbg"><div class="barfill" style="width:${p.pct}%; background:${color};"></div></div>
+        <div class="pct">
+          <input type="range" min="0" max="100" value="${p.pct}" data-pctinput="${i}" style="display:none;">
+          <span class="dot" style="background:${color};"></span>
+          <span class="plabel" data-bind="phases.${i}.label">${escapeHtml(p.label)}</span>
+        </div>
+      </div>`));
+  });
+  area.querySelectorAll("input[data-pctinput]").forEach(inp=>{
+    inp.addEventListener("input", e=>{
+      const i = +e.target.dataset.pctinput;
+      state.phases[i].pct = +e.target.value;
+      renderPhases(); applyEditMode();
+    });
+  });
+}
+
+function renderCapChart(){
+  const wrap = document.getElementById("capChart"); wrap.innerHTML = "";
+  state.capTeams.forEach((c,i)=>{
+    const color = CAP_COLOR[c.color] || CAP_COLOR.blue;
+    wrap.appendChild(el(`
+      <div class="cap-card">
+        <div class="team" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
+        <div class="role" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
+        <div class="num" data-bind="capTeams.${i}.num">${escapeHtml(c.num)}</div>
+        <div class="barbg"><div class="barfill" style="width:${c.pct}%; background:${color};"></div></div>
+        <div class="caption" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
+      </div>`));
+  });
+}
+
+function renderMatrix(){
+  const body = document.getElementById("matrixBody"); body.innerHTML = "";
+  state.matrix.forEach((r,i)=>{
+    const meta = STATUS_META[r.status] || STATUS_META.none;
+    const tr = elTR(`
+      <tr>
+        <td data-bind="matrix.${i}.cap">${escapeHtml(r.cap)}</td>
+        <td data-bind="matrix.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td>
+          <span class="tier tier${r.tier} view-only">Tier ${r.tier}</span>
+          <select class="tier-select edit-only" data-tierselect="${i}">
+            <option value="1" ${r.tier=="1"?"selected":""}>Tier 1</option>
+            <option value="2" ${r.tier=="2"?"selected":""}>Tier 2</option>
+          </select>
+        </td>
+        <td>
+          <span class="${meta.cls} view-only">${meta.label}</span>
+          <select class="status-select edit-only" data-statusselect="${i}">
+            <option value="live" ${r.status=="live"?"selected":""}>Live in console</option>
+            <option value="paper" ${r.status=="paper"?"selected":""}>Framework only</option>
+            <option value="none" ${r.status=="none"?"selected":""}>Not in either version</option>
+          </select>
+        </td>
+        <td class="edit-only"><button class="rowdel" onclick="removeRow('matrix',${i})">✕</button></td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-tierselect]").forEach(s=>s.addEventListener("change", e=>{
+    state.matrix[+e.target.dataset.tierselect].tier = e.target.value; renderMatrix(); applyEditMode();
+  }));
+  body.querySelectorAll("[data-statusselect]").forEach(s=>s.addEventListener("change", e=>{
+    state.matrix[+e.target.dataset.statusselect].status = e.target.value; renderMatrix(); applyEditMode();
+  }));
+}
+
+function renderGaps(){
+  const area = document.getElementById("gapsArea"); area.innerHTML = "";
+  state.gaps.forEach((g,i)=>{
+    const color = SEV_COLOR[g.sev] || SEV_COLOR.warning;
+    area.appendChild(el(`
+      <div class="item">
+        <span class="dot" style="background:${color};"></span>
+        <div class="txt" data-bind="gaps.${i}.text">${escapeHtml(g.text)}</div>
+        <select class="edit-only" data-sevselect="${i}">
+          <option value="warning" ${g.sev=="warning"?"selected":""}>warning</option>
+          <option value="critical" ${g.sev=="critical"?"selected":""}>critical</option>
+          <option value="blue" ${g.sev=="blue"?"selected":""}>in progress</option>
+          <option value="good" ${g.sev=="good"?"selected":""}>resolved</option>
+        </select>
+        <button class="rowdel edit-only" onclick="removeRow('gaps',${i})">✕</button>
+      </div>`));
+  });
+  area.querySelectorAll("[data-sevselect]").forEach(s=>s.addEventListener("change", e=>{
+    state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode();
+  }));
+}
+
+function renderSteps(){
+  const list = document.getElementById("stepsList"); list.innerHTML = "";
+  state.steps.forEach((s,i)=>{
+    list.appendChild(elLI(`
+      <li>
+        <div class="num">${i+1}</div>
+        <div class="txt" data-bind="steps.${i}">${escapeHtml(s)}</div>
+        <button class="rowdel edit-only" onclick="removeRow('steps',${i})">✕</button>
+      </li>`));
+  });
+}
+
+function renderNotes(){
+  document.getElementById("notesArea").innerText = state.notes;
+  document.getElementById("notesArea").setAttribute("data-bind","notes");
+}
+
+function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------- editing: generic contenteditable -> state binding ---------- */
+document.addEventListener("focusout", e=>{
+  const t = e.target;
+  if(!t.dataset || !t.dataset.bind) return;
+  const path = t.dataset.bind.split(".");
+  let obj = state;
+  for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
+  obj[path[path.length-1]] = t.innerText.trim();
+});
+
+function applyEditMode(){
+  document.querySelectorAll("[data-bind]").forEach(el=>el.setAttribute("contenteditable", editing ? "true" : "false"));
+  document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
+  document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");
+  document.querySelectorAll("input[data-pctinput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
+  document.querySelectorAll(".addbtn").forEach(el=>el.classList.toggle("show", editing));
+  document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
+}
+
+document.getElementById("toggleEdit").addEventListener("click", ()=>{
+  editing = !editing;
+  document.getElementById("toggleEdit").textContent = editing ? "✓ Done editing" : "✎ Edit";
+  applyEditMode();
+});
+
+/* ---------- add/remove rows ---------- */
+function addPhase(){ state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); applyEditMode(); }
+function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", status:"paper"}); renderMatrix(); applyEditMode(); }
+function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); }
+function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); }
+function removeRow(section, i){ state[section].splice(i,1); ({matrix:renderMatrix, gaps:renderGaps, steps:renderSteps})[section](); applyEditMode(); }
+
+/* ---------- GitHub sync ---------- */
+document.getElementById("toggleSync").addEventListener("click", ()=>{
+  document.getElementById("syncPanel").classList.toggle("open");
+});
+
+function b64EncodeUnicode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; bytes.forEach(b=>bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+function b64DecodeUnicode(b64){
+  const bin = atob(b64);
+  const bytes = Uint8Array.from(bin, c=>c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function ghApiUrl(){ return `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${gh.branch}`; }
+
+async function connectGitHub(){
+  gh.token  = document.getElementById("ghToken").value.trim();
+  gh.owner  = document.getElementById("ghOwner").value.trim();
+  gh.repo   = document.getElementById("ghRepo").value.trim();
+  gh.path   = document.getElementById("ghPath").value.trim() || "saud-dashboard-data.json";
+  gh.branch = document.getElementById("ghBranch").value.trim() || "main";
+  const statusEl = document.getElementById("syncStatus");
+  if(!gh.token || !gh.owner || !gh.repo){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Fill in the token, repo owner, and repo name first.";
+    return;
+  }
+  statusEl.className = "sync-status";
+  statusEl.innerText = "Connecting...";
+  try{
+    const resp = await fetch(ghApiUrl(), {
+      headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json" }
+    });
+    if(resp.status === 404){
+      gh.connected = true; gh.sha = null;
+      statusEl.className = "sync-status ok";
+      statusEl.innerText = "Connected. No saved file yet at this path — click \"Edit\" then \"Save to GitHub\" to create it with the current content.";
+      return;
+    }
+    if(!resp.ok){
+      const err = await resp.json().catch(()=>({}));
+      statusEl.className = "sync-status err";
+      statusEl.innerText = "Connection failed (" + resp.status + "): " + (err.message || "check the token and repo details.");
+      return;
+    }
+    const data = await resp.json();
+    gh.sha = data.sha;
+    const content = b64DecodeUnicode(data.content.replace(/\n/g,""));
+    const loaded = JSON.parse(content);
+    state = loaded;
+    gh.connected = true;
+    renderAll();
+    statusEl.className = "sync-status ok";
+    statusEl.innerText = "Connected and loaded from GitHub. Every future save writes a new commit to this file.";
+  } catch(e){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Connection failed — " + e.message;
+  }
+}
+
+async function saveToGitHub(){
+  const statusEl = document.getElementById("syncStatus");
+  if(!gh.connected){
+    document.getElementById("syncPanel").classList.add("open");
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.";
+    return;
+  }
+  state.lastUpdated = new Date().toISOString().slice(0,10) === state.lastUpdated ? state.lastUpdated : state.lastUpdated;
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true; btn.innerText = "Saving...";
+  try{
+    const body = {
+      message: "Update Saud dashboard — " + new Date().toISOString(),
+      content: b64EncodeUnicode(JSON.stringify(state, null, 2)),
+      branch: gh.branch
+    };
+    if(gh.sha) body.sha = gh.sha;
+    const resp = await fetch(ghApiUrl().split("?")[0], {
+      method:"PUT",
+      headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json", "content-type":"application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    if(!resp.ok){
+      statusEl.className = "sync-status err";
+      statusEl.innerText = "Save failed (" + resp.status + "): " + (data.message || "unknown error");
+      return;
+    }
+    gh.sha = data.content.sha;
+    statusEl.className = "sync-status ok";
+    statusEl.innerText = "Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.";
+  } catch(e){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Save failed — " + e.message;
+  } finally {
+    btn.disabled = false; btn.innerText = "Save to GitHub";
+  }
+}
+document.getElementById("saveBtn").addEventListener("click", saveToGitHub);
+
+/* ---------- boot ---------- */
+renderAll();
+document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
+</script>
+
+</body>
+</html>

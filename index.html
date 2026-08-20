@@ -35,6 +35,7 @@
   header .brand{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper); font-weight:700; margin-bottom:6px;}
   header h1{margin:0; font-size:28px; font-weight:700; color:var(--cream);}
   header p{margin:6px 0 0; color:var(--muted); font-size:14px;}
+  [data-bind][contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:1px 4px;}
   .meta{text-align:right; font-size:12px; color:var(--muted);}
   .meta span{display:block;}
   .editbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
@@ -72,13 +73,13 @@
   .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
   .stat-tile{
     background:var(--night2); border:1px solid var(--border); border-radius:14px;
-    padding:18px 20px;
+    padding:18px 20px; position:relative;
   }
   .stat-tile .label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
+  .stat-tile .icon{font-size:15px; margin-right:6px;}
   .stat-tile .value{font-size:26px; font-weight:700; color:var(--cream); font-variant-numeric:proportional-nums; border:none; background:none; width:100%; font-family:inherit;}
-  .stat-tile .value[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
   .stat-tile .sub{font-size:12px; color:var(--muted); margin-top:4px;}
-  .stat-tile .sub[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .stat-tile .reorderbar{position:absolute; top:8px; right:10px; display:flex; gap:4px;}
 
   section{margin-bottom:32px;}
   section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px;}
@@ -86,39 +87,42 @@
     font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--sand);
     margin:0;
   }
+  .sechead-actions{display:flex; align-items:center; gap:10px;}
   .addbtn{background:none; border:1px dashed var(--copper); color:var(--sand); font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;}
   .addbtn.show{display:inline-block;}
+  .reorder{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
+  .reorder:hover{color:var(--copper);}
+  .reorder:disabled{opacity:.25; cursor:default;}
 
-  .phase-row{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+  .phase-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .phase-row .reordergrp{display:flex; flex-direction:column;}
   .phase-row .pname{width:230px; flex-shrink:0; font-size:14px; color:var(--cream); background:none; border:none; font-family:inherit;}
-  .phase-row .pname[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
   .phase-row .barbg{flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden;}
   .phase-row .barfill{height:100%; border-radius:6px; transition:width .2s;}
   .phase-row .pct{width:180px; flex-shrink:0; font-size:12px; text-align:right; color:var(--muted); display:flex; align-items:center; justify-content:flex-end; gap:6px;}
   .phase-row .pct input[type=range]{width:70px;}
   .phase-row .pct .plabel{background:none; border:none; color:var(--muted); font-size:12px; font-family:inherit; text-align:right;}
-  .phase-row .pct .plabel[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
   .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
 
   .cap-chart{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
-  .cap-card{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .cap-card{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative;}
   .cap-card .team{font-size:13px; font-weight:700; color:var(--cream); margin-bottom:2px; background:none; border:none; font-family:inherit; width:100%;}
   .cap-card .role{font-size:11px; color:var(--muted); margin-bottom:12px; background:none; border:none; font-family:inherit; width:100%;}
-  .cap-card [contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
   .cap-card .num{font-size:22px; font-weight:700; font-variant-numeric:proportional-nums;}
   .cap-card .barbg{height:8px; background:rgba(255,255,255,.07); border-radius:5px; margin-top:8px; overflow:hidden;}
   .cap-card .barfill{height:100%; border-radius:5px;}
   .cap-card .caption{font-size:11px; color:var(--muted); margin-top:6px; background:none; border:none; font-family:inherit; width:100%;}
+  .cap-card .reorderbar{position:absolute; top:10px; right:10px; display:flex; gap:4px;}
 
   table{width:100%; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden;}
   thead th{
     text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
     color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600;
   }
-  thead th.actions{width:36px;}
+  thead th.actions{width:70px;}
   tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:middle;}
   tbody tr:last-child td{border-bottom:none;}
-  tbody td[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px;}
+  td.actions-cell{display:flex; gap:4px; align-items:center;}
   select.status-select, select.tier-select{
     background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:12px;
   }
@@ -132,21 +136,21 @@
   .rowdel:hover{color:var(--critical);}
 
   .gaps{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
-  .gaps .item{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--cream); padding:8px 0; border-bottom:1px solid var(--border);}
+  .gaps .item{display:flex; gap:8px; align-items:flex-start; font-size:13.5px; color:var(--cream); padding:8px 0; border-bottom:1px solid var(--border);}
   .gaps .item .dot{margin-top:5px;}
   .gaps .item .txt{flex:1; background:none; border:none; color:var(--cream); font-family:inherit; font-size:13.5px;}
-  .gaps .item .txt[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
   .gaps .item select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:5px; font-size:11px;}
+  .gaps .item .reordergrp{display:flex; flex-direction:column;}
 
   .steps{list-style:none; margin:0; padding:0;}
-  .steps li{display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);}
+  .steps li{display:flex; align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid var(--border);}
   .steps li:last-child{border-bottom:none;}
   .steps .num{
     width:24px; height:24px; border-radius:50%; background:var(--copper); color:var(--night);
     font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
   }
   .steps .txt{font-size:14px; color:var(--cream); line-height:1.5; flex:1; background:none; border:none; font-family:inherit;}
-  .steps .txt[contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:2px 4px;}
+  .steps .reordergrp{display:flex; flex-direction:column;}
 
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
   .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6;}
@@ -163,16 +167,17 @@
 
   <header>
     <div>
-      <div class="brand">Midwam · Saud</div>
-      <h1>Saud — Progress Dashboard</h1>
-      <p>The Creative Intelligence Agent — where things stand, what's proven, what's next.</p>
+      <div class="brand" id="brandEl" data-bind="titles.brand"></div>
+      <h1 id="h1El" data-bind="titles.h1"></h1>
+      <p id="subtitleEl" data-bind="titles.subtitle"></p>
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
       <div class="meta">
         <span id="lastUpdated">Last updated: —</span>
-        <span>Owner: Harith · Koushan / Midwam</span>
+        <span id="ownerLineEl" data-bind="titles.ownerLine"></span>
       </div>
       <div class="editbar">
+        <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()">⬇ Export PPTX</button>
         <button class="editbtn secondary" id="toggleTheme">🎨 Theme</button>
         <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
         <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
@@ -213,17 +218,17 @@
   <div class="stat-row" id="statRow"></div>
 
   <section>
-    <div class="sechead"><h2>Phase progress</h2><button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button></div>
+    <div class="sechead"><h2 id="secPhasesTitle" data-bind="titles.sectionPhases"></h2><button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button></div>
     <div id="phasesArea"></div>
   </section>
 
   <section>
-    <div class="sechead"><h2>Capabilities implemented, by team</h2></div>
+    <div class="sechead"><h2 id="secCapsTitle" data-bind="titles.sectionCaps"></h2><button class="addbtn" id="addCapTeam" onclick="addCapTeam()">+ add team</button></div>
     <div class="cap-chart" id="capChart"></div>
   </section>
 
   <section>
-    <div class="sechead"><h2>Capability &amp; status matrix</h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
+    <div class="sechead"><h2 id="secMatrixTitle" data-bind="titles.sectionMatrix"></h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
     <table>
       <thead><tr><th>Capability</th><th>Owner</th><th>Tier</th><th>Status</th><th class="actions"></th></tr></thead>
       <tbody id="matrixBody"></tbody>
@@ -231,19 +236,19 @@
   </section>
 
   <section>
-    <div class="sechead"><h2>Known gaps</h2><button class="addbtn" id="addGap" onclick="addGap()">+ add gap</button></div>
+    <div class="sechead"><h2 id="secGapsTitle" data-bind="titles.sectionGaps"></h2><button class="addbtn" id="addGap" onclick="addGap()">+ add gap</button></div>
     <div class="gaps" id="gapsArea"></div>
   </section>
 
   <section>
-    <div class="sechead"><h2>Next steps</h2><button class="addbtn" id="addStep" onclick="addStep()">+ add step</button></div>
+    <div class="sechead"><h2 id="secStepsTitle" data-bind="titles.sectionSteps"></h2><button class="addbtn" id="addStep" onclick="addStep()">+ add step</button></div>
     <ol class="steps" id="stepsList"></ol>
   </section>
 
   <section>
-    <h2 style="margin-bottom:14px;">Notes</h2>
+    <h2 id="secNotesTitle" data-bind="titles.sectionNotes" style="margin-bottom:14px;"></h2>
     <div class="notes" id="notesArea" contenteditable="false"></div>
-    <div class="footer-note" id="footerNote">Click "Edit" to change anything on this page, then "Save to GitHub" to make it permanent. Without GitHub connected, edits only last for this browser tab.</div>
+    <div class="footer-note" id="footerNote">Click "Edit" to change anything on this page — titles, text, numbers, order, even section headers — then "Save to GitHub" to make it permanent. Use the ▲▼ arrows next to any row to reorder it. Without GitHub connected, edits only last for this browser tab.</div>
   </section>
 
 </div>
@@ -259,11 +264,23 @@
 const DEFAULT_STATE = {
   lastUpdated: "—",
   theme: { accent:"#C1701E", bg:"#1F1B16" },
+  titles: {
+    brand: "Midwam · Saud",
+    h1: "Saud — Progress Dashboard",
+    subtitle: "The Creative Intelligence Agent — where things stand, what's proven, what's next.",
+    ownerLine: "Owner: Harith · Koushan / Midwam",
+    sectionPhases: "Phase progress",
+    sectionCaps: "Capabilities implemented, by team",
+    sectionMatrix: "Capability & status matrix",
+    sectionGaps: "Known gaps",
+    sectionSteps: "Next steps",
+    sectionNotes: "Notes"
+  },
   stats: [
-    { label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
-    { label:"Stat 2", value:"—", sub:"Connect GitHub to load real data" },
-    { label:"Stat 3", value:"—", sub:"Connect GitHub to load real data" },
-    { label:"Stat 4", value:"—", sub:"Connect GitHub to load real data" }
+    { icon:"", label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
+    { icon:"", label:"Stat 2", value:"—", sub:"Connect GitHub to load real data" },
+    { icon:"", label:"Stat 3", value:"—", sub:"Connect GitHub to load real data" },
+    { icon:"", label:"Stat 4", value:"—", sub:"Connect GitHub to load real data" }
   ],
   phases: [
     { name:"Not connected", pct:0, label:"—", color:"muted" }
@@ -286,6 +303,8 @@ const DEFAULT_STATE = {
 const SEV_COLOR = { warning:"var(--warning)", critical:"var(--critical)", blue:"var(--series-blue)", good:"var(--good)" };
 const BAR_COLOR = { good:"var(--good)", warning:"var(--warning)", blue:"var(--series-blue)", muted:"var(--muted-bar)", critical:"var(--critical)" };
 const CAP_COLOR = { blue:"var(--series-blue)", orange:"var(--series-orange)", aqua:"var(--series-aqua)" };
+const BAR_COLOR_HEX = { good:"0ca30c", warning:"d99a1a", blue:"3987e5", muted:"6b6456", critical:"d03b3b" };
+const CAP_COLOR_HEX = { blue:"3987e5", orange:"d95926", aqua:"199e70" };
 const STATUS_META = {
   live:  { label:"Live in console",         cls:"badge-live"  },
   paper: { label:"Framework only",          cls:"badge-paper" },
@@ -357,9 +376,13 @@ function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(
 function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
 function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
 
+const RENDER_FN = {};
+
 function renderAll(){
   if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16" };
+  if(!state.titles) state.titles = JSON.parse(JSON.stringify(DEFAULT_STATE.titles));
   applyTheme(state.theme);
+  renderTitles();
   document.getElementById("lastUpdated").innerText = "Last updated: " + state.lastUpdated;
   renderStats();
   renderPhases();
@@ -371,17 +394,49 @@ function renderAll(){
   applyEditMode();
 }
 
+function renderTitles(){
+  const t = state.titles;
+  document.getElementById("brandEl").innerText = t.brand;
+  document.getElementById("h1El").innerText = t.h1;
+  document.getElementById("subtitleEl").innerText = t.subtitle;
+  document.getElementById("ownerLineEl").innerText = t.ownerLine;
+  document.getElementById("secPhasesTitle").innerText = t.sectionPhases;
+  document.getElementById("secCapsTitle").innerText = t.sectionCaps;
+  document.getElementById("secMatrixTitle").innerText = t.sectionMatrix;
+  document.getElementById("secGapsTitle").innerText = t.sectionGaps;
+  document.getElementById("secStepsTitle").innerText = t.sectionSteps;
+  document.getElementById("secNotesTitle").innerText = t.sectionNotes;
+}
+
+function reorderBtns(section, i, len){
+  return `<span class="reordergrp edit-only">
+      <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="Move up">▲</button>
+      <button class="reorder" onclick="moveItem('${section}',${i},1)" ${i===len-1?"disabled":""} title="Move down">▼</button>
+    </span>`;
+}
+
+function moveItem(section, i, dir){
+  const arr = state[section];
+  const j = i + dir;
+  if(j < 0 || j >= arr.length) return;
+  const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  RENDER_FN[section]();
+  applyEditMode();
+}
+
 function renderStats(){
   const row = document.getElementById("statRow"); row.innerHTML = "";
   state.stats.forEach((s,i)=>{
     row.appendChild(el(`
       <div class="stat-tile">
-        <div class="label">${escapeHtml(s.label)}</div>
+        <div class="reorderbar">${reorderBtns('stats', i, state.stats.length)}</div>
+        <div class="label"><span class="icon" data-bind="stats.${i}.icon">${escapeHtml(s.icon||"")}</span><span data-bind="stats.${i}.label">${escapeHtml(s.label)}</span></div>
         <div class="value" data-bind="stats.${i}.value">${escapeHtml(s.value)}</div>
         <div class="sub" data-bind="stats.${i}.sub">${escapeHtml(s.sub)}</div>
       </div>`));
   });
 }
+RENDER_FN.stats = renderStats;
 
 function renderPhases(){
   const area = document.getElementById("phasesArea"); area.innerHTML = "";
@@ -389,6 +444,7 @@ function renderPhases(){
     const color = BAR_COLOR[p.color] || BAR_COLOR.muted;
     area.appendChild(el(`
       <div class="phase-row">
+        ${reorderBtns('phases', i, state.phases.length)}
         <div class="pname" data-bind="phases.${i}.name">${escapeHtml(p.name)}</div>
         <div class="barbg"><div class="barfill" style="width:${p.pct}%; background:${color};"></div></div>
         <div class="pct">
@@ -396,6 +452,7 @@ function renderPhases(){
           <span class="dot" style="background:${color};"></span>
           <span class="plabel" data-bind="phases.${i}.label">${escapeHtml(p.label)}</span>
         </div>
+        <button class="rowdel edit-only" onclick="removeRow('phases',${i})">✕</button>
       </div>`));
   });
   area.querySelectorAll("input[data-pctinput]").forEach(inp=>{
@@ -406,6 +463,7 @@ function renderPhases(){
     });
   });
 }
+RENDER_FN.phases = renderPhases;
 
 function renderCapChart(){
   const wrap = document.getElementById("capChart"); wrap.innerHTML = "";
@@ -413,6 +471,7 @@ function renderCapChart(){
     const color = CAP_COLOR[c.color] || CAP_COLOR.blue;
     wrap.appendChild(el(`
       <div class="cap-card">
+        <div class="reorderbar">${reorderBtns('capTeams', i, state.capTeams.length)}<button class="rowdel edit-only" onclick="removeRow('capTeams',${i})">✕</button></div>
         <div class="team" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
         <div class="role" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
         <div class="num" data-bind="capTeams.${i}.num">${escapeHtml(c.num)}</div>
@@ -421,6 +480,7 @@ function renderCapChart(){
       </div>`));
   });
 }
+RENDER_FN.capTeams = renderCapChart;
 
 function renderMatrix(){
   const body = document.getElementById("matrixBody"); body.innerHTML = "";
@@ -445,7 +505,10 @@ function renderMatrix(){
             <option value="none" ${r.status=="none"?"selected":""}>Not in either version</option>
           </select>
         </td>
-        <td class="edit-only"><button class="rowdel" onclick="removeRow('matrix',${i})">✕</button></td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('matrix', i, state.matrix.length)}
+          <button class="rowdel" onclick="removeRow('matrix',${i})">✕</button>
+        </td>
       </tr>`);
     body.appendChild(tr);
   });
@@ -456,6 +519,7 @@ function renderMatrix(){
     state.matrix[+e.target.dataset.statusselect].status = e.target.value; renderMatrix(); applyEditMode();
   }));
 }
+RENDER_FN.matrix = renderMatrix;
 
 function renderGaps(){
   const area = document.getElementById("gapsArea"); area.innerHTML = "";
@@ -463,6 +527,7 @@ function renderGaps(){
     const color = SEV_COLOR[g.sev] || SEV_COLOR.warning;
     area.appendChild(el(`
       <div class="item">
+        ${reorderBtns('gaps', i, state.gaps.length)}
         <span class="dot" style="background:${color};"></span>
         <div class="txt" data-bind="gaps.${i}.text">${escapeHtml(g.text)}</div>
         <select class="edit-only" data-sevselect="${i}">
@@ -478,6 +543,7 @@ function renderGaps(){
     state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode();
   }));
 }
+RENDER_FN.gaps = renderGaps;
 
 function renderSteps(){
   const list = document.getElementById("stepsList"); list.innerHTML = "";
@@ -486,10 +552,12 @@ function renderSteps(){
       <li>
         <div class="num">${i+1}</div>
         <div class="txt" data-bind="steps.${i}">${escapeHtml(s)}</div>
+        ${reorderBtns('steps', i, state.steps.length)}
         <button class="rowdel edit-only" onclick="removeRow('steps',${i})">✕</button>
       </li>`));
   });
 }
+RENDER_FN.steps = renderSteps;
 
 function renderNotes(){
   document.getElementById("notesArea").innerText = state.notes;
@@ -525,10 +593,11 @@ document.getElementById("toggleEdit").addEventListener("click", ()=>{
 
 /* ---------- add/remove rows ---------- */
 function addPhase(){ state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); applyEditMode(); }
+function addCapTeam(){ state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); }
 function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", status:"paper"}); renderMatrix(); applyEditMode(); }
 function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); }
 function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); }
-function removeRow(section, i){ state[section].splice(i,1); ({matrix:renderMatrix, gaps:renderGaps, steps:renderSteps})[section](); applyEditMode(); }
+function removeRow(section, i){ state[section].splice(i,1); RENDER_FN[section](); applyEditMode(); }
 
 /* ---------- theme panel wiring ---------- */
 document.getElementById("toggleTheme").addEventListener("click", ()=>{
@@ -612,7 +681,6 @@ async function saveToGitHub(){
     statusEl.innerText = "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.";
     return;
   }
-  state.lastUpdated = new Date().toISOString().slice(0,10) === state.lastUpdated ? state.lastUpdated : state.lastUpdated;
   const btn = document.getElementById("saveBtn");
   btn.disabled = true; btn.innerText = "Saving...";
   try{
@@ -644,6 +712,111 @@ async function saveToGitHub(){
   }
 }
 document.getElementById("saveBtn").addEventListener("click", saveToGitHub);
+
+/* ---------- PPTX export ---------- */
+function loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    if(document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = src; s.onload = ()=>resolve(); s.onerror = ()=>reject(new Error("Failed to load " + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function exportPPTX(){
+  const btn = document.getElementById("exportPptxBtn");
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "Building...";
+  try{
+    if(typeof PptxGenJS === "undefined"){
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js");
+    }
+    const accentHex = (state.theme.accent || "#C1701E").replace("#","");
+    const bgHex = (state.theme.bg || "#1F1B16").replace("#","");
+    const pptx = new PptxGenJS();
+    pptx.defineLayout({ name:"WIDE", width:13.33, height:7.5 });
+    pptx.layout = "WIDE";
+
+    let slide = pptx.addSlide();
+    slide.background = { color: bgHex };
+    slide.addText(state.titles.brand || "", { x:0.6, y:0.5, w:10, h:0.4, fontSize:12, color:accentHex, bold:true, charSpacing:2 });
+    slide.addText(state.titles.h1 || "Saud — Progress Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:36, bold:true, color:"FBF6EA" });
+    slide.addText(state.titles.subtitle || "", { x:0.6, y:3.7, w:11.5, h:0.7, fontSize:15, color:"A79A82" });
+    slide.addText("Last updated: " + state.lastUpdated, { x:0.6, y:6.7, w:6, h:0.4, fontSize:11, color:"A79A82" });
+    slide.addText(state.titles.ownerLine || "", { x:0.6, y:7.0, w:6, h:0.35, fontSize:11, color:"A79A82" });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText("KEY NUMBERS", { x:0.5, y:0.4, w:8, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const statW = 2.9, statGap = 0.25;
+    state.stats.forEach((s,i)=>{
+      const x = 0.5 + i*(statW+statGap);
+      slide.addShape("roundRect", { x, y:1.3, w:statW, h:1.9, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.1 });
+      slide.addText((s.icon ? s.icon + " " : "") + s.value, { x, y:1.55, w:statW, h:0.7, fontSize:24, bold:true, color:"FBF6EA", align:"center" });
+      slide.addText(s.label, { x, y:2.25, w:statW, h:0.4, fontSize:10, color:"A79A82", align:"center" });
+      slide.addText(s.sub, { x:x+0.1, y:2.65, w:statW-0.2, h:0.5, fontSize:8, color:"A79A82", align:"center" });
+    });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionPhases || "Phase progress").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    state.phases.forEach((p,i)=>{
+      const y = 1.3 + i*0.75;
+      if(y > 6.8) return;
+      slide.addText(p.name, { x:0.5, y, w:3.6, h:0.5, fontSize:13, color:"FBF6EA", valign:"middle" });
+      slide.addShape("rect", { x:4.3, y:y+0.14, w:6.2, h:0.22, fill:{color:"3A3226"}, line:{type:"none"} });
+      slide.addShape("rect", { x:4.3, y:y+0.14, w: Math.max(0.05, 6.2*(p.pct/100)), h:0.22, fill:{color: BAR_COLOR_HEX[p.color] || "C1701E"}, line:{type:"none"} });
+      slide.addText(p.label, { x:10.7, y, w:2.1, h:0.5, fontSize:10, color:"A79A82", valign:"middle" });
+    });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionCaps || "Capabilities implemented, by team").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const capW = (12.3 - (state.capTeams.length-1)*0.3) / Math.max(1,state.capTeams.length);
+    state.capTeams.forEach((c,i)=>{
+      const x = 0.5 + i*(capW+0.3);
+      if(x > 12) return;
+      slide.addShape("roundRect", { x, y:1.3, w:capW, h:2.6, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.08 });
+      slide.addText(c.team, { x:x+0.2, y:1.5, w:capW-0.4, h:0.5, fontSize:13, bold:true, color:"FBF6EA" });
+      slide.addText(c.role, { x:x+0.2, y:1.95, w:capW-0.4, h:0.5, fontSize:9, color:"A79A82" });
+      slide.addText(String(c.num), { x:x+0.2, y:2.5, w:capW-0.4, h:0.5, fontSize:22, bold:true, color:"FBF6EA" });
+      slide.addText(c.caption, { x:x+0.2, y:3.2, w:capW-0.4, h:0.6, fontSize:8, color:"A79A82" });
+    });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionMatrix || "Capability & status matrix").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const headOpts = { bold:true, color:"FBF6EA", fill:{color:"2B241C"}, fontSize:10 };
+    const rows = [[
+      {text:"Capability", options:headOpts}, {text:"Owner", options:headOpts},
+      {text:"Tier", options:headOpts}, {text:"Status", options:headOpts}
+    ]];
+    state.matrix.slice(0,14).forEach(r=>{
+      rows.push([
+        {text:r.cap, options:{color:"FBF6EA", fontSize:9}},
+        {text:r.owner, options:{color:"FBF6EA", fontSize:9}},
+        {text:"Tier " + r.tier, options:{color:"FBF6EA", fontSize:9}},
+        {text:(STATUS_META[r.status]||STATUS_META.none).label, options:{color:"FBF6EA", fontSize:9}}
+      ]);
+    });
+    slide.addTable(rows, { x:0.5, y:1.2, w:12.3, colW:[6.3,2,1.5,2.5], border:{color:"3A3226", pt:0.5}, autoPage:false });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionGaps || "Known gaps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    slide.addText(state.gaps.map(g=>"•  " + g.text).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:"FBF6EA", lineSpacingMultiple:1.3, valign:"top" });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionSteps || "Next steps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    slide.addText(state.steps.map((s,i)=>(i+1) + ".  " + s).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:"FBF6EA", lineSpacingMultiple:1.3, valign:"top" });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText((state.titles.sectionNotes || "Notes").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    slide.addText(state.notes || "", { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:14, color:"A79A82", lineSpacingMultiple:1.4, valign:"top" });
+
+    const fname = (state.titles.h1 || "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".pptx";
+    await pptx.writeFile({ fileName: fname });
+  } catch(e){
+    alert("PPTX export failed: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
 
 /* ---------- boot ---------- */
 renderAll();

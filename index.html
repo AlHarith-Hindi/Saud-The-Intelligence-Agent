@@ -58,6 +58,13 @@
   }
   .sync-panel input.token{width:340px;}
   .sync-panel input.short{width:150px;}
+  .sync-panel input[type="color"]{
+    width:36px; height:32px; padding:2px; border-radius:6px; border:1px solid #4A3E2C; background:var(--night); cursor:pointer;
+  }
+  .theme-swatch{
+    width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,.2); cursor:pointer; flex-shrink:0;
+  }
+  .theme-swatch.active{border-color:var(--cream); box-shadow:0 0 0 2px var(--copper);}
   .sync-status{margin-top:10px; font-size:12px; color:var(--muted);}
   .sync-status.ok{color:#5fd3a8;}
   .sync-status.err{color:#f0a06f;}
@@ -166,12 +173,26 @@
         <span>Owner: Harith · Koushan / Midwam</span>
       </div>
       <div class="editbar">
+        <button class="editbtn secondary" id="toggleTheme">🎨 Theme</button>
         <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
         <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
         <button class="editbtn" id="saveBtn" style="display:none;">Save to GitHub</button>
       </div>
     </div>
   </header>
+
+  <div class="sync-panel" id="themePanel">
+    <b>Theme — change the dashboard's colors any time.</b><br>
+    Pick a preset, or set your own accent and background colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.
+    <div class="row" id="themePresets"></div>
+    <div class="row" style="align-items:center;">
+      <span style="font-size:12px; color:var(--muted);">Accent color</span>
+      <input type="color" id="accentPicker" value="#C1701E">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;">Background color</span>
+      <input type="color" id="bgPicker" value="#1F1B16">
+      <button class="editbtn secondary" onclick="resetTheme()">Reset to default</button>
+    </div>
+  </div>
 
   <div class="sync-panel" id="syncPanel">
     <b>GitHub sync — makes edits permanent and gives you a full history of every change.</b><br>
@@ -228,8 +249,8 @@
 </div>
 
 <script>
-/* ---------- default state ----------
-   PUBLIC / PUBLISHABLE VERSION: this is the file meant to be committed to a
+/* ---------- default state (used until a GitHub file is loaded) ---------- */
+/* PUBLIC / PUBLISHABLE VERSION: this is the file meant to be committed to a
    PUBLIC repo or GitHub Pages. It deliberately ships with no real Midwam data —
    only this generic placeholder shell. Real content only ever appears in a
    visitor's browser after THEY connect their own token to your PRIVATE data
@@ -237,6 +258,7 @@
    into this file, so nothing sensitive is exposed to a public visitor. */
 const DEFAULT_STATE = {
   lastUpdated: "—",
+  theme: { accent:"#C1701E", bg:"#1F1B16" },
   stats: [
     { label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
     { label:"Stat 2", value:"—", sub:"Connect GitHub to load real data" },
@@ -274,12 +296,70 @@ let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
 let gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
 
+/* ---------- theme ---------- */
+const THEME_PRESETS = [
+  { name:"Night Desert (default)", accent:"#C1701E", bg:"#1F1B16" },
+  { name:"Ocean", accent:"#3987E5", bg:"#101820" },
+  { name:"Forest", accent:"#199E70", bg:"#14201A" },
+  { name:"Berry", accent:"#D55181", bg:"#201018" },
+  { name:"Slate Violet", accent:"#9085E9", bg:"#1A1A22" }
+];
+
+function hexToRgb(hex){
+  hex = hex.replace("#","");
+  if(hex.length===3) hex = hex.split("").map(c=>c+c).join("");
+  const n = parseInt(hex,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
+}
+function lighten(hex, amt){
+  const { r,g,b } = hexToRgb(hex);
+  return rgbToHex(r+(255-r)*amt, g+(255-g)*amt, b+(255-b)*amt);
+}
+
+function applyTheme(theme){
+  const root = document.documentElement.style;
+  root.setProperty("--copper", theme.accent);
+  root.setProperty("--night", theme.bg);
+  root.setProperty("--night2", lighten(theme.bg, 0.06));
+  renderThemePanel();
+}
+
+function renderThemePanel(){
+  const wrap = document.getElementById("themePresets");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  THEME_PRESETS.forEach(p=>{
+    const active = state.theme.accent.toLowerCase()===p.accent.toLowerCase() && state.theme.bg.toLowerCase()===p.bg.toLowerCase();
+    const sw = document.createElement("div");
+    sw.className = "theme-swatch" + (active ? " active" : "");
+    sw.title = p.name;
+    sw.style.background = `linear-gradient(135deg, ${p.accent} 50%, ${p.bg} 50%)`;
+    sw.onclick = ()=>{ state.theme = { accent:p.accent, bg:p.bg }; applyTheme(state.theme); syncThemeInputs(); };
+    wrap.appendChild(sw);
+  });
+  syncThemeInputs();
+}
+function syncThemeInputs(){
+  const a = document.getElementById("accentPicker"), b = document.getElementById("bgPicker");
+  if(a) a.value = state.theme.accent;
+  if(b) b.value = state.theme.bg;
+}
+function resetTheme(){
+  state.theme = { accent:"#C1701E", bg:"#1F1B16" };
+  applyTheme(state.theme);
+}
+
 /* ---------- rendering ---------- */
 function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
 function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
 function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
 
 function renderAll(){
+  if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16" };
+  applyTheme(state.theme);
   document.getElementById("lastUpdated").innerText = "Last updated: " + state.lastUpdated;
   renderStats();
   renderPhases();
@@ -449,6 +529,17 @@ function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas",
 function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); }
 function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); }
 function removeRow(section, i){ state[section].splice(i,1); ({matrix:renderMatrix, gaps:renderGaps, steps:renderSteps})[section](); applyEditMode(); }
+
+/* ---------- theme panel wiring ---------- */
+document.getElementById("toggleTheme").addEventListener("click", ()=>{
+  document.getElementById("themePanel").classList.toggle("open");
+});
+document.getElementById("accentPicker").addEventListener("input", e=>{
+  state.theme.accent = e.target.value; applyTheme(state.theme);
+});
+document.getElementById("bgPicker").addEventListener("input", e=>{
+  state.theme.bg = e.target.value; applyTheme(state.theme);
+});
 
 /* ---------- GitHub sync ---------- */
 document.getElementById("toggleSync").addEventListener("click", ()=>{

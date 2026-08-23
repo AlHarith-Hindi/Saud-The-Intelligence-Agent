@@ -104,6 +104,36 @@
   .phase-row .pct .plabel{background:none; border:none; color:var(--muted); font-size:12px; font-family:inherit; text-align:right;}
   .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
 
+  .phase-row select.color-select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:11px;}
+  .cap-card select.color-select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:11px; margin-top:6px; width:100%;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--muted); align-items:center;}
+  .legend .litem{display:flex; align-items:center; gap:5px;}
+  .autocolor-toggle{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); cursor:pointer; user-select:none;}
+  .autocolor-toggle input{cursor:pointer;}
+  .progress-summary{
+    background:var(--night2); border:1px solid var(--border); border-radius:14px; padding:16px 20px;
+    margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .progress-summary .psval{font-size:26px; font-weight:700; font-variant-numeric:proportional-nums;}
+  .progress-summary .pslabel{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+  .progress-summary .psbarbg{flex:1; min-width:140px; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden;}
+  .progress-summary .psbarfill{height:100%; border-radius:6px; transition:width .2s;}
+  .draft-banner{
+    background:rgba(193,112,30,.12); border:1px solid var(--copper); border-radius:10px; padding:10px 16px;
+    margin-bottom:20px; font-size:12.5px; color:var(--sand); display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .draft-banner.show{display:flex;}
+  .draft-banner button{background:none; border:1px solid var(--border); color:var(--sand); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer;}
+  .draft-banner button:hover{border-color:var(--copper); color:var(--cream);}
+  .matrix-search{
+    background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:8px;
+    padding:7px 12px; font-size:12.5px; width:240px; margin-bottom:10px;
+  }
+  section.collapsed > *:not(.sechead){display:none;}
+  .sechead h2{cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px;}
+  .sechead h2::before{content:"▾"; font-size:9px; opacity:.55;}
+  section.collapsed .sechead h2::before{content:"▸";}
+
   .cap-chart{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
   .cap-card{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative;}
   .cap-card .team{font-size:13px; font-weight:700; color:var(--cream); margin-bottom:2px; background:none; border:none; font-family:inherit; width:100%;}
@@ -160,6 +190,14 @@
     .cap-chart{grid-template-columns:1fr;}
     .gaps{grid-template-columns:1fr;}
   }
+
+  @media print{
+    .editbar, .sync-panel, .edit-only, .reorderbar, .reordergrp, .rowdel, .addbtn,
+    thead th.actions, td.actions-cell, .matrix-search, .draft-banner{ display:none !important; }
+    body{ background:#fff; color:#111; }
+    .stat-tile, .cap-card, .notes, table, .progress-summary{ background:#f4f4f4; border-color:#ccc; }
+    section.collapsed > *:not(.sechead){ display:block !important; }
+  }
 </style>
 </head>
 <body>
@@ -178,6 +216,8 @@
       </div>
       <div class="editbar">
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()">⬇ Export PPTX</button>
+        <button class="editbtn secondary" id="exportJsonBtn" onclick="exportJSON()">⬇ Export JSON</button>
+        <button class="editbtn secondary" id="printBtn" onclick="window.print()">🖨 Print</button>
         <button class="editbtn secondary" id="toggleTheme">🎨 Theme</button>
         <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
         <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
@@ -185,6 +225,14 @@
       </div>
     </div>
   </header>
+
+  <div class="draft-banner" id="draftBanner">
+    <span>📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.</span>
+    <span>
+      <button onclick="dismissLocalDraft()">Dismiss</button>
+      <button onclick="discardLocalDraft()">Discard draft</button>
+    </span>
+  </div>
 
   <div class="sync-panel" id="themePanel">
     <b>Theme — change the dashboard's colors any time.</b><br>
@@ -217,8 +265,23 @@
 
   <div class="stat-row" id="statRow"></div>
 
+  <div class="progress-summary" id="progressSummary"></div>
+
   <section>
-    <div class="sechead"><h2 id="secPhasesTitle" data-bind="titles.sectionPhases"></h2><button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button></div>
+    <div class="sechead">
+      <h2 id="secPhasesTitle" data-bind="titles.sectionPhases"></h2>
+      <div class="sechead-actions">
+        <div class="legend">
+          <span class="litem"><span class="dot" style="background:var(--good);"></span>On track</span>
+          <span class="litem"><span class="dot" style="background:var(--warning);"></span>At risk</span>
+          <span class="litem"><span class="dot" style="background:var(--critical);"></span>Blocked</span>
+        </div>
+        <label class="autocolor-toggle edit-only">
+          <input type="checkbox" id="autoColorToggle"> Auto-color by %
+        </label>
+        <button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button>
+      </div>
+    </div>
     <div id="phasesArea"></div>
   </section>
 
@@ -229,6 +292,7 @@
 
   <section>
     <div class="sechead"><h2 id="secMatrixTitle" data-bind="titles.sectionMatrix"></h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
+    <input type="text" class="matrix-search" id="matrixSearch" placeholder="🔎 Search capabilities or owners...">
     <table>
       <thead><tr><th>Capability</th><th>Owner</th><th>Tier</th><th>Status</th><th class="actions"></th></tr></thead>
       <tbody id="matrixBody"></tbody>
@@ -264,6 +328,7 @@
 const DEFAULT_STATE = {
   lastUpdated: "—",
   theme: { accent:"#C1701E", bg:"#1F1B16" },
+  autoColorPhases: false,
   titles: {
     brand: "Midwam · Saud",
     h1: "Saud — Progress Dashboard",
@@ -302,9 +367,17 @@ const DEFAULT_STATE = {
 
 const SEV_COLOR = { warning:"var(--warning)", critical:"var(--critical)", blue:"var(--series-blue)", good:"var(--good)" };
 const BAR_COLOR = { good:"var(--good)", warning:"var(--warning)", blue:"var(--series-blue)", muted:"var(--muted-bar)", critical:"var(--critical)" };
-const CAP_COLOR = { blue:"var(--series-blue)", orange:"var(--series-orange)", aqua:"var(--series-aqua)" };
+const CAP_COLOR = { blue:"var(--series-blue)", orange:"var(--series-orange)", aqua:"var(--series-aqua)", good:"var(--good)", warning:"var(--warning)", critical:"var(--critical)" };
 const BAR_COLOR_HEX = { good:"0ca30c", warning:"d99a1a", blue:"3987e5", muted:"6b6456", critical:"d03b3b" };
-const CAP_COLOR_HEX = { blue:"3987e5", orange:"d95926", aqua:"199e70" };
+const CAP_COLOR_HEX = { blue:"3987e5", orange:"d95926", aqua:"199e70", good:"0ca30c", warning:"d99a1a", critical:"d03b3b" };
+const COLOR_LABELS = { good:"Green — on track", warning:"Yellow — at risk", critical:"Red — blocked", blue:"Blue — in progress", muted:"Gray — not started" };
+const CAP_COLOR_LABELS = { blue:"Blue", orange:"Orange", aqua:"Aqua", good:"Green", warning:"Yellow", critical:"Red" };
+
+function autoColorForPct(pct){
+  if(pct >= 75) return "good";
+  if(pct >= 40) return "warning";
+  return "critical";
+}
 const STATUS_META = {
   live:  { label:"Live in console",         cls:"badge-live"  },
   paper: { label:"Framework only",          cls:"badge-paper" },
@@ -381,17 +454,36 @@ const RENDER_FN = {};
 function renderAll(){
   if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16" };
   if(!state.titles) state.titles = JSON.parse(JSON.stringify(DEFAULT_STATE.titles));
+  if(typeof state.autoColorPhases !== "boolean") state.autoColorPhases = false;
   applyTheme(state.theme);
   renderTitles();
   document.getElementById("lastUpdated").innerText = "Last updated: " + state.lastUpdated;
+  const acToggle = document.getElementById("autoColorToggle");
+  if(acToggle) acToggle.checked = state.autoColorPhases;
   renderStats();
   renderPhases();
+  renderProgressSummary();
   renderCapChart();
   renderMatrix();
   renderGaps();
   renderSteps();
   renderNotes();
   applyEditMode();
+  saveLocalDraft();
+}
+
+function renderProgressSummary(){
+  const wrap = document.getElementById("progressSummary");
+  if(!state.phases.length){ wrap.innerHTML = ""; return; }
+  const avg = Math.round(state.phases.reduce((s,p)=>s+(+p.pct||0),0) / state.phases.length);
+  const colorKey = autoColorForPct(avg);
+  const color = BAR_COLOR[colorKey];
+  wrap.innerHTML = `
+    <div class="pslabel">Overall progress</div>
+    <div class="psval" style="color:${color};">${avg}%</div>
+    <div class="psbarbg"><div class="psbarfill" style="width:${avg}%; background:${color};"></div></div>
+    <div class="pslabel">${state.phases.length} phase${state.phases.length===1?"":"s"} tracked</div>
+  `;
 }
 
 function renderTitles(){
@@ -422,6 +514,7 @@ function moveItem(section, i, dir){
   const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
   RENDER_FN[section]();
   applyEditMode();
+  saveLocalDraft();
 }
 
 function renderStats(){
@@ -441,17 +534,21 @@ RENDER_FN.stats = renderStats;
 function renderPhases(){
   const area = document.getElementById("phasesArea"); area.innerHTML = "";
   state.phases.forEach((p,i)=>{
-    const color = BAR_COLOR[p.color] || BAR_COLOR.muted;
+    const effectiveColorKey = state.autoColorPhases ? autoColorForPct(+p.pct||0) : (p.color || "muted");
+    const color = BAR_COLOR[effectiveColorKey] || BAR_COLOR.muted;
+    const colorOptions = Object.keys(COLOR_LABELS).map(k=>`<option value="${k}" ${p.color===k?"selected":""}>${COLOR_LABELS[k]}</option>`).join("");
     area.appendChild(el(`
       <div class="phase-row">
         ${reorderBtns('phases', i, state.phases.length)}
         <div class="pname" data-bind="phases.${i}.name">${escapeHtml(p.name)}</div>
         <div class="barbg"><div class="barfill" style="width:${p.pct}%; background:${color};"></div></div>
         <div class="pct">
+          <input type="number" min="0" max="100" value="${p.pct}" data-pctnuminput="${i}" style="display:none; width:48px;">
           <input type="range" min="0" max="100" value="${p.pct}" data-pctinput="${i}" style="display:none;">
           <span class="dot" style="background:${color};"></span>
           <span class="plabel" data-bind="phases.${i}.label">${escapeHtml(p.label)}</span>
         </div>
+        <select class="color-select edit-only" data-colorselect="${i}" ${state.autoColorPhases?"disabled title=\"Turn off Auto-color to set manually\"":""}>${colorOptions}</select>
         <button class="rowdel edit-only" onclick="removeRow('phases',${i})">✕</button>
       </div>`));
   });
@@ -459,9 +556,21 @@ function renderPhases(){
     inp.addEventListener("input", e=>{
       const i = +e.target.dataset.pctinput;
       state.phases[i].pct = +e.target.value;
-      renderPhases(); applyEditMode();
+      renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
     });
   });
+  area.querySelectorAll("input[data-pctnuminput]").forEach(inp=>{
+    inp.addEventListener("change", e=>{
+      const i = +e.target.dataset.pctnuminput;
+      let v = Math.max(0, Math.min(100, +e.target.value || 0));
+      state.phases[i].pct = v;
+      renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
+    });
+  });
+  area.querySelectorAll("[data-colorselect]").forEach(s=>s.addEventListener("change", e=>{
+    state.phases[+e.target.dataset.colorselect].color = e.target.value;
+    renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
+  }));
 }
 RENDER_FN.phases = renderPhases;
 
@@ -469,6 +578,7 @@ function renderCapChart(){
   const wrap = document.getElementById("capChart"); wrap.innerHTML = "";
   state.capTeams.forEach((c,i)=>{
     const color = CAP_COLOR[c.color] || CAP_COLOR.blue;
+    const colorOptions = Object.keys(CAP_COLOR_LABELS).map(k=>`<option value="${k}" ${c.color===k?"selected":""}>${CAP_COLOR_LABELS[k]}</option>`).join("");
     wrap.appendChild(el(`
       <div class="cap-card">
         <div class="reorderbar">${reorderBtns('capTeams', i, state.capTeams.length)}<button class="rowdel edit-only" onclick="removeRow('capTeams',${i})">✕</button></div>
@@ -477,14 +587,22 @@ function renderCapChart(){
         <div class="num" data-bind="capTeams.${i}.num">${escapeHtml(c.num)}</div>
         <div class="barbg"><div class="barfill" style="width:${c.pct}%; background:${color};"></div></div>
         <div class="caption" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
+        <select class="color-select edit-only" data-capcolorselect="${i}">${colorOptions}</select>
       </div>`));
   });
+  wrap.querySelectorAll("[data-capcolorselect]").forEach(s=>s.addEventListener("change", e=>{
+    state.capTeams[+e.target.dataset.capcolorselect].color = e.target.value;
+    renderCapChart(); applyEditMode(); saveLocalDraft();
+  }));
 }
 RENDER_FN.capTeams = renderCapChart;
 
+let matrixFilter = "";
 function renderMatrix(){
   const body = document.getElementById("matrixBody"); body.innerHTML = "";
+  const q = matrixFilter.trim().toLowerCase();
   state.matrix.forEach((r,i)=>{
+    if(q && !((r.cap||"").toLowerCase().includes(q) || (r.owner||"").toLowerCase().includes(q))) return;
     const meta = STATUS_META[r.status] || STATUS_META.none;
     const tr = elTR(`
       <tr>
@@ -513,10 +631,10 @@ function renderMatrix(){
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-tierselect]").forEach(s=>s.addEventListener("change", e=>{
-    state.matrix[+e.target.dataset.tierselect].tier = e.target.value; renderMatrix(); applyEditMode();
+    state.matrix[+e.target.dataset.tierselect].tier = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
   }));
   body.querySelectorAll("[data-statusselect]").forEach(s=>s.addEventListener("change", e=>{
-    state.matrix[+e.target.dataset.statusselect].status = e.target.value; renderMatrix(); applyEditMode();
+    state.matrix[+e.target.dataset.statusselect].status = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
   }));
 }
 RENDER_FN.matrix = renderMatrix;
@@ -540,7 +658,7 @@ function renderGaps(){
       </div>`));
   });
   area.querySelectorAll("[data-sevselect]").forEach(s=>s.addEventListener("change", e=>{
-    state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode();
+    state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode(); saveLocalDraft();
   }));
 }
 RENDER_FN.gaps = renderGaps;
@@ -574,6 +692,7 @@ document.addEventListener("focusout", e=>{
   let obj = state;
   for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
   obj[path[path.length-1]] = t.innerText.trim();
+  saveLocalDraft();
 });
 
 function applyEditMode(){
@@ -581,6 +700,7 @@ function applyEditMode(){
   document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
   document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");
   document.querySelectorAll("input[data-pctinput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
+  document.querySelectorAll("input[data-pctnuminput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
   document.querySelectorAll(".addbtn").forEach(el=>el.classList.toggle("show", editing));
   document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
 }
@@ -592,22 +712,84 @@ document.getElementById("toggleEdit").addEventListener("click", ()=>{
 });
 
 /* ---------- add/remove rows ---------- */
-function addPhase(){ state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); applyEditMode(); }
-function addCapTeam(){ state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); }
-function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", status:"paper"}); renderMatrix(); applyEditMode(); }
-function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); }
-function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); }
-function removeRow(section, i){ state[section].splice(i,1); RENDER_FN[section](); applyEditMode(); }
+function addPhase(){ state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft(); }
+function addCapTeam(){ state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); saveLocalDraft(); }
+function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", status:"paper"}); renderMatrix(); applyEditMode(); saveLocalDraft(); }
+function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); saveLocalDraft(); }
+function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); saveLocalDraft(); }
+function removeRow(section, i){ state[section].splice(i,1); RENDER_FN[section](); applyEditMode(); saveLocalDraft(); }
+
+/* ---------- matrix search/filter ---------- */
+document.getElementById("matrixSearch").addEventListener("input", e=>{
+  matrixFilter = e.target.value;
+  renderMatrix();
+  applyEditMode();
+});
+
+/* ---------- auto-color toggle ---------- */
+document.getElementById("autoColorToggle").addEventListener("change", e=>{
+  state.autoColorPhases = e.target.checked;
+  renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
+});
+
+/* ---------- collapsible sections ---------- */
+document.addEventListener("click", e=>{
+  if(editing) return;
+  const h2 = e.target.closest(".sechead h2");
+  if(!h2) return;
+  const section = h2.closest("section");
+  if(section) section.classList.toggle("collapsed");
+});
+
+/* ---------- keyboard shortcut: Ctrl/Cmd+S to save while editing ---------- */
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && editing){
+    e.preventDefault();
+    saveToGitHub();
+  }
+});
+
+/* ---------- export JSON ---------- */
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const fname = (state.titles && state.titles.h1 ? state.titles.h1 : "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".json";
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- local browser autosave / draft restore ---------- */
+const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
+function saveLocalDraft(){
+  try{ localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state)); } catch(e){ /* ignore quota/availability errors */ }
+}
+function loadLocalDraft(){
+  try{
+    const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function dismissLocalDraft(){
+  document.getElementById("draftBanner").classList.remove("show");
+}
+function discardLocalDraft(){
+  try{ localStorage.removeItem(LOCAL_DRAFT_KEY); } catch(e){}
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  document.getElementById("draftBanner").classList.remove("show");
+  renderAll();
+}
 
 /* ---------- theme panel wiring ---------- */
 document.getElementById("toggleTheme").addEventListener("click", ()=>{
   document.getElementById("themePanel").classList.toggle("open");
 });
 document.getElementById("accentPicker").addEventListener("input", e=>{
-  state.theme.accent = e.target.value; applyTheme(state.theme);
+  state.theme.accent = e.target.value; applyTheme(state.theme); saveLocalDraft();
 });
 document.getElementById("bgPicker").addEventListener("input", e=>{
-  state.theme.bg = e.target.value; applyTheme(state.theme);
+  state.theme.bg = e.target.value; applyTheme(state.theme); saveLocalDraft();
 });
 
 /* ---------- GitHub sync ---------- */
@@ -664,6 +846,7 @@ async function connectGitHub(){
     const loaded = JSON.parse(content);
     state = loaded;
     gh.connected = true;
+    dismissLocalDraft();
     renderAll();
     statusEl.className = "sync-status ok";
     statusEl.innerText = "Connected and loaded from GitHub. Every future save writes a new commit to this file.";
@@ -763,7 +946,8 @@ async function exportPPTX(){
       if(y > 6.8) return;
       slide.addText(p.name, { x:0.5, y, w:3.6, h:0.5, fontSize:13, color:"FBF6EA", valign:"middle" });
       slide.addShape("rect", { x:4.3, y:y+0.14, w:6.2, h:0.22, fill:{color:"3A3226"}, line:{type:"none"} });
-      slide.addShape("rect", { x:4.3, y:y+0.14, w: Math.max(0.05, 6.2*(p.pct/100)), h:0.22, fill:{color: BAR_COLOR_HEX[p.color] || "C1701E"}, line:{type:"none"} });
+      const pptxColorKey = state.autoColorPhases ? autoColorForPct(+p.pct||0) : (p.color || "muted");
+      slide.addShape("rect", { x:4.3, y:y+0.14, w: Math.max(0.05, 6.2*(p.pct/100)), h:0.22, fill:{color: BAR_COLOR_HEX[pptxColorKey] || "C1701E"}, line:{type:"none"} });
       slide.addText(p.label, { x:10.7, y, w:2.1, h:0.5, fontSize:10, color:"A79A82", valign:"middle" });
     });
 
@@ -819,7 +1003,14 @@ async function exportPPTX(){
 }
 
 /* ---------- boot ---------- */
-renderAll();
+(function boot(){
+  const draft = loadLocalDraft();
+  if(draft){
+    state = draft;
+    document.getElementById("draftBanner").classList.add("show");
+  }
+  renderAll();
+})();
 document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
 </script>
 

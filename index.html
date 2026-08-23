@@ -38,6 +38,9 @@
   [data-bind][contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:1px 4px;}
   .meta{text-align:right; font-size:12px; color:var(--muted);}
   .meta span{display:block;}
+  .meta .lastup-row{display:flex; align-items:center; justify-content:flex-end; gap:6px;}
+  .meta .tinybtn{background:none; border:1px solid var(--border); color:var(--muted); font-size:9px; padding:1px 6px; border-radius:5px; cursor:pointer;}
+  .meta .tinybtn:hover{color:var(--cream); border-color:var(--copper);}
   .editbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
   button.editbtn{
     background:var(--copper); color:var(--cream); border:none; border-radius:8px;
@@ -46,6 +49,8 @@
   button.editbtn.secondary{background:transparent; border:1px solid var(--border); color:var(--sand);}
   button.editbtn:disabled{opacity:.45; cursor:default;}
   button.editbtn:hover:not(:disabled){opacity:.9;}
+  .autosave-indicator{font-size:10.5px; color:var(--muted); display:none; align-items:center; gap:4px;}
+  .autosave-indicator.show{display:flex;}
 
   .sync-panel{
     background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
@@ -62,6 +67,9 @@
   .sync-panel input[type="color"]{
     width:36px; height:32px; padding:2px; border-radius:6px; border:1px solid #4A3E2C; background:var(--night); cursor:pointer;
   }
+  .sync-panel ul{margin:8px 0 0; padding-left:20px;}
+  .sync-panel li{margin-bottom:6px;}
+  .sync-panel kbd{background:var(--night); border:1px solid #4A3E2C; border-radius:4px; padding:1px 6px; font-size:11px; font-family:inherit;}
   .theme-swatch{
     width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,.2); cursor:pointer; flex-shrink:0;
   }
@@ -82,22 +90,24 @@
   .stat-tile .reorderbar{position:absolute; top:8px; right:10px; display:flex; gap:4px;}
 
   section{margin-bottom:32px;}
-  section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px;}
+  section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px; flex-wrap:wrap; gap:8px;}
   section h2{
     font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--sand);
-    margin:0;
+    margin:0; background:none; border:none; font-family:inherit;
   }
-  .sechead-actions{display:flex; align-items:center; gap:10px;}
+  .sechead-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
   .addbtn{background:none; border:1px dashed var(--copper); color:var(--sand); font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;}
   .addbtn.show{display:inline-block;}
   .reorder{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
   .reorder:hover{color:var(--copper);}
   .reorder:disabled{opacity:.25; cursor:default;}
+  .dupbtn{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
+  .dupbtn:hover{color:var(--series-blue);}
 
-  .phase-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .phase-row{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
   .phase-row .reordergrp{display:flex; flex-direction:column;}
   .phase-row .pname{width:230px; flex-shrink:0; font-size:14px; color:var(--cream); background:none; border:none; font-family:inherit;}
-  .phase-row .barbg{flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden;}
+  .phase-row .barbg{flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; min-width:80px;}
   .phase-row .barfill{height:100%; border-radius:6px; transition:width .2s;}
   .phase-row .pct{width:180px; flex-shrink:0; font-size:12px; text-align:right; color:var(--muted); display:flex; align-items:center; justify-content:flex-end; gap:6px;}
   .phase-row .pct input[type=range]{width:70px;}
@@ -149,21 +159,17 @@
     text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
     color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600;
   }
-  thead th.actions{width:70px;}
+  thead th.actions{width:90px;}
   tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:middle;}
   tbody tr:last-child td{border-bottom:none;}
   td.actions-cell{display:flex; gap:4px; align-items:center;}
-  select.status-select, select.tier-select{
-    background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:12px;
-  }
-  .tier{display:inline-block; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:700;}
-  .tier1{background:rgba(25,158,112,.18); color:#5fd3a8;}
-  .tier2{background:rgba(217,89,38,.2); color:#f0a06f;}
-  .badge-live{background:rgba(25,158,112,.18); color:#5fd3a8; padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
-  .badge-paper{background:rgba(217,89,38,.18); color:#f0a06f; padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
-  .badge-none{background:rgba(255,255,255,.06); color:var(--muted); padding:1px 7px; border-radius:5px; font-size:11px; font-weight:700;}
-  .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
+  .pill-edit-row{display:flex; align-items:center; gap:6px;}
+  .pill-edit-row [data-bind]{min-width:40px; display:inline-block;}
+  input[type="color"].tiny{width:26px; height:24px; padding:1px; border-radius:5px; border:1px solid var(--border); background:var(--night); cursor:pointer;}
+  .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; border-radius:4px; padding:0 3px;}
   .rowdel:hover{color:var(--critical);}
+  .rowdel.confirming{background:var(--critical); color:#fff; font-size:10px; padding:2px 6px;}
 
   .gaps{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
   .gaps .item{display:flex; gap:8px; align-items:flex-start; font-size:13.5px; color:var(--cream); padding:8px 0; border-bottom:1px solid var(--border);}
@@ -183,7 +189,20 @@
   .steps .reordergrp{display:flex; flex-direction:column;}
 
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
-  .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6;}
+  .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
+
+  .custom-section-item{display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--border);}
+  .custom-section-item .txt{flex:1; background:none; border:none; color:var(--cream); font-family:inherit; font-size:13.5px; line-height:1.5;}
+  .custom-section-item .dot{margin-top:6px;}
+  .add-section-wrap{margin-top:10px;}
+
+  .toast-container{position:fixed; bottom:18px; right:18px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
+  .toast{
+    background:var(--night2); border:1px solid var(--copper); color:var(--cream); padding:10px 16px; border-radius:8px;
+    font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.35); opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s;
+    max-width:320px;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
 
   @media (max-width:820px){
     .stat-row{grid-template-columns:repeat(2,1fr);}
@@ -192,7 +211,7 @@
   }
 
   @media print{
-    .editbar, .sync-panel, .edit-only, .reorderbar, .reordergrp, .rowdel, .addbtn,
+    .editbar, .sync-panel, .edit-only, .reorderbar, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .matrix-search, .draft-banner{ display:none !important; }
     body{ background:#fff; color:#111; }
     .stat-tile, .cap-card, .notes, table, .progress-summary{ background:#f4f4f4; border-color:#ccc; }
@@ -211,15 +230,23 @@
     </div>
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
       <div class="meta">
-        <span id="lastUpdated">Last updated: —</span>
+        <div class="lastup-row">
+          <span>Last updated: <span id="lastUpdatedText" data-bind="lastUpdated"></span></span>
+          <button class="tinybtn edit-only" id="setTodayBtn">Set to today</button>
+        </div>
         <span id="ownerLineEl" data-bind="titles.ownerLine"></span>
+        <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
       </div>
       <div class="editbar">
+        <button class="editbtn secondary" id="helpBtn">❓ Help</button>
+        <button class="editbtn secondary" id="importJsonBtn">⬆ Import JSON</button>
+        <input type="file" id="importJsonInput" accept="application/json" style="display:none;">
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()">⬇ Export PPTX</button>
         <button class="editbtn secondary" id="exportJsonBtn" onclick="exportJSON()">⬇ Export JSON</button>
         <button class="editbtn secondary" id="printBtn" onclick="window.print()">🖨 Print</button>
         <button class="editbtn secondary" id="toggleTheme">🎨 Theme</button>
         <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
+        <button class="editbtn secondary edit-only" id="undoBtn" disabled>↺ Undo</button>
         <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
         <button class="editbtn" id="saveBtn" style="display:none;">Save to GitHub</button>
       </div>
@@ -234,15 +261,31 @@
     </span>
   </div>
 
+  <div class="sync-panel" id="helpPanel">
+    <b>Tips &amp; keyboard shortcuts</b>
+    <ul>
+      <li>Click <b>✎ Edit</b> to unlock every field on the page — titles, numbers, colors, table headers, tier/status labels, all of it.</li>
+      <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd> while editing saves straight to GitHub.</li>
+      <li>Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.</li>
+      <li><b>↺ Undo</b> reverts the last structural change (add, remove, move, duplicate, color, or import).</li>
+      <li><b>+ Add custom section</b> (bottom of page, in edit mode) creates a brand-new section with its own editable title and list.</li>
+      <li>Click any section title (outside edit mode) to collapse or expand it.</li>
+      <li><b>Export JSON</b> / <b>Import JSON</b> let you back up or restore the whole dashboard without GitHub.</li>
+      <li>Connect <b>GitHub sync</b> to make edits permanent with full commit history; otherwise changes only autosave to this browser.</li>
+    </ul>
+  </div>
+
   <div class="sync-panel" id="themePanel">
     <b>Theme — change the dashboard's colors any time.</b><br>
-    Pick a preset, or set your own accent and background colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.
+    Pick a preset (including a light "Daylight" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.
     <div class="row" id="themePresets"></div>
     <div class="row" style="align-items:center;">
       <span style="font-size:12px; color:var(--muted);">Accent color</span>
       <input type="color" id="accentPicker" value="#C1701E">
       <span style="font-size:12px; color:var(--muted); margin-left:14px;">Background color</span>
       <input type="color" id="bgPicker" value="#1F1B16">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;">Text color</span>
+      <input type="color" id="textPicker" value="#FBF6EA">
       <button class="editbtn secondary" onclick="resetTheme()">Reset to default</button>
     </div>
   </div>
@@ -294,7 +337,13 @@
     <div class="sechead"><h2 id="secMatrixTitle" data-bind="titles.sectionMatrix"></h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
     <input type="text" class="matrix-search" id="matrixSearch" placeholder="🔎 Search capabilities or owners...">
     <table>
-      <thead><tr><th>Capability</th><th>Owner</th><th>Tier</th><th>Status</th><th class="actions"></th></tr></thead>
+      <thead><tr>
+        <th data-bind="titles.colCap"></th>
+        <th data-bind="titles.colOwner"></th>
+        <th data-bind="titles.colTier"></th>
+        <th data-bind="titles.colStatus"></th>
+        <th class="actions"></th>
+      </tr></thead>
       <tbody id="matrixBody"></tbody>
     </table>
   </section>
@@ -309,13 +358,20 @@
     <ol class="steps" id="stepsList"></ol>
   </section>
 
+  <div id="customSectionsArea"></div>
+  <div class="add-section-wrap edit-only" id="addSectionWrap">
+    <button class="addbtn show" id="addCustomSectionBtn" onclick="addCustomSection()">+ add custom section</button>
+  </div>
+
   <section>
     <h2 id="secNotesTitle" data-bind="titles.sectionNotes" style="margin-bottom:14px;"></h2>
     <div class="notes" id="notesArea" contenteditable="false"></div>
-    <div class="footer-note" id="footerNote">Click "Edit" to change anything on this page — titles, text, numbers, order, even section headers — then "Save to GitHub" to make it permanent. Use the ▲▼ arrows next to any row to reorder it. Without GitHub connected, edits only last for this browser tab.</div>
+    <div class="footer-note" id="footerNote" data-bind="titles.footerNote"></div>
   </section>
 
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
 /* ---------- default state (used until a GitHub file is loaded) ---------- */
@@ -327,7 +383,7 @@
    into this file, so nothing sensitive is exposed to a public visitor. */
 const DEFAULT_STATE = {
   lastUpdated: "—",
-  theme: { accent:"#C1701E", bg:"#1F1B16" },
+  theme: { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" },
   autoColorPhases: false,
   titles: {
     brand: "Midwam · Saud",
@@ -339,7 +395,12 @@ const DEFAULT_STATE = {
     sectionMatrix: "Capability & status matrix",
     sectionGaps: "Known gaps",
     sectionSteps: "Next steps",
-    sectionNotes: "Notes"
+    sectionNotes: "Notes",
+    colCap: "Capability",
+    colOwner: "Owner",
+    colTier: "Tier",
+    colStatus: "Status",
+    footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table headers, even section headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
   stats: [
     { icon:"", label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
@@ -354,7 +415,7 @@ const DEFAULT_STATE = {
     { team:"Not connected", role:"—", num:"—", pct:0, color:"blue", caption:"Connect GitHub sync above to load this team's real data" }
   ],
   matrix: [
-    { cap:"Connect GitHub sync above to load the real capability matrix", owner:"—", tier:"1", status:"none" }
+    { cap:"Connect GitHub sync above to load the real capability matrix", owner:"—", tier:"1", tierColor:"#5fd3a8", status:"Not started", statusColor:"#a79a82" }
   ],
   gaps: [
     { text:"Connect GitHub sync above to load the real gap list", sev:"warning" }
@@ -362,6 +423,7 @@ const DEFAULT_STATE = {
   steps: [
     "Connect GitHub sync above (top right) to load the real next-steps list from your private data repo."
   ],
+  customSections: [],
   notes: "This is the public shell of Saud's dashboard — it ships with no real Midwam data. Connect your GitHub token above to load and edit the real content, which lives only in your private repo."
 };
 
@@ -372,29 +434,83 @@ const BAR_COLOR_HEX = { good:"0ca30c", warning:"d99a1a", blue:"3987e5", muted:"6
 const CAP_COLOR_HEX = { blue:"3987e5", orange:"d95926", aqua:"199e70", good:"0ca30c", warning:"d99a1a", critical:"d03b3b" };
 const COLOR_LABELS = { good:"Green — on track", warning:"Yellow — at risk", critical:"Red — blocked", blue:"Blue — in progress", muted:"Gray — not started" };
 const CAP_COLOR_LABELS = { blue:"Blue", orange:"Orange", aqua:"Aqua", good:"Green", warning:"Yellow", critical:"Red" };
+/* legacy enum -> color, used only to migrate old saved data on first load */
+const LEGACY_TIER_COLOR = { "1":"#5fd3a8", "2":"#f0a06f" };
+const LEGACY_STATUS_COLOR = { live:"#5fd3a8", paper:"#f0a06f", none:"#a79a82" };
+const LEGACY_STATUS_LABEL = { live:"Live in console", paper:"Framework only", none:"Not in either version" };
 
 function autoColorForPct(pct){
   if(pct >= 75) return "good";
   if(pct >= 40) return "warning";
   return "critical";
 }
-const STATUS_META = {
-  live:  { label:"Live in console",         cls:"badge-live"  },
-  paper: { label:"Framework only",          cls:"badge-paper" },
-  none:  { label:"Not in either version",   cls:"badge-none"  }
-};
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
 let gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
 
+/* ---------- undo history ---------- */
+let history = [];
+const HISTORY_LIMIT = 25;
+function pushHistory(){
+  try{
+    history.push(JSON.stringify(state));
+    if(history.length > HISTORY_LIMIT) history.shift();
+    const btn = document.getElementById("undoBtn");
+    if(btn) btn.disabled = false;
+  } catch(e){}
+}
+function undo(){
+  if(!history.length) return;
+  const prev = history.pop();
+  state = JSON.parse(prev);
+  renderAll();
+  const btn = document.getElementById("undoBtn");
+  if(btn) btn.disabled = history.length === 0;
+  showToast("Undone");
+}
+
+/* ---------- toasts ---------- */
+function showToast(msg){
+  const c = document.getElementById("toastContainer");
+  if(!c) return;
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add("show"));
+  setTimeout(()=>{
+    t.classList.remove("show");
+    setTimeout(()=>t.remove(), 250);
+  }, 2600);
+}
+
+/* ---------- inline click-to-confirm delete ---------- */
+function confirmDelete(btn, fn){
+  if(btn.dataset.confirming === "1"){
+    clearTimeout(btn._confirmTimer);
+    fn();
+    return;
+  }
+  btn.dataset.confirming = "1";
+  btn.dataset.origText = btn.textContent;
+  btn.textContent = "Confirm?";
+  btn.classList.add("confirming");
+  btn._confirmTimer = setTimeout(()=>{
+    btn.dataset.confirming = "";
+    btn.textContent = btn.dataset.origText || "✕";
+    btn.classList.remove("confirming");
+  }, 2500);
+}
+
 /* ---------- theme ---------- */
 const THEME_PRESETS = [
-  { name:"Night Desert (default)", accent:"#C1701E", bg:"#1F1B16" },
-  { name:"Ocean", accent:"#3987E5", bg:"#101820" },
-  { name:"Forest", accent:"#199E70", bg:"#14201A" },
-  { name:"Berry", accent:"#D55181", bg:"#201018" },
-  { name:"Slate Violet", accent:"#9085E9", bg:"#1A1A22" }
+  { name:"Night Desert (default)", accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" },
+  { name:"Ocean", accent:"#3987E5", bg:"#101820", text:"#FBF6EA" },
+  { name:"Forest", accent:"#199E70", bg:"#14201A", text:"#FBF6EA" },
+  { name:"Berry", accent:"#D55181", bg:"#201018", text:"#FBF6EA" },
+  { name:"Slate Violet", accent:"#9085E9", bg:"#1A1A22", text:"#FBF6EA" },
+  { name:"Daylight (light mode)", accent:"#B75E12", bg:"#F5EFE1", text:"#2A2018" }
 ];
 
 function hexToRgb(hex){
@@ -410,12 +526,24 @@ function lighten(hex, amt){
   const { r,g,b } = hexToRgb(hex);
   return rgbToHex(r+(255-r)*amt, g+(255-g)*amt, b+(255-b)*amt);
 }
+function darken(hex, amt){
+  const { r,g,b } = hexToRgb(hex);
+  return rgbToHex(r*(1-amt), g*(1-amt), b*(1-amt));
+}
+function relLuminance(hex){
+  const { r,g,b } = hexToRgb(hex);
+  return (0.299*r + 0.587*g + 0.114*b) / 255;
+}
 
 function applyTheme(theme){
+  if(!theme.text) theme.text = "#FBF6EA";
   const root = document.documentElement.style;
   root.setProperty("--copper", theme.accent);
   root.setProperty("--night", theme.bg);
-  root.setProperty("--night2", lighten(theme.bg, 0.06));
+  root.setProperty("--cream", theme.text);
+  const light = relLuminance(theme.bg) > 0.5;
+  root.setProperty("--night2", light ? darken(theme.bg, 0.05) : lighten(theme.bg, 0.06));
+  root.setProperty("--border", light ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.08)");
   renderThemePanel();
 }
 
@@ -429,19 +557,22 @@ function renderThemePanel(){
     sw.className = "theme-swatch" + (active ? " active" : "");
     sw.title = p.name;
     sw.style.background = `linear-gradient(135deg, ${p.accent} 50%, ${p.bg} 50%)`;
-    sw.onclick = ()=>{ state.theme = { accent:p.accent, bg:p.bg }; applyTheme(state.theme); syncThemeInputs(); };
+    sw.onclick = ()=>{ pushHistory(); state.theme = { accent:p.accent, bg:p.bg, text:p.text }; applyTheme(state.theme); syncThemeInputs(); saveLocalDraft(); };
     wrap.appendChild(sw);
   });
   syncThemeInputs();
 }
 function syncThemeInputs(){
-  const a = document.getElementById("accentPicker"), b = document.getElementById("bgPicker");
+  const a = document.getElementById("accentPicker"), b = document.getElementById("bgPicker"), t = document.getElementById("textPicker");
   if(a) a.value = state.theme.accent;
   if(b) b.value = state.theme.bg;
+  if(t) t.value = state.theme.text || "#FBF6EA";
 }
 function resetTheme(){
-  state.theme = { accent:"#C1701E", bg:"#1F1B16" };
+  pushHistory();
+  state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
   applyTheme(state.theme);
+  saveLocalDraft();
 }
 
 /* ---------- rendering ---------- */
@@ -451,13 +582,29 @@ function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim
 
 const RENDER_FN = {};
 
-function renderAll(){
-  if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16" };
+function migrateState(){
+  if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
+  if(!state.theme.text) state.theme.text = "#FBF6EA";
   if(!state.titles) state.titles = JSON.parse(JSON.stringify(DEFAULT_STATE.titles));
+  ["colCap","colOwner","colTier","colStatus","footerNote"].forEach(k=>{
+    if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
+  });
   if(typeof state.autoColorPhases !== "boolean") state.autoColorPhases = false;
+  if(!Array.isArray(state.customSections)) state.customSections = [];
+  (state.matrix||[]).forEach(r=>{
+    if(!r.tierColor) r.tierColor = LEGACY_TIER_COLOR[r.tier] || "#5fd3a8";
+    if(!r.statusColor){
+      r.statusColor = LEGACY_STATUS_COLOR[r.status] || "#a79a82";
+      if(LEGACY_STATUS_LABEL[r.status]) r.status = LEGACY_STATUS_LABEL[r.status];
+    }
+  });
+}
+
+function renderAll(){
+  migrateState();
   applyTheme(state.theme);
   renderTitles();
-  document.getElementById("lastUpdated").innerText = "Last updated: " + state.lastUpdated;
+  renderLastUpdated();
   const acToggle = document.getElementById("autoColorToggle");
   if(acToggle) acToggle.checked = state.autoColorPhases;
   renderStats();
@@ -467,9 +614,14 @@ function renderAll(){
   renderMatrix();
   renderGaps();
   renderSteps();
+  renderCustomSections();
   renderNotes();
   applyEditMode();
   saveLocalDraft();
+}
+
+function renderLastUpdated(){
+  document.getElementById("lastUpdatedText").innerText = state.lastUpdated;
 }
 
 function renderProgressSummary(){
@@ -498,23 +650,41 @@ function renderTitles(){
   document.getElementById("secGapsTitle").innerText = t.sectionGaps;
   document.getElementById("secStepsTitle").innerText = t.sectionSteps;
   document.getElementById("secNotesTitle").innerText = t.sectionNotes;
+  document.querySelector('[data-bind="titles.colCap"]').innerText = t.colCap;
+  document.querySelector('[data-bind="titles.colOwner"]').innerText = t.colOwner;
+  document.querySelector('[data-bind="titles.colTier"]').innerText = t.colTier;
+  document.querySelector('[data-bind="titles.colStatus"]').innerText = t.colStatus;
+  document.getElementById("footerNote").innerText = t.footerNote;
 }
 
 function reorderBtns(section, i, len){
   return `<span class="reordergrp edit-only">
       <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="Move up">▲</button>
       <button class="reorder" onclick="moveItem('${section}',${i},1)" ${i===len-1?"disabled":""} title="Move down">▼</button>
-    </span>`;
+    </span>
+    <button class="dupbtn edit-only" onclick="duplicateRow('${section}',${i})" title="Duplicate">⧉</button>`;
 }
 
 function moveItem(section, i, dir){
   const arr = state[section];
   const j = i + dir;
   if(j < 0 || j >= arr.length) return;
+  pushHistory();
   const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
   RENDER_FN[section]();
   applyEditMode();
   saveLocalDraft();
+}
+
+function duplicateRow(section, i){
+  pushHistory();
+  const clone = JSON.parse(JSON.stringify(state[section][i]));
+  state[section].splice(i+1, 0, clone);
+  RENDER_FN[section]();
+  if(section === "phases") renderProgressSummary();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Duplicated");
 }
 
 function renderStats(){
@@ -549,7 +719,7 @@ function renderPhases(){
           <span class="plabel" data-bind="phases.${i}.label">${escapeHtml(p.label)}</span>
         </div>
         <select class="color-select edit-only" data-colorselect="${i}" ${state.autoColorPhases?"disabled title=\"Turn off Auto-color to set manually\"":""}>${colorOptions}</select>
-        <button class="rowdel edit-only" onclick="removeRow('phases',${i})">✕</button>
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('phases',${i}))">✕</button>
       </div>`));
   });
   area.querySelectorAll("input[data-pctinput]").forEach(inp=>{
@@ -563,11 +733,13 @@ function renderPhases(){
     inp.addEventListener("change", e=>{
       const i = +e.target.dataset.pctnuminput;
       let v = Math.max(0, Math.min(100, +e.target.value || 0));
+      pushHistory();
       state.phases[i].pct = v;
       renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
     });
   });
   area.querySelectorAll("[data-colorselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
     state.phases[+e.target.dataset.colorselect].color = e.target.value;
     renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
   }));
@@ -581,7 +753,7 @@ function renderCapChart(){
     const colorOptions = Object.keys(CAP_COLOR_LABELS).map(k=>`<option value="${k}" ${c.color===k?"selected":""}>${CAP_COLOR_LABELS[k]}</option>`).join("");
     wrap.appendChild(el(`
       <div class="cap-card">
-        <div class="reorderbar">${reorderBtns('capTeams', i, state.capTeams.length)}<button class="rowdel edit-only" onclick="removeRow('capTeams',${i})">✕</button></div>
+        <div class="reorderbar">${reorderBtns('capTeams', i, state.capTeams.length)}<button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
         <div class="team" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
         <div class="role" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
         <div class="num" data-bind="capTeams.${i}.num">${escapeHtml(c.num)}</div>
@@ -591,6 +763,7 @@ function renderCapChart(){
       </div>`));
   });
   wrap.querySelectorAll("[data-capcolorselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
     state.capTeams[+e.target.dataset.capcolorselect].color = e.target.value;
     renderCapChart(); applyEditMode(); saveLocalDraft();
   }));
@@ -603,38 +776,38 @@ function renderMatrix(){
   const q = matrixFilter.trim().toLowerCase();
   state.matrix.forEach((r,i)=>{
     if(q && !((r.cap||"").toLowerCase().includes(q) || (r.owner||"").toLowerCase().includes(q))) return;
-    const meta = STATUS_META[r.status] || STATUS_META.none;
+    const tierColor = r.tierColor || "#5fd3a8";
+    const statusColor = r.statusColor || "#a79a82";
     const tr = elTR(`
       <tr>
         <td data-bind="matrix.${i}.cap">${escapeHtml(r.cap)}</td>
         <td data-bind="matrix.${i}.owner">${escapeHtml(r.owner)}</td>
         <td>
-          <span class="tier tier${r.tier} view-only">Tier ${r.tier}</span>
-          <select class="tier-select edit-only" data-tierselect="${i}">
-            <option value="1" ${r.tier=="1"?"selected":""}>Tier 1</option>
-            <option value="2" ${r.tier=="2"?"selected":""}>Tier 2</option>
-          </select>
+          <span class="pill view-only" style="background:${tierColor}22; color:${tierColor};">${escapeHtml(r.tier)}</span>
+          <span class="pill-edit-row edit-only">
+            <span class="pill" data-bind="matrix.${i}.tier" style="background:${tierColor}22; color:${tierColor};">${escapeHtml(r.tier)}</span>
+            <input type="color" class="tiny" data-tiercolor="${i}" value="${tierColor}">
+          </span>
         </td>
         <td>
-          <span class="${meta.cls} view-only">${meta.label}</span>
-          <select class="status-select edit-only" data-statusselect="${i}">
-            <option value="live" ${r.status=="live"?"selected":""}>Live in console</option>
-            <option value="paper" ${r.status=="paper"?"selected":""}>Framework only</option>
-            <option value="none" ${r.status=="none"?"selected":""}>Not in either version</option>
-          </select>
+          <span class="pill view-only" style="background:${statusColor}22; color:${statusColor};">${escapeHtml(r.status)}</span>
+          <span class="pill-edit-row edit-only">
+            <span class="pill" data-bind="matrix.${i}.status" style="background:${statusColor}22; color:${statusColor};">${escapeHtml(r.status)}</span>
+            <input type="color" class="tiny" data-statuscolor="${i}" value="${statusColor}">
+          </span>
         </td>
         <td class="actions-cell edit-only">
           ${reorderBtns('matrix', i, state.matrix.length)}
-          <button class="rowdel" onclick="removeRow('matrix',${i})">✕</button>
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('matrix',${i}))">✕</button>
         </td>
       </tr>`);
     body.appendChild(tr);
   });
-  body.querySelectorAll("[data-tierselect]").forEach(s=>s.addEventListener("change", e=>{
-    state.matrix[+e.target.dataset.tierselect].tier = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
+  body.querySelectorAll("[data-tiercolor]").forEach(inp=>inp.addEventListener("input", e=>{
+    state.matrix[+e.target.dataset.tiercolor].tierColor = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
   }));
-  body.querySelectorAll("[data-statusselect]").forEach(s=>s.addEventListener("change", e=>{
-    state.matrix[+e.target.dataset.statusselect].status = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
+  body.querySelectorAll("[data-statuscolor]").forEach(inp=>inp.addEventListener("input", e=>{
+    state.matrix[+e.target.dataset.statuscolor].statusColor = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
   }));
 }
 RENDER_FN.matrix = renderMatrix;
@@ -654,10 +827,11 @@ function renderGaps(){
           <option value="blue" ${g.sev=="blue"?"selected":""}>in progress</option>
           <option value="good" ${g.sev=="good"?"selected":""}>resolved</option>
         </select>
-        <button class="rowdel edit-only" onclick="removeRow('gaps',${i})">✕</button>
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button>
       </div>`));
   });
   area.querySelectorAll("[data-sevselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
     state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode(); saveLocalDraft();
   }));
 }
@@ -671,7 +845,7 @@ function renderSteps(){
         <div class="num">${i+1}</div>
         <div class="txt" data-bind="steps.${i}">${escapeHtml(s)}</div>
         ${reorderBtns('steps', i, state.steps.length)}
-        <button class="rowdel edit-only" onclick="removeRow('steps',${i})">✕</button>
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('steps',${i}))">✕</button>
       </li>`));
   });
 }
@@ -682,12 +856,99 @@ function renderNotes(){
   document.getElementById("notesArea").setAttribute("data-bind","notes");
 }
 
+/* ---------- custom sections ---------- */
+function renderCustomSections(){
+  const area = document.getElementById("customSectionsArea"); area.innerHTML = "";
+  state.customSections.forEach((sec, si)=>{
+    const secEl = document.createElement("section");
+    const itemsHtml = (sec.items||[]).map((it,ii)=>`
+      <div class="custom-section-item">
+        <span class="dot" style="background:var(--copper);"></span>
+        <div class="txt" data-bind="customSections.${si}.items.${ii}">${escapeHtml(it)}</div>
+        <span class="reordergrp edit-only">
+          <button class="reorder" onclick="moveCustomItem(${si},${ii},-1)" ${ii===0?"disabled":""} title="Move up">▲</button>
+          <button class="reorder" onclick="moveCustomItem(${si},${ii},1)" ${ii===(sec.items.length-1)?"disabled":""} title="Move down">▼</button>
+        </span>
+        <button class="dupbtn edit-only" onclick="duplicateCustomItem(${si},${ii})" title="Duplicate">⧉</button>
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeCustomItem(${si},${ii}))">✕</button>
+      </div>`).join("");
+    secEl.innerHTML = `
+      <div class="sechead">
+        <h2 data-bind="customSections.${si}.title">${escapeHtml(sec.title)}</h2>
+        <div class="sechead-actions">
+          <span class="reordergrp edit-only">
+            <button class="reorder" onclick="moveCustomSection(${si},-1)" ${si===0?"disabled":""} title="Move section up">▲</button>
+            <button class="reorder" onclick="moveCustomSection(${si},1)" ${si===(state.customSections.length-1)?"disabled":""} title="Move section down">▼</button>
+          </span>
+          <button class="addbtn" onclick="addCustomItem(${si})">+ add item</button>
+          <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeCustomSection(${si}))" title="Remove section">🗑 Remove section</button>
+        </div>
+      </div>
+      <div>${itemsHtml || '<div class="footer-note">No items yet — click "+ add item" while editing.</div>'}</div>
+    `;
+    area.appendChild(secEl);
+  });
+}
+RENDER_FN.customSections = renderCustomSections;
+
+function addCustomSection(){
+  pushHistory();
+  state.customSections.push({ title:"New section", items:["New item"] });
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+  showToast("Section added");
+}
+function removeCustomSection(si){
+  pushHistory();
+  state.customSections.splice(si,1);
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+  showToast("Section removed");
+}
+function moveCustomSection(si, dir){
+  const j = si + dir;
+  if(j < 0 || j >= state.customSections.length) return;
+  pushHistory();
+  const tmp = state.customSections[si]; state.customSections[si] = state.customSections[j]; state.customSections[j] = tmp;
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+}
+function addCustomItem(si){
+  pushHistory();
+  state.customSections[si].items.push("New item");
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+}
+function removeCustomItem(si, ii){
+  pushHistory();
+  state.customSections[si].items.splice(ii,1);
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+}
+function moveCustomItem(si, ii, dir){
+  const arr = state.customSections[si].items;
+  const j = ii + dir;
+  if(j < 0 || j >= arr.length) return;
+  pushHistory();
+  const tmp = arr[ii]; arr[ii] = arr[j]; arr[j] = tmp;
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+}
+function duplicateCustomItem(si, ii){
+  pushHistory();
+  state.customSections[si].items.splice(ii+1, 0, state.customSections[si].items[ii]);
+  renderCustomSections(); applyEditMode(); saveLocalDraft();
+  showToast("Duplicated");
+}
+
 function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 /* ---------- editing: generic contenteditable -> state binding ---------- */
+document.addEventListener("focusin", e=>{
+  const t = e.target;
+  if(!t.dataset || !t.dataset.bind || !editing) return;
+  if(t._historySnapped) return;
+  t._historySnapped = true;
+  pushHistory();
+});
 document.addEventListener("focusout", e=>{
   const t = e.target;
   if(!t.dataset || !t.dataset.bind) return;
+  t._historySnapped = false;
   const path = t.dataset.bind.split(".");
   let obj = state;
   for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
@@ -703,6 +964,7 @@ function applyEditMode(){
   document.querySelectorAll("input[data-pctnuminput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
   document.querySelectorAll(".addbtn").forEach(el=>el.classList.toggle("show", editing));
   document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
+  document.getElementById("undoBtn").disabled = history.length === 0;
 }
 
 document.getElementById("toggleEdit").addEventListener("click", ()=>{
@@ -710,14 +972,23 @@ document.getElementById("toggleEdit").addEventListener("click", ()=>{
   document.getElementById("toggleEdit").textContent = editing ? "✓ Done editing" : "✎ Edit";
   applyEditMode();
 });
+document.getElementById("undoBtn").addEventListener("click", undo);
+document.getElementById("setTodayBtn").addEventListener("click", ()=>{
+  pushHistory();
+  const d = new Date();
+  state.lastUpdated = d.toLocaleDateString(undefined, {year:"numeric", month:"short", day:"numeric"});
+  renderLastUpdated();
+  saveLocalDraft();
+  showToast("Date updated");
+});
 
 /* ---------- add/remove rows ---------- */
-function addPhase(){ state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft(); }
-function addCapTeam(){ state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); saveLocalDraft(); }
-function addMatrixRow(){ state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", status:"paper"}); renderMatrix(); applyEditMode(); saveLocalDraft(); }
-function addGap(){ state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); saveLocalDraft(); }
-function addStep(){ state.steps.push("New step"); renderSteps(); applyEditMode(); saveLocalDraft(); }
-function removeRow(section, i){ state[section].splice(i,1); RENDER_FN[section](); applyEditMode(); saveLocalDraft(); }
+function addPhase(){ pushHistory(); state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft(); }
+function addCapTeam(){ pushHistory(); state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); saveLocalDraft(); }
+function addMatrixRow(){ pushHistory(); state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", tierColor:"#5fd3a8", status:"Framework only", statusColor:"#f0a06f"}); renderMatrix(); applyEditMode(); saveLocalDraft(); }
+function addGap(){ pushHistory(); state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); saveLocalDraft(); }
+function addStep(){ pushHistory(); state.steps.push("New step"); renderSteps(); applyEditMode(); saveLocalDraft(); }
+function removeRow(section, i){ pushHistory(); state[section].splice(i,1); RENDER_FN[section](); if(section==="phases") renderProgressSummary(); applyEditMode(); saveLocalDraft(); showToast("Removed"); }
 
 /* ---------- matrix search/filter ---------- */
 document.getElementById("matrixSearch").addEventListener("input", e=>{
@@ -728,6 +999,7 @@ document.getElementById("matrixSearch").addEventListener("input", e=>{
 
 /* ---------- auto-color toggle ---------- */
 document.getElementById("autoColorToggle").addEventListener("change", e=>{
+  pushHistory();
   state.autoColorPhases = e.target.checked;
   renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
 });
@@ -749,7 +1021,12 @@ document.addEventListener("keydown", e=>{
   }
 });
 
-/* ---------- export JSON ---------- */
+/* ---------- help panel ---------- */
+document.getElementById("helpBtn").addEventListener("click", ()=>{
+  document.getElementById("helpPanel").classList.toggle("open");
+});
+
+/* ---------- export / import JSON ---------- */
 function exportJSON(){
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
@@ -758,12 +1035,43 @@ function exportJSON(){
   a.href = url; a.download = fname;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  showToast("JSON exported");
 }
+document.getElementById("importJsonBtn").addEventListener("click", ()=>{
+  document.getElementById("importJsonInput").click();
+});
+document.getElementById("importJsonInput").addEventListener("change", e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      pushHistory();
+      state = parsed;
+      dismissLocalDraft();
+      renderAll();
+      showToast("Imported " + file.name);
+    } catch(err){
+      showToast("Import failed — not valid JSON");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
 
 /* ---------- local browser autosave / draft restore ---------- */
 const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
 function saveLocalDraft(){
-  try{ localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state)); } catch(e){ /* ignore quota/availability errors */ }
+  try{
+    localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
+    const ind = document.getElementById("autosaveIndicator");
+    const timeEl = document.getElementById("autosaveTime");
+    if(ind && timeEl){
+      timeEl.innerText = "Saved locally " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      ind.classList.add("show");
+    }
+  } catch(e){ /* ignore quota/availability errors */ }
 }
 function loadLocalDraft(){
   try{
@@ -776,9 +1084,11 @@ function dismissLocalDraft(){
 }
 function discardLocalDraft(){
   try{ localStorage.removeItem(LOCAL_DRAFT_KEY); } catch(e){}
+  pushHistory();
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   document.getElementById("draftBanner").classList.remove("show");
   renderAll();
+  showToast("Draft discarded");
 }
 
 /* ---------- theme panel wiring ---------- */
@@ -790,6 +1100,9 @@ document.getElementById("accentPicker").addEventListener("input", e=>{
 });
 document.getElementById("bgPicker").addEventListener("input", e=>{
   state.theme.bg = e.target.value; applyTheme(state.theme); saveLocalDraft();
+});
+document.getElementById("textPicker").addEventListener("input", e=>{
+  state.theme.text = e.target.value; applyTheme(state.theme); saveLocalDraft();
 });
 
 /* ---------- GitHub sync ---------- */
@@ -887,6 +1200,7 @@ async function saveToGitHub(){
     gh.sha = data.content.sha;
     statusEl.className = "sync-status ok";
     statusEl.innerText = "Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.";
+    showToast("Saved to GitHub");
   } catch(e){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Save failed — " + e.message;
@@ -916,6 +1230,7 @@ async function exportPPTX(){
     }
     const accentHex = (state.theme.accent || "#C1701E").replace("#","");
     const bgHex = (state.theme.bg || "#1F1B16").replace("#","");
+    const textHex = (state.theme.text || "#FBF6EA").replace("#","");
     const pptx = new PptxGenJS();
     pptx.defineLayout({ name:"WIDE", width:13.33, height:7.5 });
     pptx.layout = "WIDE";
@@ -923,7 +1238,7 @@ async function exportPPTX(){
     let slide = pptx.addSlide();
     slide.background = { color: bgHex };
     slide.addText(state.titles.brand || "", { x:0.6, y:0.5, w:10, h:0.4, fontSize:12, color:accentHex, bold:true, charSpacing:2 });
-    slide.addText(state.titles.h1 || "Saud — Progress Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:36, bold:true, color:"FBF6EA" });
+    slide.addText(state.titles.h1 || "Saud — Progress Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:36, bold:true, color:textHex });
     slide.addText(state.titles.subtitle || "", { x:0.6, y:3.7, w:11.5, h:0.7, fontSize:15, color:"A79A82" });
     slide.addText("Last updated: " + state.lastUpdated, { x:0.6, y:6.7, w:6, h:0.4, fontSize:11, color:"A79A82" });
     slide.addText(state.titles.ownerLine || "", { x:0.6, y:7.0, w:6, h:0.35, fontSize:11, color:"A79A82" });
@@ -934,7 +1249,7 @@ async function exportPPTX(){
     state.stats.forEach((s,i)=>{
       const x = 0.5 + i*(statW+statGap);
       slide.addShape("roundRect", { x, y:1.3, w:statW, h:1.9, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.1 });
-      slide.addText((s.icon ? s.icon + " " : "") + s.value, { x, y:1.55, w:statW, h:0.7, fontSize:24, bold:true, color:"FBF6EA", align:"center" });
+      slide.addText((s.icon ? s.icon + " " : "") + s.value, { x, y:1.55, w:statW, h:0.7, fontSize:24, bold:true, color:textHex, align:"center" });
       slide.addText(s.label, { x, y:2.25, w:statW, h:0.4, fontSize:10, color:"A79A82", align:"center" });
       slide.addText(s.sub, { x:x+0.1, y:2.65, w:statW-0.2, h:0.5, fontSize:8, color:"A79A82", align:"center" });
     });
@@ -944,7 +1259,7 @@ async function exportPPTX(){
     state.phases.forEach((p,i)=>{
       const y = 1.3 + i*0.75;
       if(y > 6.8) return;
-      slide.addText(p.name, { x:0.5, y, w:3.6, h:0.5, fontSize:13, color:"FBF6EA", valign:"middle" });
+      slide.addText(p.name, { x:0.5, y, w:3.6, h:0.5, fontSize:13, color:textHex, valign:"middle" });
       slide.addShape("rect", { x:4.3, y:y+0.14, w:6.2, h:0.22, fill:{color:"3A3226"}, line:{type:"none"} });
       const pptxColorKey = state.autoColorPhases ? autoColorForPct(+p.pct||0) : (p.color || "muted");
       slide.addShape("rect", { x:4.3, y:y+0.14, w: Math.max(0.05, 6.2*(p.pct/100)), h:0.22, fill:{color: BAR_COLOR_HEX[pptxColorKey] || "C1701E"}, line:{type:"none"} });
@@ -958,36 +1273,42 @@ async function exportPPTX(){
       const x = 0.5 + i*(capW+0.3);
       if(x > 12) return;
       slide.addShape("roundRect", { x, y:1.3, w:capW, h:2.6, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.08 });
-      slide.addText(c.team, { x:x+0.2, y:1.5, w:capW-0.4, h:0.5, fontSize:13, bold:true, color:"FBF6EA" });
+      slide.addText(c.team, { x:x+0.2, y:1.5, w:capW-0.4, h:0.5, fontSize:13, bold:true, color:textHex });
       slide.addText(c.role, { x:x+0.2, y:1.95, w:capW-0.4, h:0.5, fontSize:9, color:"A79A82" });
-      slide.addText(String(c.num), { x:x+0.2, y:2.5, w:capW-0.4, h:0.5, fontSize:22, bold:true, color:"FBF6EA" });
+      slide.addText(String(c.num), { x:x+0.2, y:2.5, w:capW-0.4, h:0.5, fontSize:22, bold:true, color:textHex });
       slide.addText(c.caption, { x:x+0.2, y:3.2, w:capW-0.4, h:0.6, fontSize:8, color:"A79A82" });
     });
 
     slide = pptx.addSlide(); slide.background = { color: bgHex };
     slide.addText((state.titles.sectionMatrix || "Capability & status matrix").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    const headOpts = { bold:true, color:"FBF6EA", fill:{color:"2B241C"}, fontSize:10 };
+    const headOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:10 };
     const rows = [[
-      {text:"Capability", options:headOpts}, {text:"Owner", options:headOpts},
-      {text:"Tier", options:headOpts}, {text:"Status", options:headOpts}
+      {text:state.titles.colCap || "Capability", options:headOpts}, {text:state.titles.colOwner || "Owner", options:headOpts},
+      {text:state.titles.colTier || "Tier", options:headOpts}, {text:state.titles.colStatus || "Status", options:headOpts}
     ]];
     state.matrix.slice(0,14).forEach(r=>{
       rows.push([
-        {text:r.cap, options:{color:"FBF6EA", fontSize:9}},
-        {text:r.owner, options:{color:"FBF6EA", fontSize:9}},
-        {text:"Tier " + r.tier, options:{color:"FBF6EA", fontSize:9}},
-        {text:(STATUS_META[r.status]||STATUS_META.none).label, options:{color:"FBF6EA", fontSize:9}}
+        {text:r.cap, options:{color:textHex, fontSize:9}},
+        {text:r.owner, options:{color:textHex, fontSize:9}},
+        {text:String(r.tier), options:{color:textHex, fontSize:9}},
+        {text:String(r.status), options:{color:textHex, fontSize:9}}
       ]);
     });
     slide.addTable(rows, { x:0.5, y:1.2, w:12.3, colW:[6.3,2,1.5,2.5], border:{color:"3A3226", pt:0.5}, autoPage:false });
 
     slide = pptx.addSlide(); slide.background = { color: bgHex };
     slide.addText((state.titles.sectionGaps || "Known gaps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    slide.addText(state.gaps.map(g=>"•  " + g.text).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:"FBF6EA", lineSpacingMultiple:1.3, valign:"top" });
+    slide.addText(state.gaps.map(g=>"•  " + g.text).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
 
     slide = pptx.addSlide(); slide.background = { color: bgHex };
     slide.addText((state.titles.sectionSteps || "Next steps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    slide.addText(state.steps.map((s,i)=>(i+1) + ".  " + s).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:"FBF6EA", lineSpacingMultiple:1.3, valign:"top" });
+    slide.addText(state.steps.map((s,i)=>(i+1) + ".  " + s).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
+
+    (state.customSections||[]).forEach(sec=>{
+      slide = pptx.addSlide(); slide.background = { color: bgHex };
+      slide.addText((sec.title || "Section").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+      slide.addText((sec.items||[]).map(it=>"•  " + it).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
+    });
 
     slide = pptx.addSlide(); slide.background = { color: bgHex };
     slide.addText((state.titles.sectionNotes || "Notes").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });

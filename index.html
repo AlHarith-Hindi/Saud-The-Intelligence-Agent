@@ -1076,6 +1076,24 @@ function addEtimadRow(){
   showToast("Opportunity added");
 }
 
+const ETIMAD_SUMMARY_LINES = [
+  {t:"Etimad Tender Research — Midwam Interactive", bold:true, size:14},
+  {t:"Filters applied: Active Competitions (Submitting Bids) | Primary Activity: Tourism, Restaurants, Hotels & Exhibition Organizing | Sub-Activity: Exhibition & Conference Activities | Published within the last month"},
+  {t:"Prepared for Harith Hindi, Midwam Interactive — data pulled from tenders.etimad.sa"},
+  {t:""},
+  {t:"SCOPE", bold:true},
+  {t:"Tenders matched the exact filter combination requested. A subset are genuinely still open for bidding; any legacy-system listings whose bid deadlines already passed despite showing under Etimad's \"Active\" filter are listed separately — see the 'Excluded / Expired' tab."},
+  {t:""},
+  {t:"HOW TO READ THE 'Open Opportunities' TAB", bold:true},
+  {t:"Each row is one tender, sorted by Midwam Fit (Strong first). Fit ratings reflect a match against Midwam's actual service lines (Concept Design, Experience & Space Design, Content Development, Digital Solutions, Immersive Spaces, Booth Design & Exhibition, Event Management, PMO) and target sectors (Sports, Culture, Entertainment, Government/Vision 2030, Private sector) — not a guess at win probability alone."},
+  {t:""},
+  {t:"DATA COMPLETENESS NOTE", bold:true},
+  {t:"Etimad's public visitor pages fully expose: competition name, agency, RN, type, price of documents, inquiry deadline, and bid submission deadline & method for every tender below — all captured. Expected Award Date and Project/Service Start Date are only published upfront for a minority of tenders; where not published on the visitor-facing page, they are marked accordingly, which is normal for Etimad and not a data-collection gap. Full detailed scope-of-work documents require purchasing the tender package (the listed price) from Etimad — the 'Details' column below reflects the public summary only."},
+  {t:""},
+  {t:"RECOMMENDED NEXT STEPS (overall)", bold:true},
+  {t:"Prioritize the Strong-fit rows and route them into Midwam's RFP intake process promptly for any with near-term bid deadlines. For framework agreements, note these typically admit multiple suppliers, lowering the competitive bar versus a single-winner tender."}
+];
+
 async function exportEtimadExcel(){
   const btn = document.getElementById("exportEtimadExcelBtn");
   const orig = btn.textContent;
@@ -1085,6 +1103,19 @@ async function exportEtimadExcel(){
       await loadScriptOnce("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
     }
     const wb = new ExcelJS.Workbook();
+    const dateStr = new Date().toISOString().slice(0,10);
+
+    /* ---- Sheet 1: Summary ---- */
+    const wsSummary = wb.addWorksheet("Summary");
+    wsSummary.getColumn(1).width = 120;
+    ETIMAD_SUMMARY_LINES.forEach(line=>{
+      const row = wsSummary.addRow([line.t]);
+      const cell = row.getCell(1);
+      cell.font = { name:"Arial", size: line.size || 10, bold: !!line.bold };
+      cell.alignment = { wrapText:true, vertical:"top" };
+    });
+
+    /* ---- Sheet 2: Open Opportunities ---- */
     const ws = wb.addWorksheet("Open Opportunities");
     const headers = ["Midwam Fit","Competition Name","Government Entity","Competition RN","Type",
       "Sending Questions & Inquiries","Last Date for Receiving Inquiries","Submitting Bids (deadline)",
@@ -1110,12 +1141,29 @@ async function exportEtimadExcel(){
       fitCell.fill = { type:"pattern", pattern:"solid", fgColor:{argb: fitFillArgb[r.fit] || "FFD9D9D9"} };
     });
     ws.views = [{ state:"frozen", ySplit:1 }];
-    const dateStr = new Date().toISOString().slice(0,10);
+
+    /* ---- Sheet 3: Excluded - Expired ---- */
+    const wsEx = wb.addWorksheet("Excluded - Expired");
+    const exHeaders = ["Competition Name (Arabic)","Government Entity","Competition RN","Bid Deadline (already passed)","Why excluded"];
+    const exWidths = [42,28,16,22,50];
+    wsEx.columns = exHeaders.map((h,i)=>({ header:h, width: exWidths[i] }));
+    const exHeaderRow = wsEx.getRow(1);
+    exHeaderRow.eachCell(c=>{
+      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
+      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
+      c.alignment = { wrapText:true, vertical:"top" };
+    });
+    (state.etimadExcluded||[]).forEach(r=>{
+      const row = wsEx.addRow([r.name, r.agency, r.rn, r.deadline, r.reason]);
+      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
+    });
+    wsEx.views = [{ state:"frozen", ySplit:1 }];
+
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `Midwam_Etimad_Opportunities_${dateStr}.xlsx`;
+    a.href = url; a.download = `Midwam_Etimad_Tender_Research_${dateStr}.xlsx`;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
     showToast("Excel exported");

@@ -204,15 +204,37 @@
   }
   .toast.show{opacity:1; transform:translateY(0);}
 
+  /* ---------- page tabs ---------- */
+  .tabs-nav{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0;}
+  .tab-btn{
+    background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:600; cursor:pointer;
+    padding:10px 4px; margin-right:18px; border-bottom:2px solid transparent; font-family:inherit;
+  }
+  .tab-btn:hover{color:var(--cream);}
+  .tab-btn.active{color:var(--cream); border-bottom-color:var(--copper);}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ---------- etimad page ---------- */
+  .etimad-summary{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;}
+  .table-scroll{overflow-x:auto; border-radius:12px;}
+  .table-scroll table{min-width:1900px;}
+  table.etimad-table td, table.etimad-table th{vertical-align:top; white-space:normal; max-width:260px;}
+  table.etimad-table td[data-bind]{min-width:120px;}
+  .fit-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;}
+  .fit-pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700; margin-bottom:4px;}
+
   @media (max-width:820px){
     .stat-row{grid-template-columns:repeat(2,1fr);}
+    .etimad-summary{grid-template-columns:repeat(2,1fr);}
     .cap-chart{grid-template-columns:1fr;}
     .gaps{grid-template-columns:1fr;}
   }
 
   @media print{
     .editbar, .sync-panel, .edit-only, .reorderbar, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
-    thead th.actions, td.actions-cell, .matrix-search, .draft-banner{ display:none !important; }
+    thead th.actions, td.actions-cell, .matrix-search, .draft-banner, .tabs-nav{ display:none !important; }
+    .page{ display:block !important; }
     body{ background:#fff; color:#111; }
     .stat-tile, .cap-card, .notes, table, .progress-summary{ background:#f4f4f4; border-color:#ccc; }
     section.collapsed > *:not(.sechead){ display:block !important; }
@@ -306,6 +328,13 @@
     <div class="sync-status" id="syncStatus">Not connected — this page shows its built-in starting content until you connect.</div>
   </div>
 
+  <div class="tabs-nav" id="tabsNav">
+    <button class="tab-btn active" data-page="dashboard" onclick="switchPage('dashboard')">Dashboard</button>
+    <button class="tab-btn" data-page="etimad" onclick="switchPage('etimad')">Etimad Opportunities</button>
+  </div>
+
+  <div class="page active" id="page-dashboard">
+
   <div class="stat-row" id="statRow"></div>
 
   <div class="progress-summary" id="progressSummary"></div>
@@ -369,6 +398,38 @@
     <div class="footer-note" id="footerNote" data-bind="titles.footerNote"></div>
   </section>
 
+  </div>
+
+  <div class="page" id="page-etimad">
+
+    <div class="etimad-summary" id="etimadSummary"></div>
+
+    <section>
+      <div class="sechead">
+        <h2 id="secEtimadTitle" data-bind="titles.sectionEtimad"></h2>
+        <div class="sechead-actions">
+          <button class="editbtn secondary" id="exportEtimadExcelBtn" onclick="exportEtimadExcel()">⬇ Export Excel</button>
+          <button class="addbtn" id="addEtimadRow" onclick="addEtimadRow()">+ add opportunity</button>
+        </div>
+      </div>
+      <input type="text" class="matrix-search" id="etimadSearch" placeholder="🔎 Search competition name, agency, or RN...">
+      <div class="table-scroll">
+        <table class="etimad-table">
+          <thead><tr>
+            <th>Fit</th><th>Competition Name</th><th>Government Entity</th><th>RN</th><th>Type</th>
+            <th>Sending Questions &amp; Inquiries</th><th>Last Date for Inquiries</th><th>Submitting Bids (deadline)</th>
+            <th>Expected Award Date</th><th>Project/Service Start</th><th>Method of Submitting Bids</th>
+            <th>Place of Execution</th><th>Details / Scope</th><th>Submission Cost</th>
+            <th>Fit Rationale</th><th>Potential Partners</th><th>Recommended Next Steps</th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="etimadBody"></tbody>
+        </table>
+      </div>
+      <div class="footer-note">Data here is the working copy for Midwam's Etimad research — edit any cell directly (click ✎ Edit above), then use <b>Export Excel</b> to produce a workbook in the same format as the original research file, or <b>⬇ Export PPTX</b> at the top to include these opportunities in the full dashboard deck.</div>
+    </section>
+
+  </div>
+
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -396,6 +457,7 @@ const DEFAULT_STATE = {
     sectionGaps: "Known gaps",
     sectionSteps: "Next steps",
     sectionNotes: "Notes",
+    sectionEtimad: "Etimad Opportunities",
     colCap: "Capability",
     colOwner: "Owner",
     colTier: "Tier",
@@ -424,8 +486,16 @@ const DEFAULT_STATE = {
     "Connect GitHub sync above (top right) to load the real next-steps list from your private data repo."
   ],
   customSections: [],
+  etimad: [
+    { fit:"Strong", name:"Connect GitHub sync above to load the real Etimad opportunity list", agency:"—", rn:"—", type:"—",
+      inqStart:"—", inqDeadline:"—", bidDeadline:"—", award:"—", projStart:"—", method:"—", place:"—",
+      details:"—", price:"—", rationale:"—", partners:"—", next:"—" }
+  ],
   notes: "This is the public shell of Saud's dashboard — it ships with no real Midwam data. Connect your GitHub token above to load and edit the real content, which lives only in your private repo."
 };
+
+const FIT_COLOR = { Strong:"#0ca30c", Medium:"#d99a1a", "Low-Medium":"#d99a1a", Low:"#d03b3b" };
+const FIT_COLOR_HEX = { Strong:"0ca30c", Medium:"d99a1a", "Low-Medium":"d99a1a", Low:"d03b3b" };
 
 const SEV_COLOR = { warning:"var(--warning)", critical:"var(--critical)", blue:"var(--series-blue)", good:"var(--good)" };
 const BAR_COLOR = { good:"var(--good)", warning:"var(--warning)", blue:"var(--series-blue)", muted:"var(--muted-bar)", critical:"var(--critical)" };
@@ -586,11 +656,13 @@ function migrateState(){
   if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
   if(!state.theme.text) state.theme.text = "#FBF6EA";
   if(!state.titles) state.titles = JSON.parse(JSON.stringify(DEFAULT_STATE.titles));
-  ["colCap","colOwner","colTier","colStatus","footerNote"].forEach(k=>{
+  ["colCap","colOwner","colTier","colStatus","footerNote","sectionEtimad"].forEach(k=>{
     if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
   });
   if(typeof state.autoColorPhases !== "boolean") state.autoColorPhases = false;
   if(!Array.isArray(state.customSections)) state.customSections = [];
+  if(!Array.isArray(state.etimad)) state.etimad = [];
+  state.etimad.forEach(r=>{ if(!FIT_COLOR[r.fit]) r.fit = "Medium"; });
   (state.matrix||[]).forEach(r=>{
     if(!r.tierColor) r.tierColor = LEGACY_TIER_COLOR[r.tier] || "#5fd3a8";
     if(!r.statusColor){
@@ -616,6 +688,7 @@ function renderAll(){
   renderSteps();
   renderCustomSections();
   renderNotes();
+  renderEtimad();
   applyEditMode();
   saveLocalDraft();
 }
@@ -650,6 +723,7 @@ function renderTitles(){
   document.getElementById("secGapsTitle").innerText = t.sectionGaps;
   document.getElementById("secStepsTitle").innerText = t.sectionSteps;
   document.getElementById("secNotesTitle").innerText = t.sectionNotes;
+  document.getElementById("secEtimadTitle").innerText = t.sectionEtimad;
   document.querySelector('[data-bind="titles.colCap"]').innerText = t.colCap;
   document.querySelector('[data-bind="titles.colOwner"]').innerText = t.colOwner;
   document.querySelector('[data-bind="titles.colTier"]').innerText = t.colTier;
@@ -934,6 +1008,129 @@ function duplicateCustomItem(si, ii){
   renderCustomSections(); applyEditMode(); saveLocalDraft();
   showToast("Duplicated");
 }
+
+/* ---------- etimad opportunities page ---------- */
+let etimadFilter = "";
+const ETIMAD_FIELDS = ["name","agency","rn","type","inqStart","inqDeadline","bidDeadline","award","projStart","method","place","details","price","rationale","partners","next"];
+
+function switchPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id === "page-"+page));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.page === page));
+}
+
+function renderEtimadSummary(){
+  const wrap = document.getElementById("etimadSummary"); if(!wrap) return;
+  const list = state.etimad || [];
+  const strong = list.filter(r=>r.fit==="Strong").length;
+  let nextDeadline = "—";
+  const dated = list.map(r=>r.bidDeadline).filter(d=>d && /\d{4}-\d{2}-\d{2}/.test(d)).sort();
+  if(dated.length) nextDeadline = dated[0];
+  wrap.innerHTML = `
+    <div class="stat-tile"><div class="label">Open opportunities</div><div class="value">${list.length}</div><div class="sub">Currently tracked, excluding expired</div></div>
+    <div class="stat-tile"><div class="label">Strong fit</div><div class="value" style="color:${FIT_COLOR.Strong};">${strong}</div><div class="sub">Recommended priority bids</div></div>
+    <div class="stat-tile"><div class="label">Next bid deadline</div><div class="value" style="font-size:18px;">${escapeHtml(nextDeadline)}</div><div class="sub">Earliest submission cutoff in the list</div></div>
+    <div class="stat-tile"><div class="label">Last updated</div><div class="value" style="font-size:18px;">${escapeHtml(state.lastUpdated)}</div><div class="sub">Same as dashboard "Last updated"</div></div>
+  `;
+}
+
+function renderEtimad(){
+  renderEtimadSummary();
+  const body = document.getElementById("etimadBody"); if(!body) return;
+  body.innerHTML = "";
+  const q = etimadFilter.trim().toLowerCase();
+  const fitOptions = Object.keys(FIT_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  (state.etimad||[]).forEach((r,i)=>{
+    if(q && !((r.name||"").toLowerCase().includes(q) || (r.agency||"").toLowerCase().includes(q) || (r.rn||"").toLowerCase().includes(q))) return;
+    const color = FIT_COLOR[r.fit] || FIT_COLOR.Medium;
+    const cells = ETIMAD_FIELDS.map(f=>`<td data-bind="etimad.${i}.${f}">${escapeHtml(r[f]||"")}</td>`).join("");
+    const tr = elTR(`
+      <tr>
+        <td>
+          <span class="fit-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.fit)}</span>
+          <select class="fit-select edit-only" data-fitselect="${i}" style="background:${color}22; color:${color};">${fitOptions}</select>
+        </td>
+        ${cells}
+        <td class="actions-cell edit-only">
+          ${reorderBtns('etimad', i, state.etimad.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('etimad',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-fitselect="${i}"]`).value = r.fit;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    const idx = +e.target.dataset.fitselect;
+    state.etimad[idx].fit = e.target.value;
+    renderEtimad(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.etimad = renderEtimad;
+
+function addEtimadRow(){
+  pushHistory();
+  state.etimad.push({ fit:"Medium", name:"New opportunity", agency:"", rn:"", type:"",
+    inqStart:"", inqDeadline:"", bidDeadline:"", award:"", projStart:"", method:"", place:"",
+    details:"", price:"", rationale:"", partners:"", next:"" });
+  renderEtimad(); applyEditMode(); saveLocalDraft();
+  showToast("Opportunity added");
+}
+
+async function exportEtimadExcel(){
+  const btn = document.getElementById("exportEtimadExcelBtn");
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "Building...";
+  try{
+    if(typeof ExcelJS === "undefined"){
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
+    }
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Open Opportunities");
+    const headers = ["Midwam Fit","Competition Name","Government Entity","Competition RN","Type",
+      "Sending Questions & Inquiries","Last Date for Receiving Inquiries","Submitting Bids (deadline)",
+      "Expected Award Date","Project / Service Start Date","Method of Submitting Bids","Place of Execution",
+      "Details / Scope Summary","Submission Cost","Fit Rationale","Potential Partners Needed","Recommended Next Steps"];
+    const widths = [10,42,28,16,16,20,20,20,20,20,22,22,42,14,42,26,42];
+    ws.columns = headers.map((h,i)=>({ header:h, width: widths[i] }));
+    const headerRow = ws.getRow(1);
+    headerRow.eachCell(c=>{
+      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
+      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
+      c.alignment = { wrapText:true, vertical:"top" };
+    });
+    const fitFillArgb = { Strong:"FFC6EFCE", Medium:"FFFFEB9C", "Low-Medium":"FFFFEB9C", Low:"FFFFC7CE" };
+    (state.etimad||[]).forEach(r=>{
+      const row = ws.addRow([
+        r.fit, r.name, r.agency, r.rn, r.type, r.inqStart, r.inqDeadline, r.bidDeadline,
+        r.award, r.projStart, r.method, r.place, r.details, r.price, r.rationale, r.partners, r.next
+      ]);
+      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
+      const fitCell = row.getCell(1);
+      fitCell.font = { name:"Arial", size:9, bold:true };
+      fitCell.fill = { type:"pattern", pattern:"solid", fgColor:{argb: fitFillArgb[r.fit] || "FFD9D9D9"} };
+    });
+    ws.views = [{ state:"frozen", ySplit:1 }];
+    const dateStr = new Date().toISOString().slice(0,10);
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `Midwam_Etimad_Opportunities_${dateStr}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast("Excel exported");
+  } catch(e){
+    alert("Excel export failed: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+document.getElementById("etimadSearch").addEventListener("input", e=>{
+  etimadFilter = e.target.value;
+  renderEtimad();
+  applyEditMode();
+});
 
 function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
@@ -1313,6 +1510,37 @@ async function exportPPTX(){
     slide = pptx.addSlide(); slide.background = { color: bgHex };
     slide.addText((state.titles.sectionNotes || "Notes").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
     slide.addText(state.notes || "", { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:14, color:"A79A82", lineSpacingMultiple:1.4, valign:"top" });
+
+    if((state.etimad||[]).length){
+      slide = pptx.addSlide(); slide.background = { color: bgHex };
+      slide.addText((state.titles.sectionEtimad || "Etimad Opportunities").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+      const strongCount = state.etimad.filter(r=>r.fit==="Strong");
+      slide.addText(`${state.etimad.length} open opportunities tracked · ${strongCount.length} rated Strong fit`, { x:0.5, y:1.1, w:11, h:0.4, fontSize:13, color:"A79A82" });
+      slide.addText(
+        strongCount.length
+          ? strongCount.map(r=>`•  ${r.name}  —  ${r.agency}  (bid deadline: ${r.bidDeadline||"n/a"})`).join("\n\n")
+          : "No Strong-fit opportunities currently tracked.",
+        { x:0.5, y:1.7, w:12.3, h:5.3, fontSize:12, color:textHex, lineSpacingMultiple:1.25, valign:"top" }
+      );
+
+      const etHeadOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:9 };
+      const etRows = [[
+        {text:"Fit", options:etHeadOpts}, {text:"Competition Name", options:etHeadOpts}, {text:"Agency", options:etHeadOpts},
+        {text:"RN", options:etHeadOpts}, {text:"Bid Deadline", options:etHeadOpts}
+      ]];
+      state.etimad.forEach(r=>{
+        etRows.push([
+          {text:r.fit, options:{color:FIT_COLOR_HEX[r.fit] || textHex, fontSize:8, bold:true}},
+          {text:r.name, options:{color:textHex, fontSize:8}},
+          {text:r.agency, options:{color:textHex, fontSize:8}},
+          {text:r.rn, options:{color:textHex, fontSize:8}},
+          {text:r.bidDeadline, options:{color:textHex, fontSize:8}}
+        ]);
+      });
+      slide = pptx.addSlide(); slide.background = { color: bgHex };
+      slide.addText("ETIMAD OPPORTUNITIES — FULL LIST", { x:0.5, y:0.3, w:11, h:0.4, fontSize:14, bold:true, color:accentHex, charSpacing:2 });
+      slide.addTable(etRows, { x:0.4, y:0.85, w:12.5, colW:[1.1,5.2,3.4,1.6,1.2], border:{color:"3A3226", pt:0.5}, autoPage:true, autoPageLineWeight:0.5, newSlideStartY:0.85 });
+    }
 
     const fname = (state.titles.h1 || "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".pptx";
     await pptx.writeFile({ fileName: fname });

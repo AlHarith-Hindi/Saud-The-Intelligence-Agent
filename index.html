@@ -1665,7 +1665,7 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   }
 
   function currentContext() {
-    const s = window.state || {};
+    const s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
     return {
       etimad: s.etimad || [],
       etimadExcluded: s.etimadExcluded || [],

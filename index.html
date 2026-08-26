@@ -1611,5 +1611,98 @@ async function exportPPTX(){
 document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
 </script>
 
+<div id="saud-chat-fab" title="Ask Saud"
+     style="position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;
+            background:#1a56db;color:#fff;display:flex;align-items:center;justify-content:center;
+            cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:9999;font-size:24px;">💬</div>
+
+<div id="saud-chat-panel"
+     style="display:none;position:fixed;bottom:88px;right:20px;width:360px;max-height:480px;
+            background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:9999;
+            flex-direction:column;overflow:hidden;font-family:inherit;">
+  <div style="background:#1a56db;color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+    <span>Ask Saud</span>
+    <span id="saud-chat-close" style="cursor:pointer;font-weight:400;">✕</span>
+  </div>
+  <div id="saud-chat-log" style="flex:1;overflow-y:auto;padding:12px;font-size:14px;color:#111;background:#fafafa;"></div>
+  <div style="display:flex;border-top:1px solid #eee;">
+    <input id="saud-chat-input" type="text" placeholder="Ask about tenders, gaps, capabilities…"
+           style="flex:1;border:none;padding:10px;font-size:14px;outline:none;">
+    <button id="saud-chat-send" style="border:none;background:#1a56db;color:#fff;padding:0 16px;cursor:pointer;">Send</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const WORKER_URL = "https://orange-queen-ead8.alhindiharith.workers.dev/";
+
+  const fab = document.getElementById('saud-chat-fab');
+  const panel = document.getElementById('saud-chat-panel');
+  const closeBtn = document.getElementById('saud-chat-close');
+  const log = document.getElementById('saud-chat-log');
+  const input = document.getElementById('saud-chat-input');
+  const sendBtn = document.getElementById('saud-chat-send');
+  let history = [];
+
+  fab.onclick = () => { panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'flex' : 'none'; };
+  closeBtn.onclick = () => { panel.style.display = 'none'; };
+
+  function addBubble(role, text) {
+    const wrap = document.createElement('div');
+    wrap.style.margin = '6px 0';
+    wrap.style.textAlign = role === 'user' ? 'right' : 'left';
+    const bubble = document.createElement('span');
+    bubble.style.display = 'inline-block';
+    bubble.style.padding = '8px 12px';
+    bubble.style.borderRadius = '10px';
+    bubble.style.maxWidth = '85%';
+    bubble.style.background = role === 'user' ? '#e8f0fe' : '#f1f1f1';
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    return bubble;
+  }
+
+  function currentContext() {
+    const s = window.state || {};
+    return {
+      etimad: s.etimad || [],
+      etimadExcluded: s.etimadExcluded || [],
+      matrix: s.matrix || [],
+      gaps: s.gaps || [],
+      phases: s.phases || [],
+      stats: s.stats || [],
+    };
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addBubble('user', text);
+    history.push({ role: 'user', content: text });
+    const thinking = addBubble('assistant', '…');
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, context: currentContext() }),
+      });
+      const data = await res.json();
+      const reply = (data && data.content && data.content[0] && data.content[0].text) || data.error || "Sorry, I couldn't get a response.";
+      thinking.textContent = reply;
+      history.push({ role: 'assistant', content: reply });
+    } catch (e) {
+      thinking.textContent = "Error reaching Saud: " + e.message;
+    }
+  }
+
+  sendBtn.onclick = send;
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+})();
+</script>
+
 </body>
 </html>

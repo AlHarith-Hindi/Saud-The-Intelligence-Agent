@@ -291,12 +291,12 @@
   </div>
 
   <div class="tabs-nav" id="tabsNav">
-    <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')">Overview</button>
-    <button class="tab-btn" data-page="external" onclick="switchPage('external')">External</button>
-    <button class="tab-btn" data-page="internal" onclick="switchPage('internal')">Internal Performance</button>
-    <button class="tab-btn" data-page="projects" onclick="switchPage('projects')">Projects &amp; Prototypes</button>
-    <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')">Tasks &amp; Next Steps</button>
-    <button class="tab-btn" data-page="notes" onclick="switchPage('notes')">Notes &amp; Legend</button>
+    <button class="tab-btn active" data-page="overview" onclick="if(!editing) switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
+    <button class="tab-btn" data-page="external" onclick="if(!editing) switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
+    <button class="tab-btn" data-page="internal" onclick="if(!editing) switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
+    <button class="tab-btn" data-page="projects" onclick="if(!editing) switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
+    <button class="tab-btn" data-page="tasks" onclick="if(!editing) switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
+    <button class="tab-btn" data-page="notes" onclick="if(!editing) switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
   </div>
 
   <!-- ============================== OVERVIEW ============================== -->
@@ -572,6 +572,28 @@ const DEFAULT_STATE = {
     colMsMilestone: "Milestone", colMsOwner: "Owner", colMsTarget: "Target Date", colMsStatus: "Status", colMsNotes: "Notes",
     colTodoDone: "Done", colTodoItem: "Item", colTodoOwner: "Owner", colTodoDue: "Due", colTodoNotes: "Notes",
     colRaciSection: "Section", colRaciOwner: "Primary Owner", colRaciBasis: "Basis",
+
+    tabOverview: "Overview", tabExternal: "External", tabInternal: "Internal Performance",
+    tabProjects: "Projects & Prototypes", tabTasks: "Tasks & Next Steps", tabNotes: "Notes & Legend",
+
+    kpiRfpLabel: "RFP Submitted", kpiRfpSub: "from Internal Performance",
+    kpiOppValueLabel: "Opportunity Value", kpiOppValueSub: "pipeline total, unweighted",
+    kpiProjectsLabel: "Projects Tracked", kpiProjectsSub: "incl. closed cases",
+    kpiPrototypesLabel: "Prototypes Tracked", kpiPrototypesSub: "in the Makers + on shelf",
+    kpiOpenTasksLabel: "Open Tasks", kpiOpenTasksSub: "not yet marked Done",
+
+    kpiExtOpenLabel: "Open Tenders Tracked", kpiExtOpenSub: "current baseline",
+    kpiExtMissingLabel: "Missing Fit", kpiExtMissingSub: "need enrichment",
+    kpiExtTopCatLabel: "Largest Category",
+
+    kpiIntLoggedLabel: "Opportunities Logged", kpiIntLoggedSub: "all stages",
+    kpiIntSubmittedLabel: "Submitted", kpiIntSubmittedSub: "stage = Submitted",
+    kpiIntPipelineLabel: "Pipeline Value (SAR)", kpiIntPipelineSub: "sum, unweighted",
+    kpiIntWeightedLabel: "Weighted Value (SAR)", kpiIntWeightedSub: "probability-adjusted",
+
+    kpiProtoProgressLabel: "In Progress", kpiProtoProgressSub: "in the Makers",
+    kpiProtoShelfLabel: "On Shelf", kpiProtoShelfSub: "paused / parked",
+    kpiProtoValueLabel: "Value (score)", kpiProtoValueSub: "placeholder unit",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
@@ -900,19 +922,20 @@ function renderStats(){
   const projectsTracked = state.projects.length;
   const prototypesTracked = state.prototypes.length;
   const openTasks = state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length;
+  const t = state.titles;
   const tiles = [
-    { label:"RFP Submitted", value:String(submitted), sub:"from Internal Performance" },
-    { label:"Opportunity Value", value:oppValue.toLocaleString()+" SAR", sub:"pipeline total, unweighted" },
-    { label:"Projects Tracked", value:String(projectsTracked), sub:"incl. closed cases" },
-    { label:"Prototypes Tracked", value:String(prototypesTracked), sub:"in the Makers + on shelf" },
-    { label:"Open Tasks", value:String(openTasks), sub:"not yet marked Done" }
+    { labelKey:"kpiRfpLabel", subKey:"kpiRfpSub", value:String(submitted) },
+    { labelKey:"kpiOppValueLabel", subKey:"kpiOppValueSub", value:oppValue.toLocaleString()+" SAR" },
+    { labelKey:"kpiProjectsLabel", subKey:"kpiProjectsSub", value:String(projectsTracked) },
+    { labelKey:"kpiPrototypesLabel", subKey:"kpiPrototypesSub", value:String(prototypesTracked) },
+    { labelKey:"kpiOpenTasksLabel", subKey:"kpiOpenTasksSub", value:String(openTasks) }
   ];
   tiles.forEach(s=>{
     row.appendChild(el(`
       <div class="stat-tile">
-        <div class="label">${escapeHtml(s.label)}</div>
+        <div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div>
         <div class="value">${escapeHtml(s.value)}</div>
-        <div class="sub">${escapeHtml(s.sub)}</div>
+        <div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div>
       </div>`));
   });
 }
@@ -946,11 +969,14 @@ function renderExternal(){
   list.forEach(r=>{ const c=r.category||"Other/Uncategorized"; catCounts[c]=(catCounts[c]||0)+1; });
   let topCat = "—", topCount = 0;
   Object.keys(catCounts).forEach(c=>{ if(catCounts[c]>topCount){ topCount=catCounts[c]; topCat=c; } });
-  [
-    { label:"Open Tenders Tracked", value:String(list.length), sub:"current baseline" },
-    { label:"Missing Fit", value:String(missing), sub:"need enrichment" },
-    { label:"Largest Category", value:topCat, sub:topCount+" tender"+(topCount===1?"":"s") }
-  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiExtOpenLabel", value:String(list.length), subKey:"kpiExtOpenSub" },
+      { labelKey:"kpiExtMissingLabel", value:String(missing), subKey:"kpiExtMissingSub" },
+      { labelKey:"kpiExtTopCatLabel", value:topCat, sub:topCount+" tender"+(topCount===1?"":"s") }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub"${s.subKey?` data-bind="titles.${s.subKey}"`:""}>${escapeHtml(s.subKey ? (t[s.subKey]||"") : s.sub)}</div></div>`)));
+  }
 
   const body = document.getElementById("externalBody"); body.innerHTML = "";
   const q = externalFilter.trim().toLowerCase();
@@ -1025,12 +1051,15 @@ function renderInternal(){
   const submitted = list.filter(r=>r.stage==="Submitted").length;
   const total = list.reduce((s,r)=>s+(+r.value||0),0);
   const weighted = list.reduce((s,r)=>s+(+r.value||0)*probForStage(r.stage),0);
-  [
-    { label:"Opportunities Logged", value:String(list.length), sub:"all stages" },
-    { label:"Submitted", value:String(submitted), sub:"stage = Submitted" },
-    { label:"Pipeline Value (SAR)", value:total.toLocaleString(), sub:"sum, unweighted" },
-    { label:"Weighted Value (SAR)", value:Math.round(weighted).toLocaleString(), sub:"probability-adjusted" }
-  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiIntLoggedLabel", subKey:"kpiIntLoggedSub", value:String(list.length) },
+      { labelKey:"kpiIntSubmittedLabel", subKey:"kpiIntSubmittedSub", value:String(submitted) },
+      { labelKey:"kpiIntPipelineLabel", subKey:"kpiIntPipelineSub", value:total.toLocaleString() },
+      { labelKey:"kpiIntWeightedLabel", subKey:"kpiIntWeightedSub", value:Math.round(weighted).toLocaleString() }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div></div>`)));
+  }
 
   const body = document.getElementById("internalBody"); body.innerHTML = "";
   const stageOptions = state.stageProbs.map(p=>`<option value="${p.stage}">${p.stage}</option>`).join("");
@@ -1130,11 +1159,14 @@ function renderPrototypes(){
   const inMakers = list.filter(r=>r.status==="In the Makers").length;
   const onShelf = list.filter(r=>r.status==="On shelf").length;
   const valSum = list.reduce((s,r)=>s+(+r.value||0),0);
-  [
-    { label:"In Progress", value:String(inMakers), sub:"in the Makers" },
-    { label:"On Shelf", value:String(onShelf), sub:"paused / parked" },
-    { label:"Value (score)", value:String(valSum), sub:"placeholder unit" }
-  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiProtoProgressLabel", subKey:"kpiProtoProgressSub", value:String(inMakers) },
+      { labelKey:"kpiProtoShelfLabel", subKey:"kpiProtoShelfSub", value:String(onShelf) },
+      { labelKey:"kpiProtoValueLabel", subKey:"kpiProtoValueSub", value:String(valSum) }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div></div>`)));
+  }
 
   const body = document.getElementById("prototypesBody"); body.innerHTML = "";
   const statusOptions = Object.keys(PROTO_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");

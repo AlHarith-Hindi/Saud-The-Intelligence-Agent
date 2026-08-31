@@ -222,31 +222,31 @@
         <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
       </div>
       <div class="editbar">
-        <button class="editbtn secondary" id="helpBtn">❓ Help</button>
-        <button class="editbtn secondary" id="importJsonBtn">⬆ Import JSON</button>
+        <button class="editbtn secondary" id="helpBtn"><span data-bind="titles.btnHelp"></span></button>
+        <button class="editbtn secondary" id="importJsonBtn"><span data-bind="titles.btnImportJson"></span></button>
         <input type="file" id="importJsonInput" accept="application/json" style="display:none;">
-        <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()">⬇ Export PPTX</button>
-        <button class="editbtn secondary" id="exportJsonBtn" onclick="exportJSON()">⬇ Export JSON</button>
-        <button class="editbtn secondary" id="printBtn" onclick="window.print()">🖨 Print</button>
-        <button class="editbtn secondary" id="toggleTheme">🎨 Theme</button>
-        <button class="editbtn secondary" id="toggleSync">⇄ GitHub sync</button>
-        <button class="editbtn secondary edit-only" id="undoBtn" disabled>↺ Undo</button>
-        <button class="editbtn secondary" id="toggleEdit">✎ Edit</button>
-        <button class="editbtn" id="saveBtn" style="display:none;">Save to GitHub</button>
+        <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
+        <button class="editbtn secondary" id="exportJsonBtn" onclick="exportJSON()"><span data-bind="titles.btnExportJson"></span></button>
+        <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
+        <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
+        <button class="editbtn secondary" id="toggleSync"><span data-bind="titles.btnGithubSync"></span></button>
+        <button class="editbtn secondary edit-only" id="undoBtn" disabled><span data-bind="titles.btnUndo"></span></button>
+        <button class="editbtn secondary" id="toggleEdit"><span data-bind="titles.btnEdit"></span></button>
+        <button class="editbtn" id="saveBtn" style="display:none;"><span data-bind="titles.btnSaveToGithub"></span></button>
       </div>
     </div>
   </header>
 
   <div class="draft-banner" id="draftBanner">
-    <span>📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.</span>
+    <span data-bind="titles.draftRestoredMsg"></span>
     <span>
-      <button onclick="dismissLocalDraft()">Dismiss</button>
-      <button onclick="discardLocalDraft()">Discard draft</button>
+      <button onclick="dismissLocalDraft()" data-bind="titles.btnDismissDraft"></button>
+      <button onclick="discardLocalDraft()" data-bind="titles.btnDiscardDraft"></button>
     </span>
   </div>
 
   <div class="sync-panel" id="helpPanel">
-    <b>Tips &amp; keyboard shortcuts</b>
+    <b data-bind="titles.helpHeading"></b>
     <ul>
       <li>Click <b>✎ Edit</b> to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.</li>
       <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd> while editing saves straight to GitHub.</li>
@@ -260,34 +260,32 @@
   </div>
 
   <div class="sync-panel" id="themePanel">
-    <b>Theme — change the dashboard's colors any time.</b><br>
-    Pick a preset (including a light "Daylight" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.
+    <b data-bind="titles.themeHeading"></b><br>
+    <span data-bind="titles.themeDesc"></span>
     <div class="row" id="themePresets"></div>
     <div class="row" style="align-items:center;">
-      <span style="font-size:12px; color:var(--muted);">Accent color</span>
+      <span style="font-size:12px; color:var(--muted);" data-bind="titles.labelAccentColor"></span>
       <input type="color" id="accentPicker" value="#C1701E">
-      <span style="font-size:12px; color:var(--muted); margin-left:14px;">Background color</span>
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelBackgroundColor"></span>
       <input type="color" id="bgPicker" value="#1F1B16">
-      <span style="font-size:12px; color:var(--muted); margin-left:14px;">Text color</span>
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelTextColor"></span>
       <input type="color" id="textPicker" value="#FBF6EA">
-      <button class="editbtn secondary" onclick="resetTheme()">Reset to default</button>
+      <button class="editbtn secondary" onclick="resetTheme()"><span data-bind="titles.btnResetTheme"></span></button>
     </div>
   </div>
 
   <div class="sync-panel" id="syncPanel">
-    <b>GitHub sync — makes edits permanent and gives you a full history of every change.</b><br>
-    This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal
-    access token with access to that repo (kept in this browser tab's memory only — never saved, never sent
-    anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.
+    <b data-bind="titles.githubSyncHeading"></b><br>
+    <span data-bind="titles.githubSyncDesc"></span>
     <div class="row">
       <input class="token" type="password" id="ghToken" placeholder="GitHub personal access token (ghp_...)">
       <input class="short" type="text" id="ghOwner" placeholder="repo owner / org">
       <input class="short" type="text" id="ghRepo" placeholder="repo name">
       <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
       <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
-      <button class="editbtn" onclick="connectGitHub()">Connect &amp; Load</button>
+      <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
     </div>
-    <div class="sync-status" id="syncStatus">Not connected — this page shows its built-in starting content until you connect.</div>
+    <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
   </div>
 
   <div class="tabs-nav" id="tabsNav">
@@ -314,8 +312,8 @@
       <div class="sechead">
         <h2 id="secExternalTitle" data-bind="titles.sectionExternal"></h2>
         <div class="sechead-actions">
-          <button class="editbtn secondary" id="exportExternalExcelBtn" onclick="exportExternalExcel()">⬇ Export Excel</button>
-          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New tender', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})">+ add tender</button>
+          <button class="editbtn secondary" id="exportExternalExcelBtn" onclick="exportExternalExcel()"><span data-bind="titles.btnExportExcel"></span></button>
+          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New tender', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})"><span data-bind="titles.addBtnTender"></span></button>
         </div>
       </div>
       <div class="subhead" data-bind="titles.externalOwnerLine"></div>
@@ -337,7 +335,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionNews"></h2>
-        <button class="addbtn" onclick="addRow('news', {date:'', source:'', headline:'New headline', relevance:'', link:'', notes:''})">+ add item</button>
+        <button class="addbtn" onclick="addRow('news', {date:'', source:'', headline:'New headline', relevance:'', link:'', notes:''})"><span data-bind="titles.addBtnNewsItem"></span></button>
       </div>
       <div class="table-scroll">
         <table class="wide-table">
@@ -357,7 +355,7 @@
     <section>
       <div class="sechead">
         <h2 id="secInternalTitle" data-bind="titles.sectionInternal"></h2>
-        <button class="addbtn" onclick="addRow('internal', {name:'New opportunity', client:'', value:0, stage:'Not started', subDate:'', nextStep:'', owner:''})">+ add opportunity</button>
+        <button class="addbtn" onclick="addRow('internal', {name:'New opportunity', client:'', value:0, stage:'Not started', subDate:'', nextStep:'', owner:''})"><span data-bind="titles.addBtnOpportunity"></span></button>
       </div>
       <div class="subhead" data-bind="titles.internalOwnerLine"></div>
       <div class="kpi-row" id="internalKpis"></div>
@@ -386,7 +384,7 @@
     <section>
       <div class="sechead">
         <h2 id="secProjectsTitle" data-bind="titles.sectionProjects"></h2>
-        <button class="addbtn" onclick="addRow('projects', {name:'New project', status:'Not started', financially:'', operationally:'', issues:'', deadline:''})">+ add project</button>
+        <button class="addbtn" onclick="addRow('projects', {name:'New project', status:'Not started', financially:'', operationally:'', issues:'', deadline:''})"><span data-bind="titles.addBtnProject"></span></button>
       </div>
       <div class="subhead" data-bind="titles.projectsOwnerLine"></div>
       <div class="table-scroll">
@@ -404,7 +402,7 @@
     <section>
       <div class="sechead">
         <h2 id="secPrototypesTitle" data-bind="titles.sectionPrototypes"></h2>
-        <button class="addbtn" onclick="addRow('prototypes', {name:'New prototype', status:'In the Makers', team:'', notes:'', value:0})">+ add prototype</button>
+        <button class="addbtn" onclick="addRow('prototypes', {name:'New prototype', status:'In the Makers', team:'', notes:'', value:0})"><span data-bind="titles.addBtnPrototype"></span></button>
       </div>
       <div class="subhead" data-bind="titles.prototypesOwnerLine"></div>
       <div class="kpi-row" id="prototypesKpis"></div>
@@ -425,7 +423,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionTasks"></h2>
-        <button class="addbtn" onclick="addRow('tasks', {task:'New task', owner:'', status:'Not started', cadence:'Monthly', notes:''})">+ add task</button>
+        <button class="addbtn" onclick="addRow('tasks', {task:'New task', owner:'', status:'Not started', cadence:'Monthly', notes:''})"><span data-bind="titles.addBtnTask"></span></button>
       </div>
       <div class="table-scroll">
         <table class="wide-table">
@@ -438,7 +436,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionMilestones"></h2>
-        <button class="addbtn" onclick="addRow('milestones', {milestone:'New milestone', owner:'', targetDate:'', status:'Not started', notes:''})">+ add milestone</button>
+        <button class="addbtn" onclick="addRow('milestones', {milestone:'New milestone', owner:'', targetDate:'', status:'Not started', notes:''})"><span data-bind="titles.addBtnMilestone"></span></button>
       </div>
       <div class="table-scroll">
         <table class="wide-table">
@@ -451,7 +449,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionTodos"></h2>
-        <button class="addbtn" onclick="addRow('todos', {done:false, item:'New item', owner:'', due:'', notes:''})">+ add to-do</button>
+        <button class="addbtn" onclick="addRow('todos', {done:false, item:'New item', owner:'', due:'', notes:''})"><span data-bind="titles.addBtnTodo"></span></button>
       </div>
       <div class="table-scroll">
         <table class="wide-table">
@@ -467,7 +465,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionRaci"></h2>
-        <button class="addbtn" onclick="addRow('raci', {section:'New section', owner:'', basis:''})">+ add row</button>
+        <button class="addbtn" onclick="addRow('raci', {section:'New section', owner:'', basis:''})"><span data-bind="titles.addBtnRaciRow"></span></button>
       </div>
       <table>
         <thead><tr><th data-bind="titles.colRaciSection"></th><th data-bind="titles.colRaciOwner"></th><th data-bind="titles.colRaciBasis"></th><th class="actions"></th></tr></thead>
@@ -478,7 +476,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionSources"></h2>
-        <button class="addbtn" onclick="addStringRow('sources', 'New source')">+ add source</button>
+        <button class="addbtn" onclick="addStringRow('sources', 'New source')"><span data-bind="titles.addBtnSource"></span></button>
       </div>
       <ol class="steps" id="sourcesList" style="list-style:none; margin:0; padding:0;"></ol>
     </section>
@@ -486,7 +484,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionMethodology"></h2>
-        <button class="addbtn" onclick="addStringRow('methodology', 'New methodology note')">+ add note</button>
+        <button class="addbtn" onclick="addStringRow('methodology', 'New methodology note')"><span data-bind="titles.addBtnMethodNote"></span></button>
       </div>
       <ol class="steps" id="methodologyList" style="list-style:none; margin:0; padding:0;"></ol>
     </section>
@@ -594,6 +592,27 @@ const DEFAULT_STATE = {
     kpiProtoProgressLabel: "In Progress", kpiProtoProgressSub: "in the Makers",
     kpiProtoShelfLabel: "On Shelf", kpiProtoShelfSub: "paused / parked",
     kpiProtoValueLabel: "Value (score)", kpiProtoValueSub: "placeholder unit",
+
+    btnHelp: "❓ Help", btnImportJson: "⬆ Import JSON", btnExportExcel: "⬇ Export Excel",
+    btnExportPptx: "⬇ Export PPTX", btnExportJson: "⬇ Export JSON", btnPrint: "🖨 Print",
+    btnTheme: "🎨 Theme", btnGithubSync: "⇄ GitHub sync", btnUndo: "↺ Undo",
+    btnEdit: "✎ Edit", btnDoneEditing: "✓ Done editing", btnSaveToGithub: "Save to GitHub",
+    btnConnectLoad: "Connect & Load", btnDismissDraft: "Dismiss", btnDiscardDraft: "Discard draft",
+    btnResetTheme: "Reset to default",
+
+    draftRestoredMsg: "📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.",
+    helpHeading: "Tips & keyboard shortcuts",
+    themeHeading: "Theme — change the dashboard's colors any time.",
+    themeDesc: "Pick a preset (including a light \"Daylight\" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.",
+    labelAccentColor: "Accent color", labelBackgroundColor: "Background color", labelTextColor: "Text color",
+    githubSyncHeading: "GitHub sync — makes edits permanent and gives you a full history of every change.",
+    githubSyncDesc: "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo (kept in this browser tab's memory only — never saved, never sent anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.",
+    syncNotConnectedMsg: "Not connected — this page shows its built-in starting content until you connect.",
+
+    addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
+    addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnTask: "+ add task",
+    addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
+    addBtnSource: "+ add source", addBtnMethodNote: "+ add note",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
@@ -1368,7 +1387,10 @@ function applyEditMode(){
 
 document.getElementById("toggleEdit").addEventListener("click", ()=>{
   editing = !editing;
-  document.getElementById("toggleEdit").textContent = editing ? "✓ Done editing" : "✎ Edit";
+  const span = document.querySelector("#toggleEdit span[data-bind]");
+  const key = editing ? "btnDoneEditing" : "btnEdit";
+  span.dataset.bind = "titles." + key;
+  span.textContent = state.titles[key];
   applyEditMode();
 });
 document.getElementById("undoBtn").addEventListener("click", undo);
@@ -1560,6 +1582,7 @@ async function saveToGitHub(){
     return;
   }
   const btn = document.getElementById("saveBtn");
+  const origBtnHTML = btn.innerHTML;
   btn.disabled = true; btn.innerText = "Saving...";
   try{
     const body = {
@@ -1587,7 +1610,7 @@ async function saveToGitHub(){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Save failed — " + e.message;
   } finally {
-    btn.disabled = false; btn.innerText = "Save to GitHub";
+    btn.disabled = false; btn.innerHTML = origBtnHTML;
   }
 }
 document.getElementById("saveBtn").addEventListener("click", saveToGitHub);
@@ -1604,7 +1627,7 @@ function loadScriptOnce(src){
 
 async function exportExternalExcel(){
   const btn = document.getElementById("exportExternalExcelBtn");
-  const orig = btn.textContent;
+  const orig = btn.innerHTML;
   btn.disabled = true; btn.textContent = "Building...";
   try{
     if(typeof ExcelJS === "undefined"){
@@ -1642,14 +1665,14 @@ async function exportExternalExcel(){
   } catch(e){
     alert("Excel export failed: " + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = orig;
+    btn.disabled = false; btn.innerHTML = orig;
   }
 }
 
 /* ---------- PPTX export ---------- */
 async function exportPPTX(){
   const btn = document.getElementById("exportPptxBtn");
-  const orig = btn.textContent;
+  const orig = btn.innerHTML;
   btn.disabled = true; btn.textContent = "Building...";
   try{
     if(typeof PptxGenJS === "undefined"){
@@ -1731,7 +1754,7 @@ async function exportPPTX(){
   } catch(e){
     alert("PPTX export failed: " + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = orig;
+    btn.disabled = false; btn.innerHTML = orig;
   }
 }
 

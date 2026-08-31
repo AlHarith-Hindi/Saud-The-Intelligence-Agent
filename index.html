@@ -1125,7 +1125,7 @@ function renderProbTable(){
   const tbody = document.createElement("tbody");
   state.stageProbs.forEach((p,i)=>{
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${escapeHtml(p.stage)}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
+    tr.innerHTML = `<td data-bind="stageProbs.${i}.stage">${escapeHtml(p.stage)}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
     tbody.appendChild(tr);
   });
   t.appendChild(tbody);
@@ -1373,6 +1373,7 @@ document.addEventListener("focusout", e=>{
   let obj = state;
   for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
   obj[path[path.length-1]] = t.innerText.trim();
+  if(path[0] === "stageProbs" && path[path.length-1] === "stage"){ renderInternal(); applyEditMode(); }
   saveLocalDraft();
 });
 

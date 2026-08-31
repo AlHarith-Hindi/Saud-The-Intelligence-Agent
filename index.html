@@ -215,8 +215,8 @@
     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
       <div class="meta">
         <div class="lastup-row">
-          <span>Last updated: <span id="lastUpdatedText" data-bind="lastUpdated"></span></span>
-          <button class="tinybtn edit-only" id="setTodayBtn">Set to today</button>
+          <span><span data-bind="titles.labelLastUpdated"></span> <span id="lastUpdatedText" data-bind="lastUpdated"></span></span>
+          <button class="tinybtn edit-only" id="setTodayBtn"><span data-bind="titles.btnSetToday"></span></button>
         </div>
         <span id="ownerLineEl" data-bind="titles.ownerLine"></span>
         <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
@@ -247,16 +247,7 @@
 
   <div class="sync-panel" id="helpPanel">
     <b data-bind="titles.helpHeading"></b>
-    <ul>
-      <li>Click <b>✎ Edit</b> to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.</li>
-      <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd> while editing saves straight to GitHub.</li>
-      <li>Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.</li>
-      <li><b>↺ Undo</b> reverts the last structural change (add, remove, move, duplicate, color, or import).</li>
-      <li>Click any section title (outside edit mode) to collapse or expand it.</li>
-      <li>The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.</li>
-      <li><b>Export JSON</b> / <b>Import JSON</b> let you back up or restore the whole dashboard without GitHub.</li>
-      <li>Connect <b>GitHub sync</b> to make edits permanent with full commit history; otherwise changes only autosave to this browser.</li>
-    </ul>
+    <div class="notes" style="white-space:pre-line; margin-top:10px; line-height:1.7;" data-bind="titles.helpBody"></div>
   </div>
 
   <div class="sync-panel" id="themePanel">
@@ -613,6 +604,9 @@ const DEFAULT_STATE = {
     addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnTask: "+ add task",
     addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
     addBtnSource: "+ add source", addBtnMethodNote: "+ add note",
+
+    labelLastUpdated: "Last updated:", btnSetToday: "Set to today",
+    helpBody: "• Click “✎ Edit” to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.\n• Ctrl/Cmd + S while editing saves straight to GitHub.\n• Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.\n• “↺ Undo” reverts the last structural change (add, remove, move, duplicate, color, or import).\n• Click any section title (outside edit mode) to collapse or expand it.\n• The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.\n• “Export JSON” / “Import JSON” let you back up or restore the whole dashboard without GitHub.\n• Connect “GitHub sync” to make edits permanent with full commit history; otherwise changes only autosave to this browser.",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Saud — Business Tracking Dashboard</title>
 <style>
   :root{
@@ -280,12 +283,12 @@
   </div>
 
   <div class="tabs-nav" id="tabsNav">
-    <button class="tab-btn active" data-page="overview" onclick="if(!editing) switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
-    <button class="tab-btn" data-page="external" onclick="if(!editing) switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
-    <button class="tab-btn" data-page="internal" onclick="if(!editing) switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
-    <button class="tab-btn" data-page="projects" onclick="if(!editing) switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
-    <button class="tab-btn" data-page="tasks" onclick="if(!editing) switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
-    <button class="tab-btn" data-page="notes" onclick="if(!editing) switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
+    <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
+    <button class="tab-btn" data-page="external" onclick="switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
+    <button class="tab-btn" data-page="internal" onclick="switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
+    <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
+    <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
+    <button class="tab-btn" data-page="notes" onclick="switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
   </div>
 
   <!-- ============================== OVERVIEW ============================== -->
@@ -982,7 +985,7 @@ function renderOverviewNav(){
     const btn = document.createElement("button");
     btn.className = "navcard";
     btn.innerHTML = `<div class="t" data-bind="titles.${n.tKey}">${escapeHtml(t[n.tKey]||"")}</div><div class="d" data-bind="titles.${n.dKey}">${escapeHtml(t[n.dKey]||"")}</div><div class="o" data-bind="titles.${n.oKey}">${escapeHtml(t[n.oKey]||"")}</div>`;
-    btn.onclick = (e)=>{ if(!editing) switchPage(n.page); };
+    btn.onclick = (e)=>{ switchPage(n.page); };
     wrap.appendChild(btn);
   });
 }

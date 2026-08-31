@@ -606,6 +606,13 @@ const DEFAULT_STATE = {
     addBtnSource: "+ add source", addBtnMethodNote: "+ add note",
 
     labelLastUpdated: "Last updated:", btnSetToday: "Set to today",
+
+    iconMoveUpTip: "Move up", iconMoveDownTip: "Move down", iconDuplicateTip: "Duplicate",
+    tipChatOpen: "Ask Saud", tipChatClose: "Close", tipChatSend: "Send",
+    chatFabIcon: "💬", chatHeaderIcon: "💬", chatCloseIcon: "✕", chatSendIcon: "➤",
+    chatHeaderTitle: "Ask Saud", chatHeaderSub: "Grounded in this dashboard's live data",
+    chatEmptyMsg: "Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
+
     helpBody: "• Click “✎ Edit” to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.\n• Ctrl/Cmd + S while editing saves straight to GitHub.\n• Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.\n• “↺ Undo” reverts the last structural change (add, remove, move, duplicate, color, or import).\n• Click any section title (outside edit mode) to collapse or expand it.\n• The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.\n• “Export JSON” / “Import JSON” let you back up or restore the whole dashboard without GitHub.\n• Connect “GitHub sync” to make edits permanent with full commit history; otherwise changes only autosave to this browser.",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
@@ -834,11 +841,15 @@ function migrateState(){
 
 /* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
 function reorderBtns(section, i, len){
+  const t = state.titles;
+  const upTip = escapeHtml(t.iconMoveUpTip || "Move up");
+  const downTip = escapeHtml(t.iconMoveDownTip || "Move down");
+  const dupTip = escapeHtml(t.iconDuplicateTip || "Duplicate");
   return `<span class="reordergrp edit-only">
-      <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="Move up">▲</button>
-      <button class="reorder" onclick="moveItem('${section}',${i},1)" ${i===len-1?"disabled":""} title="Move down">▼</button>
+      <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="${upTip}">▲</button>
+      <button class="reorder" onclick="moveItem('${section}',${i},1)" ${i===len-1?"disabled":""} title="${downTip}">▼</button>
     </span>
-    <button class="dupbtn edit-only" onclick="duplicateRow('${section}',${i})" title="Duplicate">⧉</button>`;
+    <button class="dupbtn edit-only" onclick="duplicateRow('${section}',${i})" title="${dupTip}">⧉</button>`;
 }
 function moveItem(section, i, dir){
   const arr = state[section];
@@ -919,6 +930,10 @@ function renderTitles(){
     const key = el.dataset.bind.slice(7);
     if(typeof t[key] === "string") el.innerText = t[key];
   });
+  if(t.h1) document.title = t.h1;
+  const fab = document.getElementById("saud-chat-fab"); if(fab) fab.title = t.tipChatOpen || "Ask Saud";
+  const chatClose = document.getElementById("saud-chat-close"); if(chatClose) chatClose.title = t.tipChatClose || "Close";
+  const chatSend = document.getElementById("saud-chat-send"); if(chatSend) chatSend.title = t.tipChatSend || "Send";
 }
 
 /* ---------- helper: probability lookup for a stage ---------- */
@@ -1368,6 +1383,7 @@ document.addEventListener("focusout", e=>{
   for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
   obj[path[path.length-1]] = t.innerText.trim();
   if(path[0] === "stageProbs" && path[path.length-1] === "stage"){ renderInternal(); applyEditMode(); }
+  if(path[0] === "titles" && path[1] === "h1" && state.titles.h1) document.title = state.titles.h1;
   saveLocalDraft();
 });
 
@@ -1874,31 +1890,38 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   #saud-chat-send:not(:disabled):hover{ opacity:.9; }
 </style>
 
-<button id="saud-chat-fab" title="Ask Saud">💬</button>
+<button id="saud-chat-fab" title="Ask Saud"><span data-bind="titles.chatFabIcon">💬</span></button>
 
 <div id="saud-chat-panel">
   <div id="saud-chat-header">
     <div class="saud-chat-title">
-      <span>💬</span>
+      <span data-bind="titles.chatHeaderIcon">💬</span>
       <div>
-        <div>Ask Saud</div>
-        <div class="saud-chat-sub">Grounded in this dashboard's live data</div>
+        <div data-bind="titles.chatHeaderTitle">Ask Saud</div>
+        <div class="saud-chat-sub" data-bind="titles.chatHeaderSub">Grounded in this dashboard's live data</div>
       </div>
     </div>
-    <span id="saud-chat-close" title="Close">✕</span>
+    <span id="saud-chat-close" title="Close" data-bind="titles.chatCloseIcon">✕</span>
   </div>
   <div id="saud-chat-log">
-    <div id="saud-chat-empty">Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.</div>
+    <div id="saud-chat-empty" data-bind="titles.chatEmptyMsg">Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.</div>
   </div>
   <div id="saud-chat-inputrow">
     <textarea id="saud-chat-input" rows="1" placeholder="Ask about tenders, pipeline, projects…"></textarea>
-    <button id="saud-chat-send" title="Send">➤</button>
+    <button id="saud-chat-send" title="Send"><span data-bind="titles.chatSendIcon">➤</span></button>
   </div>
 </div>
 
 <script>
 (function () {
   const WORKER_URL = "https://orange-queen-ead8.alhindiharith.workers.dev/";
+
+  // the chat widget's own DOM only exists after this point, so re-run the
+  // generic titles binder now that these elements are present — otherwise
+  // any customized icon/label text loaded from a local draft or GitHub
+  // sync during boot() (which ran before this markup was parsed) would
+  // never reach these spans.
+  if (typeof renderTitles === "function") { try { renderTitles(); } catch (e) {} }
 
   const fab = document.getElementById('saud-chat-fab');
   const panel = document.getElementById('saud-chat-panel');
@@ -1911,11 +1934,15 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   let busy = false;
 
   fab.onclick = () => {
+    if (typeof editing !== 'undefined' && editing) return;
     const opening = panel.style.display !== 'flex';
     panel.style.display = opening ? 'flex' : 'none';
     if (opening) input.focus();
   };
-  closeBtn.onclick = () => { panel.style.display = 'none'; };
+  closeBtn.onclick = () => {
+    if (typeof editing !== 'undefined' && editing) return;
+    panel.style.display = 'none';
+  };
 
   function escapeHtmlChat(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

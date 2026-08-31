@@ -141,7 +141,7 @@
   .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; border-radius:4px; padding:0 3px;}
   .rowdel:hover{color:var(--critical);}
   .rowdel.confirming{background:var(--critical); color:#fff; font-size:10px; padding:2px 6px;}
-  .status-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;}
+  .status-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; field-sizing:content; min-width:60px; max-width:220px;}
   .status-pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
 
   .kpi-row{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px; margin-bottom:18px;}
@@ -807,6 +807,11 @@ function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(
 function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
 function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
 function escapeHtml(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function ensureDatalist(id, optionsHtml){
+  let dl = document.getElementById(id);
+  if(!dl){ dl = document.createElement("datalist"); dl.id = id; document.body.appendChild(dl); }
+  dl.innerHTML = optionsHtml;
+}
 
 const RENDER_FN = {};
 
@@ -1013,6 +1018,8 @@ function renderExternal(){
   const q = externalFilter.trim().toLowerCase();
   const fitOptions = Object.keys(FIT_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
   const catOptions = CATEGORY_OPTIONS.map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("fitOptionsList", fitOptions);
+  ensureDatalist("catOptionsList", catOptions);
   list.forEach((r,i)=>{
     if(q && !((r.name||"").toLowerCase().includes(q) || (r.agency||"").toLowerCase().includes(q) || (r.rn||"").toLowerCase().includes(q))) return;
     const fitColor = FIT_COLOR[r.fit] || FIT_COLOR.Unknown;
@@ -1023,11 +1030,11 @@ function renderExternal(){
         <td data-bind="external.${i}.agency">${escapeHtml(r.agency)}</td>
         <td>
           <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(r.fit)}</span>
-          <select class="status-select edit-only" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};">${fitOptions}</select>
+          <input class="status-select edit-only" list="fitOptionsList" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};" value="${escapeHtml(r.fit)}">
         </td>
         <td>
           <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(r.category)}</span>
-          <select class="status-select edit-only" data-catselect="${i}" style="background:#3987e522; color:#3987e5;">${catOptions}</select>
+          <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
         <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
         <td data-bind="external.${i}.notes">${escapeHtml(r.notes)}</td>
@@ -1036,8 +1043,6 @@ function renderExternal(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-fitselect="${i}"]`).value = r.fit;
-    tr.querySelector(`[data-catselect="${i}"]`).value = r.category;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
@@ -1094,6 +1099,7 @@ function renderInternal(){
 
   const body = document.getElementById("internalBody"); body.innerHTML = "";
   const stageOptions = state.stageProbs.map(p=>`<option value="${p.stage}">${p.stage}</option>`).join("");
+  ensureDatalist("stageOptionsList", stageOptions);
   list.forEach((r,i)=>{
     const stageColor = STAGE_COLOR[r.stage] || STAGE_COLOR["Not started"];
     const weightedVal = Math.round((+r.value||0) * probForStage(r.stage));
@@ -1104,7 +1110,7 @@ function renderInternal(){
         <td data-bind="internal.${i}.value">${escapeHtml(r.value)}</td>
         <td>
           <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(r.stage)}</span>
-          <select class="status-select edit-only" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};">${stageOptions}</select>
+          <input class="status-select edit-only" list="stageOptionsList" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};" value="${escapeHtml(r.stage)}">
         </td>
         <td data-bind="internal.${i}.subDate">${escapeHtml(r.subDate)}</td>
         <td data-bind="internal.${i}.nextStep">${escapeHtml(r.nextStep)}</td>
@@ -1115,7 +1121,6 @@ function renderInternal(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('internal',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-stageselect="${i}"]`).value = r.stage;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-valuebind]");
@@ -1155,6 +1160,7 @@ function renderProjects(){
   const body = document.getElementById("projectsBody"); if(!body) return;
   body.innerHTML = "";
   const statusOptions = Object.keys(PROJECT_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("projStatusOptionsList", statusOptions);
   state.projects.forEach((r,i)=>{
     const color = PROJECT_STATUS_COLOR[r.status] || PROJECT_STATUS_COLOR["Not started"];
     const tr = elTR(`
@@ -1162,7 +1168,7 @@ function renderProjects(){
         <td data-bind="projects.${i}.name">${escapeHtml(r.name)}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
-          <select class="status-select edit-only" data-projstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+          <input class="status-select edit-only" list="projStatusOptionsList" data-projstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="projects.${i}.financially">${escapeHtml(r.financially)}</td>
         <td data-bind="projects.${i}.operationally">${escapeHtml(r.operationally)}</td>
@@ -1173,7 +1179,6 @@ function renderProjects(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('projects',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-projstatus="${i}"]`).value = r.status;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-projstatus]").forEach(s=>s.addEventListener("change", e=>{
@@ -1201,6 +1206,7 @@ function renderPrototypes(){
 
   const body = document.getElementById("prototypesBody"); body.innerHTML = "";
   const statusOptions = Object.keys(PROTO_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("protoStatusOptionsList", statusOptions);
   list.forEach((r,i)=>{
     const color = PROTO_STATUS_COLOR[r.status] || PROTO_STATUS_COLOR["On shelf"];
     const tr = elTR(`
@@ -1208,7 +1214,7 @@ function renderPrototypes(){
         <td data-bind="prototypes.${i}.name">${escapeHtml(r.name)}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
-          <select class="status-select edit-only" data-protostatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+          <input class="status-select edit-only" list="protoStatusOptionsList" data-protostatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="prototypes.${i}.team">${escapeHtml(r.team)}</td>
         <td data-bind="prototypes.${i}.notes">${escapeHtml(r.notes)}</td>
@@ -1218,7 +1224,6 @@ function renderPrototypes(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('prototypes',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-protostatus="${i}"]`).value = r.status;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-protostatus]").forEach(s=>s.addEventListener("change", e=>{
@@ -1237,6 +1242,7 @@ function renderTasks(){
   const body = document.getElementById("tasksBody"); if(!body) return;
   body.innerHTML = "";
   const statusOptions = Object.keys(TASK_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("taskStatusOptionsList", statusOptions);
   state.tasks.forEach((r,i)=>{
     const color = TASK_STATUS_COLOR[r.status] || TASK_STATUS_COLOR["Not started"];
     const tr = elTR(`
@@ -1245,7 +1251,7 @@ function renderTasks(){
         <td data-bind="tasks.${i}.owner">${escapeHtml(r.owner)}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
-          <select class="status-select edit-only" data-taskstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+          <input class="status-select edit-only" list="taskStatusOptionsList" data-taskstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="tasks.${i}.cadence">${escapeHtml(r.cadence)}</td>
         <td data-bind="tasks.${i}.notes">${escapeHtml(r.notes)}</td>
@@ -1254,7 +1260,6 @@ function renderTasks(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('tasks',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-taskstatus="${i}"]`).value = r.status;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-taskstatus]").forEach(s=>s.addEventListener("change", e=>{
@@ -1269,6 +1274,7 @@ function renderMilestones(){
   const body = document.getElementById("milestonesBody"); if(!body) return;
   body.innerHTML = "";
   const statusOptions = Object.keys(MILESTONE_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("mstatusOptionsList", statusOptions);
   state.milestones.forEach((r,i)=>{
     const color = MILESTONE_STATUS_COLOR[r.status] || MILESTONE_STATUS_COLOR["Not started"];
     const tr = elTR(`
@@ -1278,7 +1284,7 @@ function renderMilestones(){
         <td data-bind="milestones.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
-          <select class="status-select edit-only" data-mstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+          <input class="status-select edit-only" list="mstatusOptionsList" data-mstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="milestones.${i}.notes">${escapeHtml(r.notes)}</td>
         <td class="actions-cell edit-only">
@@ -1286,7 +1292,6 @@ function renderMilestones(){
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('milestones',${i}))">✕</button>
         </td>
       </tr>`);
-    tr.querySelector(`[data-mstatus="${i}"]`).value = r.status;
     body.appendChild(tr);
   });
   body.querySelectorAll("[data-mstatus]").forEach(s=>s.addEventListener("change", e=>{

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saud — Progress Dashboard</title>
+<title>Saud — Business Tracking Dashboard</title>
 <style>
   :root{
     --night:   #1F1B16;
@@ -78,16 +78,15 @@
   .sync-status.ok{color:#5fd3a8;}
   .sync-status.err{color:#f0a06f;}
 
-  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;}
+  .stat-row{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:28px;}
   .stat-tile{
     background:var(--night2); border:1px solid var(--border); border-radius:14px;
     padding:18px 20px; position:relative;
   }
   .stat-tile .label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
   .stat-tile .icon{font-size:15px; margin-right:6px;}
-  .stat-tile .value{font-size:26px; font-weight:700; color:var(--cream); font-variant-numeric:proportional-nums; border:none; background:none; width:100%; font-family:inherit;}
+  .stat-tile .value{font-size:24px; font-weight:700; color:var(--copper); font-variant-numeric:proportional-nums;}
   .stat-tile .sub{font-size:12px; color:var(--muted); margin-top:4px;}
-  .stat-tile .reorderbar{position:absolute; top:8px; right:10px; display:flex; gap:4px;}
 
   section{margin-bottom:32px;}
   section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px; flex-wrap:wrap; gap:8px;}
@@ -103,31 +102,12 @@
   .reorder:disabled{opacity:.25; cursor:default;}
   .dupbtn{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
   .dupbtn:hover{color:var(--series-blue);}
+  .reordergrp{display:flex; flex-direction:column;}
 
-  .phase-row{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
-  .phase-row .reordergrp{display:flex; flex-direction:column;}
-  .phase-row .pname{width:230px; flex-shrink:0; font-size:14px; color:var(--cream); background:none; border:none; font-family:inherit;}
-  .phase-row .barbg{flex:1; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; min-width:80px;}
-  .phase-row .barfill{height:100%; border-radius:6px; transition:width .2s;}
-  .phase-row .pct{width:180px; flex-shrink:0; font-size:12px; text-align:right; color:var(--muted); display:flex; align-items:center; justify-content:flex-end; gap:6px;}
-  .phase-row .pct input[type=range]{width:70px;}
-  .phase-row .pct .plabel{background:none; border:none; color:var(--muted); font-size:12px; font-family:inherit; text-align:right;}
-  .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
-
-  .phase-row select.color-select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:11px;}
-  .cap-card select.color-select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:11px; margin-top:6px; width:100%;}
   .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--muted); align-items:center;}
   .legend .litem{display:flex; align-items:center; gap:5px;}
-  .autocolor-toggle{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); cursor:pointer; user-select:none;}
-  .autocolor-toggle input{cursor:pointer;}
-  .progress-summary{
-    background:var(--night2); border:1px solid var(--border); border-radius:14px; padding:16px 20px;
-    margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-  }
-  .progress-summary .psval{font-size:26px; font-weight:700; font-variant-numeric:proportional-nums;}
-  .progress-summary .pslabel{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
-  .progress-summary .psbarbg{flex:1; min-width:140px; height:10px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden;}
-  .progress-summary .psbarfill{height:100%; border-radius:6px; transition:width .2s;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
+
   .draft-banner{
     background:rgba(193,112,30,.12); border:1px solid var(--copper); border-radius:10px; padding:10px 16px;
     margin-bottom:20px; font-size:12.5px; color:var(--sand); display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -135,7 +115,7 @@
   .draft-banner.show{display:flex;}
   .draft-banner button{background:none; border:1px solid var(--border); color:var(--sand); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer;}
   .draft-banner button:hover{border-color:var(--copper); color:var(--cream);}
-  .matrix-search{
+  .row-search{
     background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:8px;
     padding:7px 12px; font-size:12.5px; width:240px; margin-bottom:10px;
   }
@@ -144,57 +124,49 @@
   .sechead h2::before{content:"▾"; font-size:9px; opacity:.55;}
   section.collapsed .sechead h2::before{content:"▸";}
 
-  .cap-chart{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
-  .cap-card{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative;}
-  .cap-card .team{font-size:13px; font-weight:700; color:var(--cream); margin-bottom:2px; background:none; border:none; font-family:inherit; width:100%;}
-  .cap-card .role{font-size:11px; color:var(--muted); margin-bottom:12px; background:none; border:none; font-family:inherit; width:100%;}
-  .cap-card .num{font-size:22px; font-weight:700; font-variant-numeric:proportional-nums;}
-  .cap-card .barbg{height:8px; background:rgba(255,255,255,.07); border-radius:5px; margin-top:8px; overflow:hidden;}
-  .cap-card .barfill{height:100%; border-radius:5px;}
-  .cap-card .caption{font-size:11px; color:var(--muted); margin-top:6px; background:none; border:none; font-family:inherit; width:100%;}
-  .cap-card .reorderbar{position:absolute; top:10px; right:10px; display:flex; gap:4px;}
-
   table{width:100%; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden;}
   thead th{
     text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
     color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600;
   }
   thead th.actions{width:90px;}
-  tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:middle;}
+  tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
   td.actions-cell{display:flex; gap:4px; align-items:center;}
   .pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
-  .pill-edit-row{display:flex; align-items:center; gap:6px;}
-  .pill-edit-row [data-bind]{min-width:40px; display:inline-block;}
   input[type="color"].tiny{width:26px; height:24px; padding:1px; border-radius:5px; border:1px solid var(--border); background:var(--night); cursor:pointer;}
   .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; border-radius:4px; padding:0 3px;}
   .rowdel:hover{color:var(--critical);}
   .rowdel.confirming{background:var(--critical); color:#fff; font-size:10px; padding:2px 6px;}
+  .status-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;}
+  .status-pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
 
-  .gaps{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px;}
-  .gaps .item{display:flex; gap:8px; align-items:flex-start; font-size:13.5px; color:var(--cream); padding:8px 0; border-bottom:1px solid var(--border);}
-  .gaps .item .dot{margin-top:5px;}
-  .gaps .item .txt{flex:1; background:none; border:none; color:var(--cream); font-family:inherit; font-size:13.5px;}
-  .gaps .item select{background:var(--night); color:var(--cream); border:1px solid var(--border); border-radius:5px; font-size:11px;}
-  .gaps .item .reordergrp{display:flex; flex-direction:column;}
+  .kpi-row{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px; margin-bottom:18px;}
+  .table-scroll{overflow-x:auto; border-radius:12px;}
+  .wide-table td, .wide-table th{vertical-align:top; white-space:normal; max-width:280px;}
 
-  .steps{list-style:none; margin:0; padding:0;}
-  .steps li{display:flex; align-items:flex-start; gap:10px; padding:12px 0; border-bottom:1px solid var(--border);}
-  .steps li:last-child{border-bottom:none;}
-  .steps .num{
-    width:24px; height:24px; border-radius:50%; background:var(--copper); color:var(--night);
-    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
-  }
-  .steps .txt{font-size:14px; color:var(--cream); line-height:1.5; flex:1; background:none; border:none; font-family:inherit;}
-  .steps .reordergrp{display:flex; flex-direction:column;}
+  .prob-table{width:100%; max-width:380px; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden; margin-top:4px;}
+  .prob-table th{text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); padding:8px 12px; border-bottom:1px solid var(--border);}
+  .prob-table td{padding:7px 12px; font-size:13px; border-bottom:1px solid var(--border);}
+  .prob-table tr:last-child td{border-bottom:none;}
+  .prob-table input[type=number]{width:60px; background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:5px; padding:3px 6px; font-size:12px;}
+  .prob-note{font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5;}
+
+  .todo-row.done td{ opacity:.55; text-decoration:line-through; }
+  input[type="checkbox"].donecheck{ width:16px; height:16px; cursor:pointer; }
 
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
   .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
+  .subhead{font-size:12px; color:var(--muted); margin:-6px 0 12px; line-height:1.5;}
 
-  .custom-section-item{display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid var(--border);}
-  .custom-section-item .txt{flex:1; background:none; border:none; color:var(--cream); font-family:inherit; font-size:13.5px; line-height:1.5;}
-  .custom-section-item .dot{margin-top:6px;}
-  .add-section-wrap{margin-top:10px;}
+  .overview-nav{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  .overview-nav .navcard{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; text-align:left; width:100%; font-family:inherit;}
+  .overview-nav .navcard:hover{border-color:var(--copper);}
+  .overview-nav .navcard .t{font-size:14px; font-weight:700; color:var(--cream); margin-bottom:4px;}
+  .overview-nav .navcard .d{font-size:12px; color:var(--muted); line-height:1.4;}
+  .overview-nav .navcard .o{font-size:11px; color:var(--copper); margin-top:6px; font-style:italic;}
+
+  .fill-note{background:rgba(217,154,26,.14); }
 
   .toast-container{position:fixed; bottom:18px; right:18px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
   .toast{
@@ -205,7 +177,7 @@
   .toast.show{opacity:1; transform:translateY(0);}
 
   /* ---------- page tabs ---------- */
-  .tabs-nav{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0;}
+  .tabs-nav{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; flex-wrap:wrap;}
   .tab-btn{
     background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:600; cursor:pointer;
     padding:10px 4px; margin-right:18px; border-bottom:2px solid transparent; font-family:inherit;
@@ -215,28 +187,18 @@
   .page{display:none;}
   .page.active{display:block;}
 
-  /* ---------- etimad page ---------- */
-  .etimad-summary{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;}
-  .table-scroll{overflow-x:auto; border-radius:12px;}
-  .table-scroll table{min-width:1900px;}
-  table.etimad-table td, table.etimad-table th{vertical-align:top; white-space:normal; max-width:260px;}
-  table.etimad-table td[data-bind]{min-width:120px;}
-  .fit-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;}
-  .fit-pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700; margin-bottom:4px;}
-
   @media (max-width:820px){
     .stat-row{grid-template-columns:repeat(2,1fr);}
-    .etimad-summary{grid-template-columns:repeat(2,1fr);}
-    .cap-chart{grid-template-columns:1fr;}
-    .gaps{grid-template-columns:1fr;}
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .overview-nav{grid-template-columns:1fr;}
   }
 
   @media print{
-    .editbar, .sync-panel, .edit-only, .reorderbar, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
-    thead th.actions, td.actions-cell, .matrix-search, .draft-banner, .tabs-nav{ display:none !important; }
+    .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
+    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav{ display:none !important; }
     .page{ display:block !important; }
     body{ background:#fff; color:#111; }
-    .stat-tile, .cap-card, .notes, table, .progress-summary{ background:#f4f4f4; border-color:#ccc; }
+    .stat-tile, .notes, table, .prob-table{ background:#f4f4f4; border-color:#ccc; }
     section.collapsed > *:not(.sechead){ display:block !important; }
   }
 </style>
@@ -286,12 +248,12 @@
   <div class="sync-panel" id="helpPanel">
     <b>Tips &amp; keyboard shortcuts</b>
     <ul>
-      <li>Click <b>✎ Edit</b> to unlock every field on the page — titles, numbers, colors, table headers, tier/status labels, all of it.</li>
+      <li>Click <b>✎ Edit</b> to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.</li>
       <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd> while editing saves straight to GitHub.</li>
       <li>Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.</li>
       <li><b>↺ Undo</b> reverts the last structural change (add, remove, move, duplicate, color, or import).</li>
-      <li><b>+ Add custom section</b> (bottom of page, in edit mode) creates a brand-new section with its own editable title and list.</li>
       <li>Click any section title (outside edit mode) to collapse or expand it.</li>
+      <li>The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.</li>
       <li><b>Export JSON</b> / <b>Import JSON</b> let you back up or restore the whole dashboard without GitHub.</li>
       <li>Connect <b>GitHub sync</b> to make edits permanent with full commit history; otherwise changes only autosave to this browser.</li>
     </ul>
@@ -329,105 +291,220 @@
   </div>
 
   <div class="tabs-nav" id="tabsNav">
-    <button class="tab-btn active" data-page="dashboard" onclick="switchPage('dashboard')">Dashboard</button>
-    <button class="tab-btn" data-page="etimad" onclick="switchPage('etimad')">Etimad Opportunities</button>
+    <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')">Overview</button>
+    <button class="tab-btn" data-page="external" onclick="switchPage('external')">External</button>
+    <button class="tab-btn" data-page="internal" onclick="switchPage('internal')">Internal Performance</button>
+    <button class="tab-btn" data-page="projects" onclick="switchPage('projects')">Projects &amp; Prototypes</button>
+    <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')">Tasks &amp; Next Steps</button>
+    <button class="tab-btn" data-page="notes" onclick="switchPage('notes')">Notes &amp; Legend</button>
   </div>
 
-  <div class="page active" id="page-dashboard">
+  <!-- ============================== OVERVIEW ============================== -->
+  <div class="page active" id="page-overview">
+    <div class="stat-row" id="statRow"></div>
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionOverviewNav"></h2></div>
+      <div class="overview-nav" id="overviewNav"></div>
+    </section>
+  </div>
 
-  <div class="stat-row" id="statRow"></div>
-
-  <div class="progress-summary" id="progressSummary"></div>
-
-  <section>
-    <div class="sechead">
-      <h2 id="secPhasesTitle" data-bind="titles.sectionPhases"></h2>
-      <div class="sechead-actions">
-        <div class="legend">
-          <span class="litem"><span class="dot" style="background:var(--good);"></span>On track</span>
-          <span class="litem"><span class="dot" style="background:var(--warning);"></span>At risk</span>
-          <span class="litem"><span class="dot" style="background:var(--critical);"></span>Blocked</span>
+  <!-- ============================== EXTERNAL ============================== -->
+  <div class="page" id="page-external">
+    <section>
+      <div class="sechead">
+        <h2 id="secExternalTitle" data-bind="titles.sectionExternal"></h2>
+        <div class="sechead-actions">
+          <button class="editbtn secondary" id="exportExternalExcelBtn" onclick="exportExternalExcel()">⬇ Export Excel</button>
+          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New tender', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})">+ add tender</button>
         </div>
-        <label class="autocolor-toggle edit-only">
-          <input type="checkbox" id="autoColorToggle"> Auto-color by %
-        </label>
-        <button class="addbtn" id="addPhase" onclick="addPhase()">+ add phase</button>
       </div>
-    </div>
-    <div id="phasesArea"></div>
-  </section>
-
-  <section>
-    <div class="sechead"><h2 id="secCapsTitle" data-bind="titles.sectionCaps"></h2><button class="addbtn" id="addCapTeam" onclick="addCapTeam()">+ add team</button></div>
-    <div class="cap-chart" id="capChart"></div>
-  </section>
-
-  <section>
-    <div class="sechead"><h2 id="secMatrixTitle" data-bind="titles.sectionMatrix"></h2><button class="addbtn" id="addRow" onclick="addMatrixRow()">+ add row</button></div>
-    <input type="text" class="matrix-search" id="matrixSearch" placeholder="🔎 Search capabilities or owners...">
-    <table>
-      <thead><tr>
-        <th data-bind="titles.colCap"></th>
-        <th data-bind="titles.colOwner"></th>
-        <th data-bind="titles.colTier"></th>
-        <th data-bind="titles.colStatus"></th>
-        <th class="actions"></th>
-      </tr></thead>
-      <tbody id="matrixBody"></tbody>
-    </table>
-  </section>
-
-  <section>
-    <div class="sechead"><h2 id="secGapsTitle" data-bind="titles.sectionGaps"></h2><button class="addbtn" id="addGap" onclick="addGap()">+ add gap</button></div>
-    <div class="gaps" id="gapsArea"></div>
-  </section>
-
-  <section>
-    <div class="sechead"><h2 id="secStepsTitle" data-bind="titles.sectionSteps"></h2><button class="addbtn" id="addStep" onclick="addStep()">+ add step</button></div>
-    <ol class="steps" id="stepsList"></ol>
-  </section>
-
-  <div id="customSectionsArea"></div>
-  <div class="add-section-wrap edit-only" id="addSectionWrap">
-    <button class="addbtn show" id="addCustomSectionBtn" onclick="addCustomSection()">+ add custom section</button>
-  </div>
-
-  <section>
-    <h2 id="secNotesTitle" data-bind="titles.sectionNotes" style="margin-bottom:14px;"></h2>
-    <div class="notes" id="notesArea" contenteditable="false"></div>
-    <div class="footer-note" id="footerNote" data-bind="titles.footerNote"></div>
-  </section>
-
-  </div>
-
-  <div class="page" id="page-etimad">
-
-    <div class="etimad-summary" id="etimadSummary"></div>
+      <div class="subhead" data-bind="titles.externalOwnerLine"></div>
+      <div class="kpi-row" id="externalKpis"></div>
+      <input type="text" class="row-search" id="externalSearch" placeholder="🔎 Search competition name, agency, or RN...">
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colExtRn"></th><th data-bind="titles.colExtName"></th><th data-bind="titles.colExtAgency"></th>
+            <th data-bind="titles.colExtFit"></th><th data-bind="titles.colExtCategory"></th><th data-bind="titles.colExtDeadline"></th>
+            <th data-bind="titles.colExtNotes"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="externalBody"></tbody>
+        </table>
+      </div>
+      <div class="footer-note" data-bind="titles.externalFooterNote"></div>
+    </section>
 
     <section>
       <div class="sechead">
-        <h2 id="secEtimadTitle" data-bind="titles.sectionEtimad"></h2>
-        <div class="sechead-actions">
-          <button class="editbtn secondary" id="exportEtimadExcelBtn" onclick="exportEtimadExcel()">⬇ Export Excel</button>
-          <button class="addbtn" id="addEtimadRow" onclick="addEtimadRow()">+ add opportunity</button>
-        </div>
+        <h2 data-bind="titles.sectionNews"></h2>
+        <button class="addbtn" onclick="addRow('news', {date:'', source:'', headline:'New headline', relevance:'', link:'', notes:''})">+ add item</button>
       </div>
-      <input type="text" class="matrix-search" id="etimadSearch" placeholder="🔎 Search competition name, agency, or RN...">
       <div class="table-scroll">
-        <table class="etimad-table">
+        <table class="wide-table">
           <thead><tr>
-            <th>Fit</th><th>Competition Name</th><th>Government Entity</th><th>RN</th><th>Type</th>
-            <th>Sending Questions &amp; Inquiries</th><th>Last Date for Inquiries</th><th>Submitting Bids (deadline)</th>
-            <th>Expected Award Date</th><th>Project/Service Start</th><th>Method of Submitting Bids</th>
-            <th>Place of Execution</th><th>Details / Scope</th><th>Submission Cost</th>
-            <th>Fit Rationale</th><th>Potential Partners</th><th>Recommended Next Steps</th><th class="actions"></th>
+            <th data-bind="titles.colNewsDate"></th><th data-bind="titles.colNewsSource"></th><th data-bind="titles.colNewsHeadline"></th>
+            <th data-bind="titles.colNewsRelevance"></th><th data-bind="titles.colNewsLink"></th><th data-bind="titles.colNewsNotes"></th>
+            <th class="actions"></th>
           </tr></thead>
-          <tbody id="etimadBody"></tbody>
+          <tbody id="newsBody"></tbody>
         </table>
       </div>
-      <div class="footer-note">Data here is the working copy for Midwam's Etimad research — edit any cell directly (click ✎ Edit above), then use <b>Export Excel</b> to produce a workbook in the same format as the original research file, or <b>⬇ Export PPTX</b> at the top to include these opportunities in the full dashboard deck.</div>
+    </section>
+  </div>
+
+  <!-- ============================== INTERNAL PERFORMANCE ============================== -->
+  <div class="page" id="page-internal">
+    <section>
+      <div class="sechead">
+        <h2 id="secInternalTitle" data-bind="titles.sectionInternal"></h2>
+        <button class="addbtn" onclick="addRow('internal', {name:'New opportunity', client:'', value:0, stage:'Not started', subDate:'', nextStep:'', owner:''})">+ add opportunity</button>
+      </div>
+      <div class="subhead" data-bind="titles.internalOwnerLine"></div>
+      <div class="kpi-row" id="internalKpis"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colIntName"></th><th data-bind="titles.colIntClient"></th><th data-bind="titles.colIntValue"></th>
+            <th data-bind="titles.colIntStage"></th><th data-bind="titles.colIntSubDate"></th><th data-bind="titles.colIntNext"></th>
+            <th data-bind="titles.colIntOwner"></th><th data-bind="titles.colIntWeighted"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="internalBody"></tbody>
+        </table>
+      </div>
+      <div class="footer-note" data-bind="titles.internalFooterNote"></div>
     </section>
 
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionProbTable"></h2></div>
+      <table class="prob-table" id="probTable"></table>
+      <div class="prob-note" data-bind="titles.probNote"></div>
+    </section>
+  </div>
+
+  <!-- ============================== PROJECTS & PROTOTYPES ============================== -->
+  <div class="page" id="page-projects">
+    <section>
+      <div class="sechead">
+        <h2 id="secProjectsTitle" data-bind="titles.sectionProjects"></h2>
+        <button class="addbtn" onclick="addRow('projects', {name:'New project', status:'Not started', financially:'', operationally:'', issues:'', deadline:''})">+ add project</button>
+      </div>
+      <div class="subhead" data-bind="titles.projectsOwnerLine"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colProjName"></th><th data-bind="titles.colProjStatus"></th><th data-bind="titles.colProjFin"></th>
+            <th data-bind="titles.colProjOps"></th><th data-bind="titles.colProjIssues"></th><th data-bind="titles.colProjDeadline"></th>
+            <th class="actions"></th>
+          </tr></thead>
+          <tbody id="projectsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 id="secPrototypesTitle" data-bind="titles.sectionPrototypes"></h2>
+        <button class="addbtn" onclick="addRow('prototypes', {name:'New prototype', status:'In the Makers', team:'', notes:'', value:0})">+ add prototype</button>
+      </div>
+      <div class="subhead" data-bind="titles.prototypesOwnerLine"></div>
+      <div class="kpi-row" id="prototypesKpis"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colProtoName"></th><th data-bind="titles.colProtoStatus"></th><th data-bind="titles.colProtoTeam"></th>
+            <th data-bind="titles.colProtoNotes"></th><th data-bind="titles.colProtoValue"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="prototypesBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== TASKS & NEXT STEPS ============================== -->
+  <div class="page" id="page-tasks">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionTasks"></h2>
+        <button class="addbtn" onclick="addRow('tasks', {task:'New task', owner:'', status:'Not started', cadence:'Monthly', notes:''})">+ add task</button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colTaskTask"></th><th data-bind="titles.colTaskOwner"></th><th data-bind="titles.colTaskStatus"></th><th data-bind="titles.colTaskCadence"></th><th data-bind="titles.colTaskNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="tasksBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMilestones"></h2>
+        <button class="addbtn" onclick="addRow('milestones', {milestone:'New milestone', owner:'', targetDate:'', status:'Not started', notes:''})">+ add milestone</button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colMsMilestone"></th><th data-bind="titles.colMsOwner"></th><th data-bind="titles.colMsTarget"></th><th data-bind="titles.colMsStatus"></th><th data-bind="titles.colMsNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="milestonesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionTodos"></h2>
+        <button class="addbtn" onclick="addRow('todos', {done:false, item:'New item', owner:'', due:'', notes:''})">+ add to-do</button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colTodoDone"></th><th data-bind="titles.colTodoItem"></th><th data-bind="titles.colTodoOwner"></th><th data-bind="titles.colTodoDue"></th><th data-bind="titles.colTodoNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="todosBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== NOTES & LEGEND ============================== -->
+  <div class="page" id="page-notes">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionRaci"></h2>
+        <button class="addbtn" onclick="addRow('raci', {section:'New section', owner:'', basis:''})">+ add row</button>
+      </div>
+      <table>
+        <thead><tr><th data-bind="titles.colRaciSection"></th><th data-bind="titles.colRaciOwner"></th><th data-bind="titles.colRaciBasis"></th><th class="actions"></th></tr></thead>
+        <tbody id="raciBody"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionSources"></h2>
+        <button class="addbtn" onclick="addStringRow('sources', 'New source')">+ add source</button>
+      </div>
+      <ol class="steps" id="sourcesList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMethodology"></h2>
+        <button class="addbtn" onclick="addStringRow('methodology', 'New methodology note')">+ add note</button>
+      </div>
+      <ol class="steps" id="methodologyList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionLegend"></h2></div>
+      <div class="notes" style="line-height:2;">
+        <div><span class="dot" style="background:var(--warning); width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:8px;"></span><span data-bind="titles.legendPlaceholder"></span></div>
+        <div><span class="dot" style="background:var(--good); width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:8px;"></span><span data-bind="titles.legendStatusPills"></span></div>
+        <div><span data-bind="titles.legendKpiNote"></span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="margin-bottom:14px;" data-bind="titles.sectionNextStep"></h2>
+      <div class="notes" id="notesArea" contenteditable="false"></div>
+      <div class="footer-note" id="footerNote" data-bind="titles.footerNote"></div>
+    </section>
   </div>
 
 </div>
@@ -445,75 +522,110 @@
 const DEFAULT_STATE = {
   lastUpdated: "—",
   theme: { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" },
-  autoColorPhases: false,
   titles: {
     brand: "Midwam · Saud",
-    h1: "Saud — Progress Dashboard",
-    subtitle: "The Creative Intelligence Agent — where things stand, what's proven, what's next.",
-    ownerLine: "Owner: Harith · Koushan / Midwam",
-    sectionPhases: "Phase progress",
-    sectionCaps: "Capabilities implemented, by team",
-    sectionMatrix: "Capability & status matrix",
-    sectionGaps: "Known gaps",
-    sectionSteps: "Next steps",
-    sectionNotes: "Notes",
-    sectionEtimad: "Etimad Opportunities",
-    colCap: "Capability",
-    colOwner: "Owner",
-    colTier: "Tier",
-    colStatus: "Status",
-    footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table headers, even section headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
+    h1: "Saud — Business Tracking Dashboard",
+    subtitle: "External pipeline, internal performance, projects, prototypes, and tasks — where things stand.",
+    ownerLine: "Owner: Harith · Midwam",
+    sectionExternal: "External — Etimad Tender Pipeline",
+    sectionNews: "News — Coverage Tracker",
+    sectionInternal: "Internal Performance — RFP / Opportunity Pipeline",
+    sectionProbTable: "Win Probability by Stage",
+    sectionProjects: "Projects in Operations",
+    sectionPrototypes: "Prototypes Tracker",
+    sectionTasks: "Recurring Tasks",
+    sectionMilestones: "Next Steps (Milestones) — Next Month",
+    sectionTodos: "To-Do List",
+    sectionRaci: "Ownership (RACI-lite)",
+    sectionSources: "Data Sources",
+    sectionMethodology: "Methodology",
+    sectionLegend: "Legend",
+    sectionNextStep: "Next Step",
+    sectionOverviewNav: "Sections",
+
+    externalOwnerLine: "Owner: Firas · Etimad tender pipeline, tourism/exhibition filter.",
+    internalOwnerLine: "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
+    projectsOwnerLine: "Owner: Sameer · Status, financial, and operational tracking for live projects.",
+    prototypesOwnerLine: "Owner: Mohammed · 'Value' is a placeholder score — redefine once a real scoring method is agreed.",
+
+    externalFooterNote: "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic tender title by keyword match; feel free to keep that convention when filling this in.",
+    internalFooterNote: "Weighted Value = Value × the win probability for that row's Stage, from the probability table below.",
+    probNote: "Placeholder probabilities — replace with real figures once enough closed opportunities exist to calibrate a win-rate history.",
+
+    legendPlaceholder: "Pale/amber highlight — placeholder or example data, still needs a real value.",
+    legendStatusPills: "Status pills are colored by meaning (green = good/done, amber = in progress, red = blocked/lost) — the same convention across every tab.",
+    legendKpiNote: "KPI tiles at the top of each tab recompute automatically from that tab's table rows — edit the rows, not the tiles.",
+
+    navExternalTitle: "External", navExternalDesc: "Etimad tender pipeline + industry/press news tracking.", navExternalOwner: "Firas",
+    navInternalTitle: "Internal Performance", navInternalDesc: "RFP pipeline — submitted, value, stage, next step.", navInternalOwner: "Firas",
+    navProjectsTitle: "Projects & Prototypes", navProjectsDesc: "Live projects in operations + the prototypes tracker.", navProjectsOwner: "Sameer / Mohammed",
+    navTasksTitle: "Tasks & Next Steps", navTasksDesc: "Recurring tasks, next-month milestones, to-do list.", navTasksOwner: "All",
+    navNotesTitle: "Notes & Legend", navNotesDesc: "Ownership (RACI), data sources, methodology.", navNotesOwner: "—",
+
+    colExtRn: "RN", colExtName: "Competition Name", colExtAgency: "Agency", colExtFit: "Fit", colExtCategory: "Category", colExtDeadline: "Bid Deadline", colExtNotes: "Notes",
+    colNewsDate: "Date", colNewsSource: "Source", colNewsHeadline: "Headline", colNewsRelevance: "Relevance to Midwam", colNewsLink: "Link", colNewsNotes: "Notes",
+    colIntName: "Opportunity", colIntClient: "Client / Agency", colIntValue: "Value (SAR)", colIntStage: "Stage", colIntSubDate: "Submitted Date", colIntNext: "Next Step", colIntOwner: "Owner", colIntWeighted: "Weighted Value (SAR)",
+    colProbStage: "Stage", colProbWin: "Win Probability",
+    colProjName: "Project", colProjStatus: "Status", colProjFin: "Financially", colProjOps: "Operationally", colProjIssues: "Issues", colProjDeadline: "Deadline",
+    colProtoName: "Prototype", colProtoStatus: "Status", colProtoTeam: "Team", colProtoNotes: "Notes", colProtoValue: "Value (score)",
+    colTaskTask: "Task", colTaskOwner: "Owner", colTaskStatus: "Status", colTaskCadence: "Cadence", colTaskNotes: "Notes",
+    colMsMilestone: "Milestone", colMsOwner: "Owner", colMsTarget: "Target Date", colMsStatus: "Status", colMsNotes: "Notes",
+    colTodoDone: "Done", colTodoItem: "Item", colTodoOwner: "Owner", colTodoDue: "Due", colTodoNotes: "Notes",
+    colRaciSection: "Section", colRaciOwner: "Primary Owner", colRaciBasis: "Basis",
+
+    footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
-  stats: [
-    { icon:"", label:"Stat 1", value:"—", sub:"Connect GitHub to load real data" },
-    { icon:"", label:"Stat 2", value:"—", sub:"Connect GitHub to load real data" },
-    { icon:"", label:"Stat 3", value:"—", sub:"Connect GitHub to load real data" },
-    { icon:"", label:"Stat 4", value:"—", sub:"Connect GitHub to load real data" }
+  external: [
+    { rn:"—", name:"Connect GitHub sync above to load the real Etimad tender list", agency:"—", fit:"Unknown", category:"Other/Uncategorized", bidDeadline:"—", notes:"—" }
   ],
-  phases: [
-    { name:"Not connected", pct:0, label:"—", color:"muted" }
+  news: [
+    { date:"—", source:"—", headline:"Connect GitHub sync above to load the real news tracker", relevance:"—", link:"—", notes:"—" }
   ],
-  capTeams: [
-    { team:"Not connected", role:"—", num:"—", pct:0, color:"blue", caption:"Connect GitHub sync above to load this team's real data" }
+  internal: [
+    { name:"Connect GitHub sync above to load the real opportunity pipeline", client:"—", value:0, stage:"Not started", subDate:"—", nextStep:"—", owner:"—" }
   ],
-  matrix: [
-    { cap:"Connect GitHub sync above to load the real capability matrix", owner:"—", tier:"1", tierColor:"#5fd3a8", status:"Not started", statusColor:"#a79a82" }
+  stageProbs: [
+    { stage:"Not started", prob:10 },
+    { stage:"Drafting", prob:20 },
+    { stage:"Submitted", prob:50 },
+    { stage:"Shortlisted", prob:70 },
+    { stage:"Awarded", prob:100 },
+    { stage:"Lost", prob:0 }
   ],
-  gaps: [
-    { text:"Connect GitHub sync above to load the real gap list", sev:"warning" }
+  projects: [
+    { name:"Connect GitHub sync above to load the real projects list", status:"Not started", financially:"—", operationally:"—", issues:"—", deadline:"—" }
   ],
-  steps: [
-    "Connect GitHub sync above (top right) to load the real next-steps list from your private data repo."
+  prototypes: [
+    { name:"Connect GitHub sync above to load the real prototypes list", status:"On shelf", team:"—", notes:"—", value:0 }
   ],
-  customSections: [],
-  etimad: [
-    { fit:"Strong", name:"Connect GitHub sync above to load the real Etimad opportunity list", agency:"—", rn:"—", type:"—",
-      inqStart:"—", inqDeadline:"—", bidDeadline:"—", award:"—", projStart:"—", method:"—", place:"—",
-      details:"—", price:"—", rationale:"—", partners:"—", next:"—" }
+  tasks: [
+    { task:"Connect GitHub sync above to load the real recurring tasks list", owner:"—", status:"Not started", cadence:"—", notes:"—" }
   ],
+  milestones: [
+    { milestone:"Connect GitHub sync above to load the real milestones list", owner:"—", targetDate:"—", status:"Not started", notes:"—" }
+  ],
+  todos: [
+    { done:false, item:"Connect GitHub sync above to load the real to-do list", owner:"—", due:"—", notes:"—" }
+  ],
+  raci: [
+    { section:"External / Internal Performance", owner:"—", basis:"—" },
+    { section:"Projects in Operations", owner:"—", basis:"—" },
+    { section:"Prototypes Tracker", owner:"—", basis:"—" }
+  ],
+  sources: [ "Connect GitHub sync above to load the real data-source citations." ],
+  methodology: [ "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab." ],
   notes: "This is the public shell of Saud's dashboard — it ships with no real Midwam data. Connect your GitHub token above to load and edit the real content, which lives only in your private repo."
 };
 
-const FIT_COLOR = { Strong:"#0ca30c", Medium:"#d99a1a", "Low-Medium":"#d99a1a", Low:"#d03b3b" };
-const FIT_COLOR_HEX = { Strong:"0ca30c", Medium:"d99a1a", "Low-Medium":"d99a1a", Low:"d03b3b" };
+const FIT_COLOR = { Strong:"#0ca30c", Medium:"#d99a1a", "Low-Medium":"#d99a1a", Low:"#d03b3b", Unknown:"#a79a82" };
+const FIT_COLOR_HEX = { Strong:"0ca30c", Medium:"d99a1a", "Low-Medium":"d99a1a", Low:"d03b3b", Unknown:"a79a82" };
+const STAGE_COLOR = { "Not started":"#a79a82", Drafting:"#3987e5", Submitted:"#3987e5", Shortlisted:"#d99a1a", Awarded:"#0ca30c", Lost:"#d03b3b" };
+const PROJECT_STATUS_COLOR = { Closed:"#a79a82", "Not started":"#d99a1a", "In progress":"#0ca30c", "On hold":"#d03b3b" };
+const PROTO_STATUS_COLOR = { "In the Makers":"#d99a1a", "On shelf":"#a79a82", Done:"#0ca30c" };
+const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
+const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
 
-const SEV_COLOR = { warning:"var(--warning)", critical:"var(--critical)", blue:"var(--series-blue)", good:"var(--good)" };
-const BAR_COLOR = { good:"var(--good)", warning:"var(--warning)", blue:"var(--series-blue)", muted:"var(--muted-bar)", critical:"var(--critical)" };
-const CAP_COLOR = { blue:"var(--series-blue)", orange:"var(--series-orange)", aqua:"var(--series-aqua)", good:"var(--good)", warning:"var(--warning)", critical:"var(--critical)" };
-const BAR_COLOR_HEX = { good:"0ca30c", warning:"d99a1a", blue:"3987e5", muted:"6b6456", critical:"d03b3b" };
-const CAP_COLOR_HEX = { blue:"3987e5", orange:"d95926", aqua:"199e70", good:"0ca30c", warning:"d99a1a", critical:"d03b3b" };
-const COLOR_LABELS = { good:"Green — on track", warning:"Yellow — at risk", critical:"Red — blocked", blue:"Blue — in progress", muted:"Gray — not started" };
-const CAP_COLOR_LABELS = { blue:"Blue", orange:"Orange", aqua:"Aqua", good:"Green", warning:"Yellow", critical:"Red" };
-/* legacy enum -> color, used only to migrate old saved data on first load */
-const LEGACY_TIER_COLOR = { "1":"#5fd3a8", "2":"#f0a06f" };
-const LEGACY_STATUS_COLOR = { live:"#5fd3a8", paper:"#f0a06f", none:"#a79a82" };
-const LEGACY_STATUS_LABEL = { live:"Live in console", paper:"Framework only", none:"Not in either version" };
-
-function autoColorForPct(pct){
-  if(pct >= 75) return "good";
-  if(pct >= 40) return "warning";
-  return "critical";
-}
+const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Other/Uncategorized"];
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
@@ -645,92 +757,47 @@ function resetTheme(){
   saveLocalDraft();
 }
 
-/* ---------- rendering ---------- */
+/* ---------- generic dom helpers ---------- */
 function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
 function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
 function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
+function escapeHtml(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 const RENDER_FN = {};
 
+/* ---------- migration from any older saved shape ---------- */
 function migrateState(){
   if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
   if(!state.theme.text) state.theme.text = "#FBF6EA";
-  if(!state.titles) state.titles = JSON.parse(JSON.stringify(DEFAULT_STATE.titles));
-  ["colCap","colOwner","colTier","colStatus","footerNote","sectionEtimad"].forEach(k=>{
+  if(!state.titles) state.titles = {};
+  Object.keys(DEFAULT_STATE.titles).forEach(k=>{
     if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
   });
-  if(typeof state.autoColorPhases !== "boolean") state.autoColorPhases = false;
-  if(!Array.isArray(state.customSections)) state.customSections = [];
-  if(!Array.isArray(state.etimad)) state.etimad = [];
-  state.etimad.forEach(r=>{ if(!FIT_COLOR[r.fit]) r.fit = "Medium"; });
-  (state.matrix||[]).forEach(r=>{
-    if(!r.tierColor) r.tierColor = LEGACY_TIER_COLOR[r.tier] || "#5fd3a8";
-    if(!r.statusColor){
-      r.statusColor = LEGACY_STATUS_COLOR[r.status] || "#a79a82";
-      if(LEGACY_STATUS_LABEL[r.status]) r.status = LEGACY_STATUS_LABEL[r.status];
+  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","tasks","milestones","todos","raci","sources","methodology"];
+  arrayFields.forEach(k=>{ if(!Array.isArray(state[k])) state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k])); });
+  if(typeof state.notes !== "string") state.notes = DEFAULT_STATE.notes;
+
+  /* one-time best-effort carry-over from the old phases/matrix/etimad dashboard shape,
+     so a private data file saved under the previous version doesn't just vanish —
+     only runs the first time a legacy file is loaded (no state.external yet AND old
+     state.etimad present), and stashes anything it can't cleanly map into state.legacyV1
+     rather than silently dropping it. */
+  if(Array.isArray(state.etimad) && !state._migratedV2){
+    if(!state.external || !state.external.length || state.external[0].name === DEFAULT_STATE.external[0].name){
+      state.external = state.etimad.map(r=>({
+        rn: r.rn||"", name: r.name||"", agency: r.agency||"",
+        fit: FIT_COLOR[r.fit] ? r.fit : "Unknown",
+        category: "Other/Uncategorized",
+        bidDeadline: r.bidDeadline||"", notes: [r.rationale, r.next].filter(Boolean).join(" — ")
+      }));
     }
-  });
+    state.legacyV1 = { phases:state.phases, capTeams:state.capTeams, matrix:state.matrix, gaps:state.gaps, steps:state.steps, etimad:state.etimad, etimadExcluded:state.etimadExcluded, customSections:state.customSections };
+    delete state.phases; delete state.capTeams; delete state.matrix; delete state.gaps; delete state.steps; delete state.etimad; delete state.etimadExcluded; delete state.customSections;
+    state._migratedV2 = true;
+  }
 }
 
-function renderAll(){
-  migrateState();
-  applyTheme(state.theme);
-  renderTitles();
-  renderLastUpdated();
-  const acToggle = document.getElementById("autoColorToggle");
-  if(acToggle) acToggle.checked = state.autoColorPhases;
-  renderStats();
-  renderPhases();
-  renderProgressSummary();
-  renderCapChart();
-  renderMatrix();
-  renderGaps();
-  renderSteps();
-  renderCustomSections();
-  renderNotes();
-  renderEtimad();
-  applyEditMode();
-  saveLocalDraft();
-}
-
-function renderLastUpdated(){
-  document.getElementById("lastUpdatedText").innerText = state.lastUpdated;
-}
-
-function renderProgressSummary(){
-  const wrap = document.getElementById("progressSummary");
-  if(!state.phases.length){ wrap.innerHTML = ""; return; }
-  const avg = Math.round(state.phases.reduce((s,p)=>s+(+p.pct||0),0) / state.phases.length);
-  const colorKey = autoColorForPct(avg);
-  const color = BAR_COLOR[colorKey];
-  wrap.innerHTML = `
-    <div class="pslabel">Overall progress</div>
-    <div class="psval" style="color:${color};">${avg}%</div>
-    <div class="psbarbg"><div class="psbarfill" style="width:${avg}%; background:${color};"></div></div>
-    <div class="pslabel">${state.phases.length} phase${state.phases.length===1?"":"s"} tracked</div>
-  `;
-}
-
-function renderTitles(){
-  const t = state.titles;
-  document.getElementById("brandEl").innerText = t.brand;
-  document.getElementById("h1El").innerText = t.h1;
-  document.getElementById("subtitleEl").innerText = t.subtitle;
-  document.getElementById("ownerLineEl").innerText = t.ownerLine;
-  document.getElementById("secPhasesTitle").innerText = t.sectionPhases;
-  document.getElementById("secCapsTitle").innerText = t.sectionCaps;
-  document.getElementById("secMatrixTitle").innerText = t.sectionMatrix;
-  document.getElementById("secGapsTitle").innerText = t.sectionGaps;
-  document.getElementById("secStepsTitle").innerText = t.sectionSteps;
-  document.getElementById("secNotesTitle").innerText = t.sectionNotes;
-  document.getElementById("secEtimadTitle").innerText = t.sectionEtimad;
-  document.querySelector('[data-bind="titles.colCap"]').innerText = t.colCap;
-  document.querySelector('[data-bind="titles.colOwner"]').innerText = t.colOwner;
-  document.querySelector('[data-bind="titles.colTier"]').innerText = t.colTier;
-  document.querySelector('[data-bind="titles.colStatus"]').innerText = t.colStatus;
-  document.getElementById("footerNote").innerText = t.footerNote;
-}
-
+/* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
 function reorderBtns(section, i, len){
   return `<span class="reordergrp edit-only">
       <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="Move up">▲</button>
@@ -738,7 +805,6 @@ function reorderBtns(section, i, len){
     </span>
     <button class="dupbtn edit-only" onclick="duplicateRow('${section}',${i})" title="Duplicate">⧉</button>`;
 }
-
 function moveItem(section, i, dir){
   const arr = state[section];
   const j = i + dir;
@@ -749,438 +815,496 @@ function moveItem(section, i, dir){
   applyEditMode();
   saveLocalDraft();
 }
-
 function duplicateRow(section, i){
   pushHistory();
   const clone = JSON.parse(JSON.stringify(state[section][i]));
   state[section].splice(i+1, 0, clone);
   RENDER_FN[section]();
-  if(section === "phases") renderProgressSummary();
   applyEditMode();
   saveLocalDraft();
   showToast("Duplicated");
 }
+function addRow(section, template){
+  pushHistory();
+  state[section].push(JSON.parse(JSON.stringify(template)));
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Added");
+}
+function addStringRow(section, text){
+  pushHistory();
+  state[section].push(text);
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Added");
+}
+function removeRow(section, i){
+  pushHistory();
+  state[section].splice(i,1);
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Removed");
+}
 
+/* ---------- render: everything ---------- */
+function renderAll(){
+  migrateState();
+  applyTheme(state.theme);
+  renderTitles();
+  renderLastUpdated();
+  renderStats();
+  renderOverviewNav();
+  renderExternal();
+  renderNews();
+  renderInternal();
+  renderProbTable();
+  renderProjects();
+  renderPrototypes();
+  renderTasks();
+  renderMilestones();
+  renderTodos();
+  renderRaci();
+  renderStringList('sources','sourcesList');
+  renderStringList('methodology','methodologyList');
+  renderNotes();
+  applyEditMode();
+  saveLocalDraft();
+}
+
+function renderLastUpdated(){
+  document.getElementById("lastUpdatedText").innerText = state.lastUpdated;
+}
+
+function renderTitles(){
+  const t = state.titles;
+  document.querySelectorAll('[data-bind^="titles."]').forEach(el=>{
+    const key = el.dataset.bind.slice(7);
+    if(typeof t[key] === "string") el.innerText = t[key];
+  });
+}
+
+/* ---------- helper: probability lookup for a stage ---------- */
+function probForStage(stage){
+  const row = state.stageProbs.find(p=>p.stage===stage);
+  return row ? (+row.prob||0)/100 : 0.3;
+}
+
+/* ---------- Overview: computed KPI tiles + section nav ---------- */
 function renderStats(){
   const row = document.getElementById("statRow"); row.innerHTML = "";
-  state.stats.forEach((s,i)=>{
+  const submitted = state.internal.filter(r=>r.stage==="Submitted").length;
+  const oppValue = state.internal.reduce((s,r)=>s+(+r.value||0),0);
+  const projectsTracked = state.projects.length;
+  const prototypesTracked = state.prototypes.length;
+  const openTasks = state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length;
+  const tiles = [
+    { label:"RFP Submitted", value:String(submitted), sub:"from Internal Performance" },
+    { label:"Opportunity Value", value:oppValue.toLocaleString()+" SAR", sub:"pipeline total, unweighted" },
+    { label:"Projects Tracked", value:String(projectsTracked), sub:"incl. closed cases" },
+    { label:"Prototypes Tracked", value:String(prototypesTracked), sub:"in the Makers + on shelf" },
+    { label:"Open Tasks", value:String(openTasks), sub:"not yet marked Done" }
+  ];
+  tiles.forEach(s=>{
     row.appendChild(el(`
       <div class="stat-tile">
-        <div class="reorderbar">${reorderBtns('stats', i, state.stats.length)}</div>
-        <div class="label"><span class="icon" data-bind="stats.${i}.icon">${escapeHtml(s.icon||"")}</span><span data-bind="stats.${i}.label">${escapeHtml(s.label)}</span></div>
-        <div class="value" data-bind="stats.${i}.value">${escapeHtml(s.value)}</div>
-        <div class="sub" data-bind="stats.${i}.sub">${escapeHtml(s.sub)}</div>
+        <div class="label">${escapeHtml(s.label)}</div>
+        <div class="value">${escapeHtml(s.value)}</div>
+        <div class="sub">${escapeHtml(s.sub)}</div>
       </div>`));
   });
 }
-RENDER_FN.stats = renderStats;
 
-function renderPhases(){
-  const area = document.getElementById("phasesArea"); area.innerHTML = "";
-  state.phases.forEach((p,i)=>{
-    const effectiveColorKey = state.autoColorPhases ? autoColorForPct(+p.pct||0) : (p.color || "muted");
-    const color = BAR_COLOR[effectiveColorKey] || BAR_COLOR.muted;
-    const colorOptions = Object.keys(COLOR_LABELS).map(k=>`<option value="${k}" ${p.color===k?"selected":""}>${COLOR_LABELS[k]}</option>`).join("");
-    area.appendChild(el(`
-      <div class="phase-row">
-        ${reorderBtns('phases', i, state.phases.length)}
-        <div class="pname" data-bind="phases.${i}.name">${escapeHtml(p.name)}</div>
-        <div class="barbg"><div class="barfill" style="width:${p.pct}%; background:${color};"></div></div>
-        <div class="pct">
-          <input type="number" min="0" max="100" value="${p.pct}" data-pctnuminput="${i}" style="display:none; width:48px;">
-          <input type="range" min="0" max="100" value="${p.pct}" data-pctinput="${i}" style="display:none;">
-          <span class="dot" style="background:${color};"></span>
-          <span class="plabel" data-bind="phases.${i}.label">${escapeHtml(p.label)}</span>
-        </div>
-        <select class="color-select edit-only" data-colorselect="${i}" ${state.autoColorPhases?"disabled title=\"Turn off Auto-color to set manually\"":""}>${colorOptions}</select>
-        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('phases',${i}))">✕</button>
-      </div>`));
+function renderOverviewNav(){
+  const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
+  const t = state.titles;
+  const nav = [
+    { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
+    { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
+    { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
+    { page:"tasks", tKey:"navTasksTitle", dKey:"navTasksDesc", oKey:"navTasksOwner" },
+    { page:"notes", tKey:"navNotesTitle", dKey:"navNotesDesc", oKey:"navNotesOwner" }
+  ];
+  nav.forEach(n=>{
+    const btn = document.createElement("button");
+    btn.className = "navcard";
+    btn.innerHTML = `<div class="t" data-bind="titles.${n.tKey}">${escapeHtml(t[n.tKey]||"")}</div><div class="d" data-bind="titles.${n.dKey}">${escapeHtml(t[n.dKey]||"")}</div><div class="o" data-bind="titles.${n.oKey}">${escapeHtml(t[n.oKey]||"")}</div>`;
+    btn.onclick = (e)=>{ if(!editing) switchPage(n.page); };
+    wrap.appendChild(btn);
   });
-  area.querySelectorAll("input[data-pctinput]").forEach(inp=>{
-    inp.addEventListener("input", e=>{
-      const i = +e.target.dataset.pctinput;
-      state.phases[i].pct = +e.target.value;
-      renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
-    });
-  });
-  area.querySelectorAll("input[data-pctnuminput]").forEach(inp=>{
-    inp.addEventListener("change", e=>{
-      const i = +e.target.dataset.pctnuminput;
-      let v = Math.max(0, Math.min(100, +e.target.value || 0));
-      pushHistory();
-      state.phases[i].pct = v;
-      renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
-    });
-  });
-  area.querySelectorAll("[data-colorselect]").forEach(s=>s.addEventListener("change", e=>{
-    pushHistory();
-    state.phases[+e.target.dataset.colorselect].color = e.target.value;
-    renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
-  }));
 }
-RENDER_FN.phases = renderPhases;
 
-function renderCapChart(){
-  const wrap = document.getElementById("capChart"); wrap.innerHTML = "";
-  state.capTeams.forEach((c,i)=>{
-    const color = CAP_COLOR[c.color] || CAP_COLOR.blue;
-    const colorOptions = Object.keys(CAP_COLOR_LABELS).map(k=>`<option value="${k}" ${c.color===k?"selected":""}>${CAP_COLOR_LABELS[k]}</option>`).join("");
-    wrap.appendChild(el(`
-      <div class="cap-card">
-        <div class="reorderbar">${reorderBtns('capTeams', i, state.capTeams.length)}<button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
-        <div class="team" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
-        <div class="role" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
-        <div class="num" data-bind="capTeams.${i}.num">${escapeHtml(c.num)}</div>
-        <div class="barbg"><div class="barfill" style="width:${c.pct}%; background:${color};"></div></div>
-        <div class="caption" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
-        <select class="color-select edit-only" data-capcolorselect="${i}">${colorOptions}</select>
-      </div>`));
-  });
-  wrap.querySelectorAll("[data-capcolorselect]").forEach(s=>s.addEventListener("change", e=>{
-    pushHistory();
-    state.capTeams[+e.target.dataset.capcolorselect].color = e.target.value;
-    renderCapChart(); applyEditMode(); saveLocalDraft();
-  }));
-}
-RENDER_FN.capTeams = renderCapChart;
+/* ---------- External ---------- */
+let externalFilter = "";
+function renderExternal(){
+  const kpiWrap = document.getElementById("externalKpis"); kpiWrap.innerHTML = "";
+  const list = state.external;
+  const missing = list.filter(r=>!r.fit || r.fit==="Unknown").length;
+  const catCounts = {};
+  list.forEach(r=>{ const c=r.category||"Other/Uncategorized"; catCounts[c]=(catCounts[c]||0)+1; });
+  let topCat = "—", topCount = 0;
+  Object.keys(catCounts).forEach(c=>{ if(catCounts[c]>topCount){ topCount=catCounts[c]; topCat=c; } });
+  [
+    { label:"Open Tenders Tracked", value:String(list.length), sub:"current baseline" },
+    { label:"Missing Fit", value:String(missing), sub:"need enrichment" },
+    { label:"Largest Category", value:topCat, sub:topCount+" tender"+(topCount===1?"":"s") }
+  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
 
-let matrixFilter = "";
-function renderMatrix(){
-  const body = document.getElementById("matrixBody"); body.innerHTML = "";
-  const q = matrixFilter.trim().toLowerCase();
-  state.matrix.forEach((r,i)=>{
-    if(q && !((r.cap||"").toLowerCase().includes(q) || (r.owner||"").toLowerCase().includes(q))) return;
-    const tierColor = r.tierColor || "#5fd3a8";
-    const statusColor = r.statusColor || "#a79a82";
+  const body = document.getElementById("externalBody"); body.innerHTML = "";
+  const q = externalFilter.trim().toLowerCase();
+  const fitOptions = Object.keys(FIT_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  const catOptions = CATEGORY_OPTIONS.map(k=>`<option value="${k}">${k}</option>`).join("");
+  list.forEach((r,i)=>{
+    if(q && !((r.name||"").toLowerCase().includes(q) || (r.agency||"").toLowerCase().includes(q) || (r.rn||"").toLowerCase().includes(q))) return;
+    const fitColor = FIT_COLOR[r.fit] || FIT_COLOR.Unknown;
     const tr = elTR(`
       <tr>
-        <td data-bind="matrix.${i}.cap">${escapeHtml(r.cap)}</td>
-        <td data-bind="matrix.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="external.${i}.rn">${escapeHtml(r.rn)}</td>
+        <td data-bind="external.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="external.${i}.agency">${escapeHtml(r.agency)}</td>
         <td>
-          <span class="pill view-only" style="background:${tierColor}22; color:${tierColor};">${escapeHtml(r.tier)}</span>
-          <span class="pill-edit-row edit-only">
-            <span class="pill" data-bind="matrix.${i}.tier" style="background:${tierColor}22; color:${tierColor};">${escapeHtml(r.tier)}</span>
-            <input type="color" class="tiny" data-tiercolor="${i}" value="${tierColor}">
-          </span>
+          <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(r.fit)}</span>
+          <select class="status-select edit-only" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};">${fitOptions}</select>
         </td>
         <td>
-          <span class="pill view-only" style="background:${statusColor}22; color:${statusColor};">${escapeHtml(r.status)}</span>
-          <span class="pill-edit-row edit-only">
-            <span class="pill" data-bind="matrix.${i}.status" style="background:${statusColor}22; color:${statusColor};">${escapeHtml(r.status)}</span>
-            <input type="color" class="tiny" data-statuscolor="${i}" value="${statusColor}">
-          </span>
+          <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(r.category)}</span>
+          <select class="status-select edit-only" data-catselect="${i}" style="background:#3987e522; color:#3987e5;">${catOptions}</select>
         </td>
+        <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
+        <td data-bind="external.${i}.notes">${escapeHtml(r.notes)}</td>
         <td class="actions-cell edit-only">
-          ${reorderBtns('matrix', i, state.matrix.length)}
-          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('matrix',${i}))">✕</button>
+          ${reorderBtns('external', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-fitselect="${i}"]`).value = r.fit;
+    tr.querySelector(`[data-catselect="${i}"]`).value = r.category;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.external[+e.target.dataset.fitselect].fit = e.target.value;
+    renderExternal(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  body.querySelectorAll("[data-catselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.external[+e.target.dataset.catselect].category = e.target.value;
+    renderExternal(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.external = renderExternal;
+document.addEventListener("DOMContentLoaded", ()=>{
+  const s = document.getElementById("externalSearch");
+  if(s) s.addEventListener("input", e=>{ externalFilter = e.target.value; renderExternal(); applyEditMode(); });
+});
+
+function renderNews(){
+  const body = document.getElementById("newsBody"); if(!body) return;
+  body.innerHTML = "";
+  const fields = ["date","source","headline","relevance","link","notes"];
+  state.news.forEach((r,i)=>{
+    const cells = fields.map(f=>`<td data-bind="news.${i}.${f}">${escapeHtml(r[f])}</td>`).join("");
+    body.appendChild(elTR(`
+      <tr>
+        ${cells}
+        <td class="actions-cell edit-only">
+          ${reorderBtns('news', i, state.news.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('news',${i}))">✕</button>
+        </td>
+      </tr>`));
+  });
+}
+RENDER_FN.news = renderNews;
+
+/* ---------- Internal Performance ---------- */
+function renderInternal(){
+  const kpiWrap = document.getElementById("internalKpis"); kpiWrap.innerHTML = "";
+  const list = state.internal;
+  const submitted = list.filter(r=>r.stage==="Submitted").length;
+  const total = list.reduce((s,r)=>s+(+r.value||0),0);
+  const weighted = list.reduce((s,r)=>s+(+r.value||0)*probForStage(r.stage),0);
+  [
+    { label:"Opportunities Logged", value:String(list.length), sub:"all stages" },
+    { label:"Submitted", value:String(submitted), sub:"stage = Submitted" },
+    { label:"Pipeline Value (SAR)", value:total.toLocaleString(), sub:"sum, unweighted" },
+    { label:"Weighted Value (SAR)", value:Math.round(weighted).toLocaleString(), sub:"probability-adjusted" }
+  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
+
+  const body = document.getElementById("internalBody"); body.innerHTML = "";
+  const stageOptions = state.stageProbs.map(p=>`<option value="${p.stage}">${p.stage}</option>`).join("");
+  list.forEach((r,i)=>{
+    const stageColor = STAGE_COLOR[r.stage] || STAGE_COLOR["Not started"];
+    const weightedVal = Math.round((+r.value||0) * probForStage(r.stage));
+    const tr = elTR(`
+      <tr>
+        <td data-bind="internal.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="internal.${i}.client">${escapeHtml(r.client)}</td>
+        <td data-bind="internal.${i}.value">${escapeHtml(r.value)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(r.stage)}</span>
+          <select class="status-select edit-only" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};">${stageOptions}</select>
+        </td>
+        <td data-bind="internal.${i}.subDate">${escapeHtml(r.subDate)}</td>
+        <td data-bind="internal.${i}.nextStep">${escapeHtml(r.nextStep)}</td>
+        <td data-bind="internal.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td>${weightedVal.toLocaleString()}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('internal', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('internal',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-stageselect="${i}"]`).value = r.stage;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-valuebind]");
+  body.querySelectorAll("[data-stageselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.internal[+e.target.dataset.stageselect].stage = e.target.value;
+    renderInternal(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  // value column needs to recompute weighted value + KPIs on edit, not just save text
+  body.querySelectorAll('[data-bind^="internal."][data-bind$=".value"]').forEach(td=>{
+    td.addEventListener("focusout", ()=>{ renderInternal(); renderStats(); saveLocalDraft(); });
+  });
+}
+RENDER_FN.internal = renderInternal;
+
+function renderProbTable(){
+  const t = document.getElementById("probTable"); if(!t) return;
+  t.innerHTML = `<thead><tr><th data-bind="titles.colProbStage">${escapeHtml(state.titles.colProbStage||"")}</th><th data-bind="titles.colProbWin">${escapeHtml(state.titles.colProbWin||"")}</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  state.stageProbs.forEach((p,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(p.stage)}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+  t.querySelectorAll("[data-probinput]").forEach(inp=>inp.addEventListener("change", e=>{
+    pushHistory();
+    let v = Math.max(0, Math.min(100, +e.target.value || 0));
+    state.stageProbs[+e.target.dataset.probinput].prob = v;
+    renderProbTable(); renderInternal(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.stageProbs = renderProbTable;
+
+/* ---------- Projects & Prototypes ---------- */
+function renderProjects(){
+  const body = document.getElementById("projectsBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(PROJECT_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  state.projects.forEach((r,i)=>{
+    const color = PROJECT_STATUS_COLOR[r.status] || PROJECT_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="projects.${i}.name">${escapeHtml(r.name)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <select class="status-select edit-only" data-projstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+        </td>
+        <td data-bind="projects.${i}.financially">${escapeHtml(r.financially)}</td>
+        <td data-bind="projects.${i}.operationally">${escapeHtml(r.operationally)}</td>
+        <td data-bind="projects.${i}.issues">${escapeHtml(r.issues)}</td>
+        <td data-bind="projects.${i}.deadline">${escapeHtml(r.deadline)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('projects', i, state.projects.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('projects',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-projstatus="${i}"]`).value = r.status;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-projstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.projects[+e.target.dataset.projstatus].status = e.target.value;
+    renderProjects(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.projects = renderProjects;
+
+function renderPrototypes(){
+  const kpiWrap = document.getElementById("prototypesKpis"); kpiWrap.innerHTML = "";
+  const list = state.prototypes;
+  const inMakers = list.filter(r=>r.status==="In the Makers").length;
+  const onShelf = list.filter(r=>r.status==="On shelf").length;
+  const valSum = list.reduce((s,r)=>s+(+r.value||0),0);
+  [
+    { label:"In Progress", value:String(inMakers), sub:"in the Makers" },
+    { label:"On Shelf", value:String(onShelf), sub:"paused / parked" },
+    { label:"Value (score)", value:String(valSum), sub:"placeholder unit" }
+  ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label">${escapeHtml(s.label)}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub">${escapeHtml(s.sub)}</div></div>`)));
+
+  const body = document.getElementById("prototypesBody"); body.innerHTML = "";
+  const statusOptions = Object.keys(PROTO_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  list.forEach((r,i)=>{
+    const color = PROTO_STATUS_COLOR[r.status] || PROTO_STATUS_COLOR["On shelf"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="prototypes.${i}.name">${escapeHtml(r.name)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <select class="status-select edit-only" data-protostatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+        </td>
+        <td data-bind="prototypes.${i}.team">${escapeHtml(r.team)}</td>
+        <td data-bind="prototypes.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="prototypes.${i}.value">${escapeHtml(r.value)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('prototypes', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('prototypes',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-protostatus="${i}"]`).value = r.status;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-protostatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.prototypes[+e.target.dataset.protostatus].status = e.target.value;
+    renderPrototypes(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  body.querySelectorAll('[data-bind^="prototypes."][data-bind$=".value"]').forEach(td=>{
+    td.addEventListener("focusout", ()=>{ renderPrototypes(); saveLocalDraft(); });
+  });
+}
+RENDER_FN.prototypes = renderPrototypes;
+
+/* ---------- Tasks & Next Steps ---------- */
+function renderTasks(){
+  const body = document.getElementById("tasksBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(TASK_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  state.tasks.forEach((r,i)=>{
+    const color = TASK_STATUS_COLOR[r.status] || TASK_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="tasks.${i}.task">${escapeHtml(r.task)}</td>
+        <td data-bind="tasks.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <select class="status-select edit-only" data-taskstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+        </td>
+        <td data-bind="tasks.${i}.cadence">${escapeHtml(r.cadence)}</td>
+        <td data-bind="tasks.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('tasks', i, state.tasks.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('tasks',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-taskstatus="${i}"]`).value = r.status;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-taskstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.tasks[+e.target.dataset.taskstatus].status = e.target.value;
+    renderTasks(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.tasks = renderTasks;
+
+function renderMilestones(){
+  const body = document.getElementById("milestonesBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(MILESTONE_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  state.milestones.forEach((r,i)=>{
+    const color = MILESTONE_STATUS_COLOR[r.status] || MILESTONE_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="milestones.${i}.milestone">${escapeHtml(r.milestone)}</td>
+        <td data-bind="milestones.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="milestones.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <select class="status-select edit-only" data-mstatus="${i}" style="background:${color}22; color:${color};">${statusOptions}</select>
+        </td>
+        <td data-bind="milestones.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('milestones', i, state.milestones.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('milestones',${i}))">✕</button>
+        </td>
+      </tr>`);
+    tr.querySelector(`[data-mstatus="${i}"]`).value = r.status;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-mstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.milestones[+e.target.dataset.mstatus].status = e.target.value;
+    renderMilestones(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.milestones = renderMilestones;
+
+function renderTodos(){
+  const body = document.getElementById("todosBody"); if(!body) return;
+  body.innerHTML = "";
+  state.todos.forEach((r,i)=>{
+    const tr = elTR(`
+      <tr class="todo-row ${r.done?'done':''}">
+        <td><input type="checkbox" class="donecheck" data-donecheck="${i}" ${r.done?"checked":""}></td>
+        <td data-bind="todos.${i}.item">${escapeHtml(r.item)}</td>
+        <td data-bind="todos.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="todos.${i}.due">${escapeHtml(r.due)}</td>
+        <td data-bind="todos.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('todos', i, state.todos.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('todos',${i}))">✕</button>
         </td>
       </tr>`);
     body.appendChild(tr);
   });
-  body.querySelectorAll("[data-tiercolor]").forEach(inp=>inp.addEventListener("input", e=>{
-    state.matrix[+e.target.dataset.tiercolor].tierColor = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
-  }));
-  body.querySelectorAll("[data-statuscolor]").forEach(inp=>inp.addEventListener("input", e=>{
-    state.matrix[+e.target.dataset.statuscolor].statusColor = e.target.value; renderMatrix(); applyEditMode(); saveLocalDraft();
-  }));
-}
-RENDER_FN.matrix = renderMatrix;
-
-function renderGaps(){
-  const area = document.getElementById("gapsArea"); area.innerHTML = "";
-  state.gaps.forEach((g,i)=>{
-    const color = SEV_COLOR[g.sev] || SEV_COLOR.warning;
-    area.appendChild(el(`
-      <div class="item">
-        ${reorderBtns('gaps', i, state.gaps.length)}
-        <span class="dot" style="background:${color};"></span>
-        <div class="txt" data-bind="gaps.${i}.text">${escapeHtml(g.text)}</div>
-        <select class="edit-only" data-sevselect="${i}">
-          <option value="warning" ${g.sev=="warning"?"selected":""}>warning</option>
-          <option value="critical" ${g.sev=="critical"?"selected":""}>critical</option>
-          <option value="blue" ${g.sev=="blue"?"selected":""}>in progress</option>
-          <option value="good" ${g.sev=="good"?"selected":""}>resolved</option>
-        </select>
-        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button>
-      </div>`));
-  });
-  area.querySelectorAll("[data-sevselect]").forEach(s=>s.addEventListener("change", e=>{
+  body.querySelectorAll("[data-donecheck]").forEach(cb=>cb.addEventListener("change", e=>{
     pushHistory();
-    state.gaps[+e.target.dataset.sevselect].sev = e.target.value; renderGaps(); applyEditMode(); saveLocalDraft();
+    state.todos[+e.target.dataset.donecheck].done = e.target.checked;
+    renderTodos(); renderStats(); applyEditMode(); saveLocalDraft();
   }));
 }
-RENDER_FN.gaps = renderGaps;
+RENDER_FN.todos = renderTodos;
 
-function renderSteps(){
-  const list = document.getElementById("stepsList"); list.innerHTML = "";
-  state.steps.forEach((s,i)=>{
+/* ---------- Notes & Legend ---------- */
+function renderRaci(){
+  const body = document.getElementById("raciBody"); if(!body) return;
+  body.innerHTML = "";
+  state.raci.forEach((r,i)=>{
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="raci.${i}.section">${escapeHtml(r.section)}</td>
+        <td data-bind="raci.${i}.owner" style="color:var(--copper); font-weight:700;">${escapeHtml(r.owner)}</td>
+        <td data-bind="raci.${i}.basis">${escapeHtml(r.basis)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('raci', i, state.raci.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('raci',${i}))">✕</button>
+        </td>
+      </tr>`));
+  });
+}
+RENDER_FN.raci = renderRaci;
+
+function renderStringList(section, elementId){
+  const list = document.getElementById(elementId); if(!list) return;
+  list.innerHTML = "";
+  state[section].forEach((s,i)=>{
     list.appendChild(elLI(`
-      <li>
-        <div class="num">${i+1}</div>
-        <div class="txt" data-bind="steps.${i}">${escapeHtml(s)}</div>
-        ${reorderBtns('steps', i, state.steps.length)}
-        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('steps',${i}))">✕</button>
+      <li style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <span class="dot" style="background:var(--copper); margin-top:6px;"></span>
+        <div class="txt" data-bind="${section}.${i}" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(s)}</div>
+        ${reorderBtns(section, i, state[section].length)}
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('${section}',${i}))">✕</button>
       </li>`));
   });
 }
-RENDER_FN.steps = renderSteps;
+RENDER_FN.sources = ()=>renderStringList('sources','sourcesList');
+RENDER_FN.methodology = ()=>renderStringList('methodology','methodologyList');
 
 function renderNotes(){
   document.getElementById("notesArea").innerText = state.notes;
   document.getElementById("notesArea").setAttribute("data-bind","notes");
 }
 
-/* ---------- custom sections ---------- */
-function renderCustomSections(){
-  const area = document.getElementById("customSectionsArea"); area.innerHTML = "";
-  state.customSections.forEach((sec, si)=>{
-    const secEl = document.createElement("section");
-    const itemsHtml = (sec.items||[]).map((it,ii)=>`
-      <div class="custom-section-item">
-        <span class="dot" style="background:var(--copper);"></span>
-        <div class="txt" data-bind="customSections.${si}.items.${ii}">${escapeHtml(it)}</div>
-        <span class="reordergrp edit-only">
-          <button class="reorder" onclick="moveCustomItem(${si},${ii},-1)" ${ii===0?"disabled":""} title="Move up">▲</button>
-          <button class="reorder" onclick="moveCustomItem(${si},${ii},1)" ${ii===(sec.items.length-1)?"disabled":""} title="Move down">▼</button>
-        </span>
-        <button class="dupbtn edit-only" onclick="duplicateCustomItem(${si},${ii})" title="Duplicate">⧉</button>
-        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeCustomItem(${si},${ii}))">✕</button>
-      </div>`).join("");
-    secEl.innerHTML = `
-      <div class="sechead">
-        <h2 data-bind="customSections.${si}.title">${escapeHtml(sec.title)}</h2>
-        <div class="sechead-actions">
-          <span class="reordergrp edit-only">
-            <button class="reorder" onclick="moveCustomSection(${si},-1)" ${si===0?"disabled":""} title="Move section up">▲</button>
-            <button class="reorder" onclick="moveCustomSection(${si},1)" ${si===(state.customSections.length-1)?"disabled":""} title="Move section down">▼</button>
-          </span>
-          <button class="addbtn" onclick="addCustomItem(${si})">+ add item</button>
-          <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeCustomSection(${si}))" title="Remove section">🗑 Remove section</button>
-        </div>
-      </div>
-      <div>${itemsHtml || '<div class="footer-note">No items yet — click "+ add item" while editing.</div>'}</div>
-    `;
-    area.appendChild(secEl);
-  });
-}
-RENDER_FN.customSections = renderCustomSections;
-
-function addCustomSection(){
-  pushHistory();
-  state.customSections.push({ title:"New section", items:["New item"] });
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-  showToast("Section added");
-}
-function removeCustomSection(si){
-  pushHistory();
-  state.customSections.splice(si,1);
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-  showToast("Section removed");
-}
-function moveCustomSection(si, dir){
-  const j = si + dir;
-  if(j < 0 || j >= state.customSections.length) return;
-  pushHistory();
-  const tmp = state.customSections[si]; state.customSections[si] = state.customSections[j]; state.customSections[j] = tmp;
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-}
-function addCustomItem(si){
-  pushHistory();
-  state.customSections[si].items.push("New item");
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-}
-function removeCustomItem(si, ii){
-  pushHistory();
-  state.customSections[si].items.splice(ii,1);
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-}
-function moveCustomItem(si, ii, dir){
-  const arr = state.customSections[si].items;
-  const j = ii + dir;
-  if(j < 0 || j >= arr.length) return;
-  pushHistory();
-  const tmp = arr[ii]; arr[ii] = arr[j]; arr[j] = tmp;
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-}
-function duplicateCustomItem(si, ii){
-  pushHistory();
-  state.customSections[si].items.splice(ii+1, 0, state.customSections[si].items[ii]);
-  renderCustomSections(); applyEditMode(); saveLocalDraft();
-  showToast("Duplicated");
-}
-
-/* ---------- etimad opportunities page ---------- */
-let etimadFilter = "";
-const ETIMAD_FIELDS = ["name","agency","rn","type","inqStart","inqDeadline","bidDeadline","award","projStart","method","place","details","price","rationale","partners","next"];
-
+/* ---------- tabs ---------- */
 function switchPage(page){
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id === "page-"+page));
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.page === page));
 }
-
-function renderEtimadSummary(){
-  const wrap = document.getElementById("etimadSummary"); if(!wrap) return;
-  const list = state.etimad || [];
-  const strong = list.filter(r=>r.fit==="Strong").length;
-  let nextDeadline = "—";
-  const dated = list.map(r=>r.bidDeadline).filter(d=>d && /\d{4}-\d{2}-\d{2}/.test(d)).sort();
-  if(dated.length) nextDeadline = dated[0];
-  wrap.innerHTML = `
-    <div class="stat-tile"><div class="label">Open opportunities</div><div class="value">${list.length}</div><div class="sub">Currently tracked, excluding expired</div></div>
-    <div class="stat-tile"><div class="label">Strong fit</div><div class="value" style="color:${FIT_COLOR.Strong};">${strong}</div><div class="sub">Recommended priority bids</div></div>
-    <div class="stat-tile"><div class="label">Next bid deadline</div><div class="value" style="font-size:18px;">${escapeHtml(nextDeadline)}</div><div class="sub">Earliest submission cutoff in the list</div></div>
-    <div class="stat-tile"><div class="label">Last updated</div><div class="value" style="font-size:18px;">${escapeHtml(state.lastUpdated)}</div><div class="sub">Same as dashboard "Last updated"</div></div>
-  `;
-}
-
-function renderEtimad(){
-  renderEtimadSummary();
-  const body = document.getElementById("etimadBody"); if(!body) return;
-  body.innerHTML = "";
-  const q = etimadFilter.trim().toLowerCase();
-  const fitOptions = Object.keys(FIT_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
-  (state.etimad||[]).forEach((r,i)=>{
-    if(q && !((r.name||"").toLowerCase().includes(q) || (r.agency||"").toLowerCase().includes(q) || (r.rn||"").toLowerCase().includes(q))) return;
-    const color = FIT_COLOR[r.fit] || FIT_COLOR.Medium;
-    const cells = ETIMAD_FIELDS.map(f=>`<td data-bind="etimad.${i}.${f}">${escapeHtml(r[f]||"")}</td>`).join("");
-    const tr = elTR(`
-      <tr>
-        <td>
-          <span class="fit-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.fit)}</span>
-          <select class="fit-select edit-only" data-fitselect="${i}" style="background:${color}22; color:${color};">${fitOptions}</select>
-        </td>
-        ${cells}
-        <td class="actions-cell edit-only">
-          ${reorderBtns('etimad', i, state.etimad.length)}
-          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('etimad',${i}))">✕</button>
-        </td>
-      </tr>`);
-    tr.querySelector(`[data-fitselect="${i}"]`).value = r.fit;
-    body.appendChild(tr);
-  });
-  body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
-    pushHistory();
-    const idx = +e.target.dataset.fitselect;
-    state.etimad[idx].fit = e.target.value;
-    renderEtimad(); applyEditMode(); saveLocalDraft();
-  }));
-}
-RENDER_FN.etimad = renderEtimad;
-
-function addEtimadRow(){
-  pushHistory();
-  state.etimad.push({ fit:"Medium", name:"New opportunity", agency:"", rn:"", type:"",
-    inqStart:"", inqDeadline:"", bidDeadline:"", award:"", projStart:"", method:"", place:"",
-    details:"", price:"", rationale:"", partners:"", next:"" });
-  renderEtimad(); applyEditMode(); saveLocalDraft();
-  showToast("Opportunity added");
-}
-
-const ETIMAD_SUMMARY_LINES = [
-  {t:"Etimad Tender Research — Midwam Interactive", bold:true, size:14},
-  {t:"Filters applied: Active Competitions (Submitting Bids) | Primary Activity: Tourism, Restaurants, Hotels & Exhibition Organizing | Sub-Activity: Exhibition & Conference Activities | Published within the last month"},
-  {t:"Prepared for Harith Hindi, Midwam Interactive — data pulled from tenders.etimad.sa"},
-  {t:""},
-  {t:"SCOPE", bold:true},
-  {t:"Tenders matched the exact filter combination requested. A subset are genuinely still open for bidding; any legacy-system listings whose bid deadlines already passed despite showing under Etimad's \"Active\" filter are listed separately — see the 'Excluded / Expired' tab."},
-  {t:""},
-  {t:"HOW TO READ THE 'Open Opportunities' TAB", bold:true},
-  {t:"Each row is one tender, sorted by Midwam Fit (Strong first). Fit ratings reflect a match against Midwam's actual service lines (Concept Design, Experience & Space Design, Content Development, Digital Solutions, Immersive Spaces, Booth Design & Exhibition, Event Management, PMO) and target sectors (Sports, Culture, Entertainment, Government/Vision 2030, Private sector) — not a guess at win probability alone."},
-  {t:""},
-  {t:"DATA COMPLETENESS NOTE", bold:true},
-  {t:"Etimad's public visitor pages fully expose: competition name, agency, RN, type, price of documents, inquiry deadline, and bid submission deadline & method for every tender below — all captured. Expected Award Date and Project/Service Start Date are only published upfront for a minority of tenders; where not published on the visitor-facing page, they are marked accordingly, which is normal for Etimad and not a data-collection gap. Full detailed scope-of-work documents require purchasing the tender package (the listed price) from Etimad — the 'Details' column below reflects the public summary only."},
-  {t:""},
-  {t:"RECOMMENDED NEXT STEPS (overall)", bold:true},
-  {t:"Prioritize the Strong-fit rows and route them into Midwam's RFP intake process promptly for any with near-term bid deadlines. For framework agreements, note these typically admit multiple suppliers, lowering the competitive bar versus a single-winner tender."}
-];
-
-async function exportEtimadExcel(){
-  const btn = document.getElementById("exportEtimadExcelBtn");
-  const orig = btn.textContent;
-  btn.disabled = true; btn.textContent = "Building...";
-  try{
-    if(typeof ExcelJS === "undefined"){
-      await loadScriptOnce("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
-    }
-    const wb = new ExcelJS.Workbook();
-    const dateStr = new Date().toISOString().slice(0,10);
-
-    /* ---- Sheet 1: Summary ---- */
-    const wsSummary = wb.addWorksheet("Summary");
-    wsSummary.getColumn(1).width = 120;
-    ETIMAD_SUMMARY_LINES.forEach(line=>{
-      const row = wsSummary.addRow([line.t]);
-      const cell = row.getCell(1);
-      cell.font = { name:"Arial", size: line.size || 10, bold: !!line.bold };
-      cell.alignment = { wrapText:true, vertical:"top" };
-    });
-
-    /* ---- Sheet 2: Open Opportunities ---- */
-    const ws = wb.addWorksheet("Open Opportunities");
-    const headers = ["Midwam Fit","Competition Name","Government Entity","Competition RN","Type",
-      "Sending Questions & Inquiries","Last Date for Receiving Inquiries","Submitting Bids (deadline)",
-      "Expected Award Date","Project / Service Start Date","Method of Submitting Bids","Place of Execution",
-      "Details / Scope Summary","Submission Cost","Fit Rationale","Potential Partners Needed","Recommended Next Steps"];
-    const widths = [10,42,28,16,16,20,20,20,20,20,22,22,42,14,42,26,42];
-    ws.columns = headers.map((h,i)=>({ header:h, width: widths[i] }));
-    const headerRow = ws.getRow(1);
-    headerRow.eachCell(c=>{
-      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
-      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
-      c.alignment = { wrapText:true, vertical:"top" };
-    });
-    const fitFillArgb = { Strong:"FFC6EFCE", Medium:"FFFFEB9C", "Low-Medium":"FFFFEB9C", Low:"FFFFC7CE" };
-    (state.etimad||[]).forEach(r=>{
-      const row = ws.addRow([
-        r.fit, r.name, r.agency, r.rn, r.type, r.inqStart, r.inqDeadline, r.bidDeadline,
-        r.award, r.projStart, r.method, r.place, r.details, r.price, r.rationale, r.partners, r.next
-      ]);
-      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
-      const fitCell = row.getCell(1);
-      fitCell.font = { name:"Arial", size:9, bold:true };
-      fitCell.fill = { type:"pattern", pattern:"solid", fgColor:{argb: fitFillArgb[r.fit] || "FFD9D9D9"} };
-    });
-    ws.views = [{ state:"frozen", ySplit:1 }];
-
-    /* ---- Sheet 3: Excluded - Expired ---- */
-    const wsEx = wb.addWorksheet("Excluded - Expired");
-    const exHeaders = ["Competition Name (Arabic)","Government Entity","Competition RN","Bid Deadline (already passed)","Why excluded"];
-    const exWidths = [42,28,16,22,50];
-    wsEx.columns = exHeaders.map((h,i)=>({ header:h, width: exWidths[i] }));
-    const exHeaderRow = wsEx.getRow(1);
-    exHeaderRow.eachCell(c=>{
-      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
-      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
-      c.alignment = { wrapText:true, vertical:"top" };
-    });
-    (state.etimadExcluded||[]).forEach(r=>{
-      const row = wsEx.addRow([r.name, r.agency, r.rn, r.deadline, r.reason]);
-      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
-    });
-    wsEx.views = [{ state:"frozen", ySplit:1 }];
-
-    const buf = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `Midwam_Etimad_Tender_Research_${dateStr}.xlsx`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    showToast("Excel exported");
-  } catch(e){
-    alert("Excel export failed: " + e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = orig;
-  }
-}
-
-document.getElementById("etimadSearch").addEventListener("input", e=>{
-  etimadFilter = e.target.value;
-  renderEtimad();
-  applyEditMode();
-});
-
-function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 /* ---------- editing: generic contenteditable -> state binding ---------- */
 document.addEventListener("focusin", e=>{
@@ -1205,8 +1329,6 @@ function applyEditMode(){
   document.querySelectorAll("[data-bind]").forEach(el=>el.setAttribute("contenteditable", editing ? "true" : "false"));
   document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
   document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");
-  document.querySelectorAll("input[data-pctinput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
-  document.querySelectorAll("input[data-pctnuminput]").forEach(el=>el.style.display = editing ? "inline-block" : "none");
   document.querySelectorAll(".addbtn").forEach(el=>el.classList.toggle("show", editing));
   document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
   document.getElementById("undoBtn").disabled = history.length === 0;
@@ -1227,26 +1349,9 @@ document.getElementById("setTodayBtn").addEventListener("click", ()=>{
   showToast("Date updated");
 });
 
-/* ---------- add/remove rows ---------- */
-function addPhase(){ pushHistory(); state.phases.push({name:"New phase", pct:0, label:"Not started", color:"muted"}); renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft(); }
-function addCapTeam(){ pushHistory(); state.capTeams.push({team:"New team", role:"Role", num:"0", pct:0, color:"blue", caption:"Add a caption"}); renderCapChart(); applyEditMode(); saveLocalDraft(); }
-function addMatrixRow(){ pushHistory(); state.matrix.push({cap:"New capability", owner:"Firas", tier:"1", tierColor:"#5fd3a8", status:"Framework only", statusColor:"#f0a06f"}); renderMatrix(); applyEditMode(); saveLocalDraft(); }
-function addGap(){ pushHistory(); state.gaps.push({text:"New gap", sev:"warning"}); renderGaps(); applyEditMode(); saveLocalDraft(); }
-function addStep(){ pushHistory(); state.steps.push("New step"); renderSteps(); applyEditMode(); saveLocalDraft(); }
-function removeRow(section, i){ pushHistory(); state[section].splice(i,1); RENDER_FN[section](); if(section==="phases") renderProgressSummary(); applyEditMode(); saveLocalDraft(); showToast("Removed"); }
-
-/* ---------- matrix search/filter ---------- */
-document.getElementById("matrixSearch").addEventListener("input", e=>{
-  matrixFilter = e.target.value;
-  renderMatrix();
-  applyEditMode();
-});
-
-/* ---------- auto-color toggle ---------- */
-document.getElementById("autoColorToggle").addEventListener("change", e=>{
-  pushHistory();
-  state.autoColorPhases = e.target.checked;
-  renderPhases(); renderProgressSummary(); applyEditMode(); saveLocalDraft();
+/* ---------- search filters ---------- */
+document.getElementById("externalSearch") && document.getElementById("externalSearch").addEventListener("input", e=>{
+  externalFilter = e.target.value; renderExternal(); applyEditMode();
 });
 
 /* ---------- collapsible sections ---------- */
@@ -1455,7 +1560,7 @@ async function saveToGitHub(){
 }
 document.getElementById("saveBtn").addEventListener("click", saveToGitHub);
 
-/* ---------- PPTX export ---------- */
+/* ---------- Excel export (External tenders) ---------- */
 function loadScriptOnce(src){
   return new Promise((resolve, reject)=>{
     if(document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
@@ -1465,6 +1570,51 @@ function loadScriptOnce(src){
   });
 }
 
+async function exportExternalExcel(){
+  const btn = document.getElementById("exportExternalExcelBtn");
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "Building...";
+  try{
+    if(typeof ExcelJS === "undefined"){
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
+    }
+    const wb = new ExcelJS.Workbook();
+    const dateStr = new Date().toISOString().slice(0,10);
+    const ws = wb.addWorksheet("External Tenders");
+    const headers = ["RN","Competition Name","Agency","Fit","Category","Bid Deadline","Notes"];
+    const widths = [16,42,28,12,20,16,42];
+    ws.columns = headers.map((h,i)=>({ header:h, width: widths[i] }));
+    const headerRow = ws.getRow(1);
+    headerRow.eachCell(c=>{
+      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
+      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
+      c.alignment = { wrapText:true, vertical:"top" };
+    });
+    const fitFillArgb = { Strong:"FFC6EFCE", Medium:"FFFFEB9C", "Low-Medium":"FFFFEB9C", Low:"FFFFC7CE", Unknown:"FFD9D9D9" };
+    state.external.forEach(r=>{
+      const row = ws.addRow([r.rn, r.name, r.agency, r.fit, r.category, r.bidDeadline, r.notes]);
+      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
+      const fitCell = row.getCell(4);
+      fitCell.font = { name:"Arial", size:9, bold:true };
+      fitCell.fill = { type:"pattern", pattern:"solid", fgColor:{argb: fitFillArgb[r.fit] || "FFD9D9D9"} };
+    });
+    ws.views = [{ state:"frozen", ySplit:1 }];
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `Midwam_External_Tenders_${dateStr}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast("Excel exported");
+  } catch(e){
+    alert("Excel export failed: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+/* ---------- PPTX export ---------- */
 async function exportPPTX(){
   const btn = document.getElementById("exportPptxBtn");
   const orig = btn.textContent;
@@ -1479,116 +1629,70 @@ async function exportPPTX(){
     const pptx = new PptxGenJS();
     pptx.defineLayout({ name:"WIDE", width:13.33, height:7.5 });
     pptx.layout = "WIDE";
+    const headOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:9 };
+    const bodyOpts = (extra)=>Object.assign({color:textHex, fontSize:9}, extra||{});
 
     let slide = pptx.addSlide();
     slide.background = { color: bgHex };
     slide.addText(state.titles.brand || "", { x:0.6, y:0.5, w:10, h:0.4, fontSize:12, color:accentHex, bold:true, charSpacing:2 });
-    slide.addText(state.titles.h1 || "Saud — Progress Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:36, bold:true, color:textHex });
+    slide.addText(state.titles.h1 || "Saud — Business Tracking Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:34, bold:true, color:textHex });
     slide.addText(state.titles.subtitle || "", { x:0.6, y:3.7, w:11.5, h:0.7, fontSize:15, color:"A79A82" });
     slide.addText("Last updated: " + state.lastUpdated, { x:0.6, y:6.7, w:6, h:0.4, fontSize:11, color:"A79A82" });
     slide.addText(state.titles.ownerLine || "", { x:0.6, y:7.0, w:6, h:0.35, fontSize:11, color:"A79A82" });
 
     slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText("KEY NUMBERS", { x:0.5, y:0.4, w:8, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    const statW = 2.9, statGap = 0.25;
-    state.stats.forEach((s,i)=>{
+    slide.addText("OVERVIEW — PORTFOLIO KPIS", { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const submitted = state.internal.filter(r=>r.stage==="Submitted").length;
+    const oppValue = state.internal.reduce((s,r)=>s+(+r.value||0),0);
+    const tiles = [
+      {v:String(submitted), l:"RFP Submitted"}, {v:oppValue.toLocaleString()+" SAR", l:"Opportunity Value"},
+      {v:String(state.projects.length), l:"Projects Tracked"}, {v:String(state.prototypes.length), l:"Prototypes Tracked"},
+      {v:String(state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length), l:"Open Tasks"}
+    ];
+    const statW = 2.3, statGap = 0.2;
+    tiles.forEach((s,i)=>{
       const x = 0.5 + i*(statW+statGap);
-      slide.addShape("roundRect", { x, y:1.3, w:statW, h:1.9, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.1 });
-      slide.addText((s.icon ? s.icon + " " : "") + s.value, { x, y:1.55, w:statW, h:0.7, fontSize:24, bold:true, color:textHex, align:"center" });
-      slide.addText(s.label, { x, y:2.25, w:statW, h:0.4, fontSize:10, color:"A79A82", align:"center" });
-      slide.addText(s.sub, { x:x+0.1, y:2.65, w:statW-0.2, h:0.5, fontSize:8, color:"A79A82", align:"center" });
+      slide.addShape("roundRect", { x, y:1.3, w:statW, h:1.6, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.1 });
+      slide.addText(s.v, { x, y:1.5, w:statW, h:0.6, fontSize:18, bold:true, color:textHex, align:"center" });
+      slide.addText(s.l, { x:x+0.1, y:2.1, w:statW-0.2, h:0.6, fontSize:9, color:"A79A82", align:"center" });
     });
 
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionPhases || "Phase progress").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    state.phases.forEach((p,i)=>{
-      const y = 1.3 + i*0.75;
-      if(y > 6.8) return;
-      slide.addText(p.name, { x:0.5, y, w:3.6, h:0.5, fontSize:13, color:textHex, valign:"middle" });
-      slide.addShape("rect", { x:4.3, y:y+0.14, w:6.2, h:0.22, fill:{color:"3A3226"}, line:{type:"none"} });
-      const pptxColorKey = state.autoColorPhases ? autoColorForPct(+p.pct||0) : (p.color || "muted");
-      slide.addShape("rect", { x:4.3, y:y+0.14, w: Math.max(0.05, 6.2*(p.pct/100)), h:0.22, fill:{color: BAR_COLOR_HEX[pptxColorKey] || "C1701E"}, line:{type:"none"} });
-      slide.addText(p.label, { x:10.7, y, w:2.1, h:0.5, fontSize:10, color:"A79A82", valign:"middle" });
-    });
-
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionCaps || "Capabilities implemented, by team").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    const capW = (12.3 - (state.capTeams.length-1)*0.3) / Math.max(1,state.capTeams.length);
-    state.capTeams.forEach((c,i)=>{
-      const x = 0.5 + i*(capW+0.3);
-      if(x > 12) return;
-      slide.addShape("roundRect", { x, y:1.3, w:capW, h:2.6, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.08 });
-      slide.addText(c.team, { x:x+0.2, y:1.5, w:capW-0.4, h:0.5, fontSize:13, bold:true, color:textHex });
-      slide.addText(c.role, { x:x+0.2, y:1.95, w:capW-0.4, h:0.5, fontSize:9, color:"A79A82" });
-      slide.addText(String(c.num), { x:x+0.2, y:2.5, w:capW-0.4, h:0.5, fontSize:22, bold:true, color:textHex });
-      slide.addText(c.caption, { x:x+0.2, y:3.2, w:capW-0.4, h:0.6, fontSize:8, color:"A79A82" });
-    });
-
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionMatrix || "Capability & status matrix").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    const headOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:10 };
-    const rows = [[
-      {text:state.titles.colCap || "Capability", options:headOpts}, {text:state.titles.colOwner || "Owner", options:headOpts},
-      {text:state.titles.colTier || "Tier", options:headOpts}, {text:state.titles.colStatus || "Status", options:headOpts}
-    ]];
-    state.matrix.slice(0,14).forEach(r=>{
-      rows.push([
-        {text:r.cap, options:{color:textHex, fontSize:9}},
-        {text:r.owner, options:{color:textHex, fontSize:9}},
-        {text:String(r.tier), options:{color:textHex, fontSize:9}},
-        {text:String(r.status), options:{color:textHex, fontSize:9}}
-      ]);
-    });
-    slide.addTable(rows, { x:0.5, y:1.2, w:12.3, colW:[6.3,2,1.5,2.5], border:{color:"3A3226", pt:0.5}, autoPage:false });
-
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionGaps || "Known gaps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    slide.addText(state.gaps.map(g=>"•  " + g.text).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
-
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionSteps || "Next steps").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    slide.addText(state.steps.map((s,i)=>(i+1) + ".  " + s).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
-
-    (state.customSections||[]).forEach(sec=>{
-      slide = pptx.addSlide(); slide.background = { color: bgHex };
-      slide.addText((sec.title || "Section").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-      slide.addText((sec.items||[]).map(it=>"•  " + it).join("\n\n"), { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:13, color:textHex, lineSpacingMultiple:1.3, valign:"top" });
-    });
-
-    slide = pptx.addSlide(); slide.background = { color: bgHex };
-    slide.addText((state.titles.sectionNotes || "Notes").toUpperCase(), { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-    slide.addText(state.notes || "", { x:0.5, y:1.3, w:12.3, h:5.7, fontSize:14, color:"A79A82", lineSpacingMultiple:1.4, valign:"top" });
-
-    if((state.etimad||[]).length){
-      slide = pptx.addSlide(); slide.background = { color: bgHex };
-      slide.addText((state.titles.sectionEtimad || "Etimad Opportunities").toUpperCase(), { x:0.5, y:0.4, w:11, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
-      const strongCount = state.etimad.filter(r=>r.fit==="Strong");
-      slide.addText(`${state.etimad.length} open opportunities tracked · ${strongCount.length} rated Strong fit`, { x:0.5, y:1.1, w:11, h:0.4, fontSize:13, color:"A79A82" });
-      slide.addText(
-        strongCount.length
-          ? strongCount.map(r=>`•  ${r.name}  —  ${r.agency}  (bid deadline: ${r.bidDeadline||"n/a"})`).join("\n\n")
-          : "No Strong-fit opportunities currently tracked.",
-        { x:0.5, y:1.7, w:12.3, h:5.3, fontSize:12, color:textHex, lineSpacingMultiple:1.25, valign:"top" }
-      );
-
-      const etHeadOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:9 };
-      const etRows = [[
-        {text:"Fit", options:etHeadOpts}, {text:"Competition Name", options:etHeadOpts}, {text:"Agency", options:etHeadOpts},
-        {text:"RN", options:etHeadOpts}, {text:"Bid Deadline", options:etHeadOpts}
-      ]];
-      state.etimad.forEach(r=>{
-        etRows.push([
-          {text:r.fit, options:{color:FIT_COLOR_HEX[r.fit] || textHex, fontSize:8, bold:true}},
-          {text:r.name, options:{color:textHex, fontSize:8}},
-          {text:r.agency, options:{color:textHex, fontSize:8}},
-          {text:r.rn, options:{color:textHex, fontSize:8}},
-          {text:r.bidDeadline, options:{color:textHex, fontSize:8}}
-        ]);
-      });
-      slide = pptx.addSlide(); slide.background = { color: bgHex };
-      slide.addText("ETIMAD OPPORTUNITIES — FULL LIST", { x:0.5, y:0.3, w:11, h:0.4, fontSize:14, bold:true, color:accentHex, charSpacing:2 });
-      slide.addTable(etRows, { x:0.4, y:0.85, w:12.5, colW:[1.1,5.2,3.4,1.6,1.2], border:{color:"3A3226", pt:0.5}, autoPage:true, autoPageLineWeight:0.5, newSlideStartY:0.85 });
+    function tableSlide(title, headers, rows, colW){
+      const sl = pptx.addSlide(); sl.background = { color: bgHex };
+      sl.addText(title.toUpperCase(), { x:0.5, y:0.35, w:11, h:0.45, fontSize:15, bold:true, color:accentHex, charSpacing:2 });
+      const tblRows = [headers.map(h=>({text:h, options:headOpts}))];
+      rows.forEach(r=>tblRows.push(r.map(c=>({text:String(c==null?"":c), options:bodyOpts()}))));
+      sl.addTable(tblRows, { x:0.4, y:0.9, w:12.5, colW, border:{color:"3A3226", pt:0.5}, autoPage:true, autoPageLineWeight:0.5, newSlideStartY:0.9 });
     }
+
+    tableSlide(state.titles.sectionExternal || "External", ["RN","Competition Name","Agency","Fit","Category","Bid Deadline"],
+      state.external.map(r=>[r.rn,r.name,r.agency,r.fit,r.category,r.bidDeadline]), [1.4,4.6,2.5,1.2,2.2,1.6]);
+
+    tableSlide(state.titles.sectionInternal || "Internal Performance", ["Opportunity","Client/Agency","Value (SAR)","Stage","Owner"],
+      state.internal.map(r=>[r.name,r.client,(+r.value||0).toLocaleString(),r.stage,r.owner]), [4.7,2.8,2,1.6,1.4]);
+
+    tableSlide(state.titles.sectionProjects || "Projects in Operations", ["Project","Status","Financially","Operationally","Deadline"],
+      state.projects.map(r=>[r.name,r.status,r.financially,r.operationally,r.deadline]), [3.4,1.8,2.7,2.9,1.7]);
+
+    tableSlide(state.titles.sectionPrototypes || "Prototypes Tracker", ["Prototype","Status","Team","Notes","Value"],
+      state.prototypes.map(r=>[r.name,r.status,r.team,r.notes,r.value]), [3.4,1.8,1.6,4.5,1.2]);
+
+    tableSlide("Recurring Tasks", ["Task","Owner","Status","Cadence","Notes"],
+      state.tasks.map(r=>[r.task,r.owner,r.status,r.cadence,r.notes]), [3.4,1.8,1.6,1.6,4.1]);
+
+    tableSlide("Next Steps (Milestones)", ["Milestone","Owner","Target Date","Status","Notes"],
+      state.milestones.map(r=>[r.milestone,r.owner,r.targetDate,r.status,r.notes]), [3.6,1.6,1.8,1.6,3.9]);
+
+    tableSlide("To-Do List", ["Done","Item","Owner","Due","Notes"],
+      state.todos.map(r=>[r.done?"Yes":"No",r.item,r.owner,r.due,r.notes]), [1,4,1.8,1.6,4.1]);
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText("NOTES & LEGEND", { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const raciText = state.raci.map(r=>`${r.section}: ${r.owner}`).join("\n");
+    const sourcesText = state.sources.map(s=>"•  "+s).join("\n\n");
+    const methodText = state.methodology.map(s=>"•  "+s).join("\n\n");
+    slide.addText("OWNERSHIP\n"+raciText+"\n\nDATA SOURCES\n"+sourcesText+"\n\nMETHODOLOGY\n"+methodText,
+      { x:0.5, y:1.1, w:12.3, h:5.9, fontSize:11, color:textHex, lineSpacingMultiple:1.25, valign:"top" });
 
     const fname = (state.titles.h1 || "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".pptx";
     await pptx.writeFile({ fileName: fname });
@@ -1734,10 +1838,10 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
     <span id="saud-chat-close" title="Close">✕</span>
   </div>
   <div id="saud-chat-log">
-    <div id="saud-chat-empty">Ask about tenders, capability gaps, phase progress, or anything else on this dashboard.</div>
+    <div id="saud-chat-empty">Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.</div>
   </div>
   <div id="saud-chat-inputrow">
-    <textarea id="saud-chat-input" rows="1" placeholder="Ask about tenders, gaps, capabilities…"></textarea>
+    <textarea id="saud-chat-input" rows="1" placeholder="Ask about tenders, pipeline, projects…"></textarea>
     <button id="saud-chat-send" title="Send">➤</button>
   </div>
 </div>
@@ -1763,105 +1867,64 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   };
   closeBtn.onclick = () => { panel.style.display = 'none'; };
 
-  // ---- tiny markdown renderer (headers, bold/italic, inline code, links, lists, tables, hr) ----
-  function escapeHtml(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function escapeHtmlChat(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function inlineFormat(s) {
-    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    return s;
-  }
+  function renderMarkdown(md) {
+    let html = escapeHtmlChat(md);
+    html = html.replace(/```([\s\S]*?)```/g, (m, code) => '<pre><code>' + code.trim() + '</code></pre>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    html = html.replace(/^---$/gm, '<hr>');
 
-  function isTableSep(line) {
-    return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(line);
-  }
-
-  function parseTableRow(line) {
-    let t = line.trim();
-    if (t.startsWith('|')) t = t.slice(1);
-    if (t.endsWith('|')) t = t.slice(0, -1);
-    return t.split('|').map(c => c.trim());
-  }
-
-  function mdToHtml(text) {
-    const rawLines = escapeHtml(text).split('\n');
-    const html = [];
+    // tables
+    const lines = html.split('\n');
+    let out = [];
     let i = 0;
-    let listType = null;
-
-    function closeList() {
-      if (listType) { html.push(listType === 'ul' ? '</ul>' : '</ol>'); listType = null; }
-    }
-
-    while (i < rawLines.length) {
-      const line = rawLines[i];
-
-      if (line.trim() === '') { closeList(); i++; continue; }
-
-      const h = line.match(/^(#{1,3})\s+(.*)$/);
-      if (h) {
-        closeList();
-        html.push(`<h${h[1].length}>${inlineFormat(h[2])}</h${h[1].length}>`);
-        i++; continue;
-      }
-
-      if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)) {
-        closeList();
-        html.push('<hr>');
-        i++; continue;
-      }
-
-      // table: a row containing '|' followed by a separator row
-      if (line.includes('|') && i + 1 < rawLines.length && isTableSep(rawLines[i + 1])) {
-        closeList();
-        const headCells = parseTableRow(line);
-        const rows = [];
+    while (i < lines.length) {
+      if (lines[i].includes('|') && lines[i + 1] && /^\s*\|?\s*[-:]+[-| :]*\s*$/.test(lines[i + 1])) {
+        const headerCells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
+        let tbl = '<div class="saud-table-wrap"><table><thead><tr>' +
+          headerCells.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
         i += 2;
-        while (i < rawLines.length && rawLines[i].includes('|') && rawLines[i].trim() !== '') {
-          rows.push(parseTableRow(rawLines[i]));
+        while (i < lines.length && lines[i].includes('|')) {
+          const cells = lines[i].split('|').map(c => c.trim()).filter((c, idx, arr) => !(idx === 0 && c === '') && !(idx === arr.length - 1 && c === ''));
+          tbl += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
           i++;
         }
-        let t = '<div class="saud-table-wrap"><table><thead><tr>';
-        headCells.forEach(c => t += `<th>${inlineFormat(c)}</th>`);
-        t += '</tr></thead><tbody>';
-        rows.forEach(r => { t += '<tr>'; r.forEach(c => t += `<td>${inlineFormat(c)}</td>`); t += '</tr>'; });
-        t += '</tbody></table></div>';
-        html.push(t);
-        continue;
-      }
-
-      const ul = line.match(/^\s*[-*]\s+(.*)$/);
-      if (ul) {
-        if (listType !== 'ul') { closeList(); html.push('<ul>'); listType = 'ul'; }
-        html.push(`<li>${inlineFormat(ul[1])}</li>`);
-        i++; continue;
-      }
-
-      const ol = line.match(/^\s*\d+\.\s+(.*)$/);
-      if (ol) {
-        if (listType !== 'ol') { closeList(); html.push('<ol>'); listType = 'ol'; }
-        html.push(`<li>${inlineFormat(ol[1])}</li>`);
-        i++; continue;
-      }
-
-      closeList();
-      // paragraph: gather consecutive plain lines
-      const para = [line];
-      i++;
-      while (i < rawLines.length && rawLines[i].trim() !== '' && !/^(#{1,3})\s/.test(rawLines[i]) &&
-             !/^\s*[-*]\s+/.test(rawLines[i]) && !/^\s*\d+\.\s+/.test(rawLines[i]) &&
-             !rawLines[i].includes('|') && !/^\s*(-{3,}|\*{3,})\s*$/.test(rawLines[i])) {
-        para.push(rawLines[i]);
+        tbl += '</tbody></table></div>';
+        out.push(tbl);
+      } else {
+        out.push(lines[i]);
         i++;
       }
-      html.push(`<p>${para.map(inlineFormat).join('<br>')}</p>`);
     }
-    closeList();
-    return html.join('\n');
+    html = out.join('\n');
+
+    // lists
+    html = html.replace(/(^|\n)((?:[-*] .*(?:\n|$))+)/g, (m, pre, block) => {
+      const items = block.trim().split('\n').map(l => '<li>' + l.replace(/^[-*]\s+/, '') + '</li>').join('');
+      return pre + '<ul>' + items + '</ul>\n';
+    });
+    html = html.replace(/(^|\n)((?:\d+\. .*(?:\n|$))+)/g, (m, pre, block) => {
+      const items = block.trim().split('\n').map(l => '<li>' + l.replace(/^\d+\.\s+/, '') + '</li>').join('');
+      return pre + '<ol>' + items + '</ol>\n';
+    });
+
+    // paragraphs
+    html = html.split(/\n{2,}/).map(chunk => {
+      if (/^\s*<(h1|h2|h3|ul|ol|pre|table|div|hr)/.test(chunk.trim())) return chunk;
+      const withBr = chunk.trim().replace(/\n/g, '<br>');
+      return withBr ? `<p>${withBr}</p>` : '';
+    }).join('\n');
+
+    return html;
   }
 
   function addBubble(role) {
@@ -1877,11 +1940,11 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   }
 
   function setUserBubble(bubble, text) {
-    bubble.textContent = text; // user text shown as plain text, never parsed as markdown/HTML
+    bubble.textContent = text;
   }
 
   function setAssistantBubble(bubble, text) {
-    bubble.innerHTML = mdToHtml(text);
+    bubble.innerHTML = renderMarkdown(text);
     log.scrollTop = log.scrollHeight;
   }
 
@@ -1898,12 +1961,15 @@ document.getElementById("syncPanel").classList.add("open"); // public shell: pro
   function currentContext() {
     const s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
     return {
-      etimad: s.etimad || [],
-      etimadExcluded: s.etimadExcluded || [],
-      matrix: s.matrix || [],
-      gaps: s.gaps || [],
-      phases: s.phases || [],
-      stats: s.stats || [],
+      external: s.external || [],
+      news: s.news || [],
+      internal: s.internal || [],
+      stageProbs: s.stageProbs || [],
+      projects: s.projects || [],
+      prototypes: s.prototypes || [],
+      tasks: s.tasks || [],
+      milestones: s.milestones || [],
+      todos: s.todos || [],
     };
   }
 

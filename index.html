@@ -287,6 +287,7 @@
     <button class="tab-btn" data-page="external" onclick="switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
     <button class="tab-btn" data-page="internal" onclick="switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
     <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
+    <button class="tab-btn" data-page="marketing" onclick="switchPage('marketing')"><span data-bind="titles.tabMarketing"></span></button>
     <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
     <button class="tab-btn" data-page="notes" onclick="switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
   </div>
@@ -412,6 +413,26 @@
     </section>
   </div>
 
+  <!-- ============================== MARKETING ============================== -->
+  <div class="page" id="page-marketing">
+    <section>
+      <div class="sechead">
+        <h2 id="secMarketingTitle" data-bind="titles.sectionMarketing"></h2>
+        <button class="addbtn" onclick="addRow('marketing', {initiative:'New initiative', channel:'', status:'Not started', targetDate:'', notes:''})"><span data-bind="titles.addBtnMarketing"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.marketingOwnerLine"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colMktInitiative"></th><th data-bind="titles.colMktChannel"></th><th data-bind="titles.colMktStatus"></th>
+            <th data-bind="titles.colMktTarget"></th><th data-bind="titles.colMktNotes"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="marketingBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
   <!-- ============================== TASKS & NEXT STEPS ============================== -->
   <div class="page" id="page-tasks">
     <section>
@@ -525,6 +546,7 @@ const DEFAULT_STATE = {
     sectionProbTable: "Win Probability by Stage",
     sectionProjects: "Projects in Operations",
     sectionPrototypes: "Prototypes Tracker",
+    sectionMarketing: "Marketing — Campaigns & Initiatives",
     sectionTasks: "Recurring Tasks",
     sectionMilestones: "Next Steps (Milestones) — Next Month",
     sectionTodos: "To-Do List",
@@ -539,6 +561,7 @@ const DEFAULT_STATE = {
     internalOwnerLine: "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
     projectsOwnerLine: "Owner: Sameer · Status, financial, and operational tracking for live projects.",
     prototypesOwnerLine: "Owner: Mohammed · 'Value' is a placeholder score — redefine once a real scoring method is agreed.",
+    marketingOwnerLine: "Owner: Faisal Almadani · Head of Marketing — campaigns, brand, and external communications for Saud's initiatives.",
 
     externalFooterNote: "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic tender title by keyword match; feel free to keep that convention when filling this in.",
     internalFooterNote: "Weighted Value = Value × the win probability for that row's Stage, from the probability table below.",
@@ -551,6 +574,7 @@ const DEFAULT_STATE = {
     navExternalTitle: "External", navExternalDesc: "Etimad tender pipeline + industry/press news tracking.", navExternalOwner: "Firas",
     navInternalTitle: "Internal Performance", navInternalDesc: "RFP pipeline — submitted, value, stage, next step.", navInternalOwner: "Firas",
     navProjectsTitle: "Projects & Prototypes", navProjectsDesc: "Live projects in operations + the prototypes tracker.", navProjectsOwner: "Sameer / Mohammed",
+    navMarketingTitle: "Marketing", navMarketingDesc: "Campaigns, brand, and external communications tracking.", navMarketingOwner: "Faisal",
     navTasksTitle: "Tasks & Next Steps", navTasksDesc: "Recurring tasks, next-month milestones, to-do list.", navTasksOwner: "All",
     navNotesTitle: "Notes & Legend", navNotesDesc: "Ownership (RACI), data sources, methodology.", navNotesOwner: "—",
 
@@ -560,13 +584,14 @@ const DEFAULT_STATE = {
     colProbStage: "Stage", colProbWin: "Win Probability",
     colProjName: "Project", colProjStatus: "Status", colProjFin: "Financially", colProjOps: "Operationally", colProjIssues: "Issues", colProjDeadline: "Deadline",
     colProtoName: "Prototype", colProtoStatus: "Status", colProtoTeam: "Team", colProtoNotes: "Notes", colProtoValue: "Value (score)",
+    colMktInitiative: "Initiative / Campaign", colMktChannel: "Channel", colMktStatus: "Status", colMktTarget: "Target Date", colMktNotes: "Notes",
     colTaskTask: "Task", colTaskOwner: "Owner", colTaskStatus: "Status", colTaskCadence: "Cadence", colTaskNotes: "Notes",
     colMsMilestone: "Milestone", colMsOwner: "Owner", colMsTarget: "Target Date", colMsStatus: "Status", colMsNotes: "Notes",
     colTodoDone: "Done", colTodoItem: "Item", colTodoOwner: "Owner", colTodoDue: "Due", colTodoNotes: "Notes",
     colRaciSection: "Section", colRaciOwner: "Primary Owner", colRaciBasis: "Basis",
 
     tabOverview: "Overview", tabExternal: "External", tabInternal: "Internal Performance",
-    tabProjects: "Projects & Prototypes", tabTasks: "Tasks & Next Steps", tabNotes: "Notes & Legend",
+    tabProjects: "Projects & Prototypes", tabMarketing: "Marketing", tabTasks: "Tasks & Next Steps", tabNotes: "Notes & Legend",
 
     kpiRfpLabel: "RFP Submitted", kpiRfpSub: "from Internal Performance",
     kpiOppValueLabel: "Opportunity Value", kpiOppValueSub: "pipeline total, unweighted",
@@ -604,7 +629,7 @@ const DEFAULT_STATE = {
     syncNotConnectedMsg: "Not connected — this page shows its built-in starting content until you connect.",
 
     addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
-    addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnTask: "+ add task",
+    addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnMarketing: "+ add campaign", addBtnTask: "+ add task",
     addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
     addBtnSource: "+ add source", addBtnMethodNote: "+ add note",
 
@@ -643,6 +668,9 @@ const DEFAULT_STATE = {
   prototypes: [
     { name:"Connect GitHub sync above to load the real prototypes list", status:"On shelf", team:"—", notes:"—", value:0 }
   ],
+  marketing: [
+    { initiative:"Connect GitHub sync above to load the real marketing initiatives list", channel:"—", status:"Not started", targetDate:"—", notes:"—" }
+  ],
   tasks: [
     { task:"Connect GitHub sync above to load the real recurring tasks list", owner:"—", status:"Not started", cadence:"—", notes:"—" }
   ],
@@ -653,9 +681,10 @@ const DEFAULT_STATE = {
     { done:false, item:"Connect GitHub sync above to load the real to-do list", owner:"—", due:"—", notes:"—" }
   ],
   raci: [
-    { section:"External / Internal Performance", owner:"—", basis:"—" },
-    { section:"Projects in Operations", owner:"—", basis:"—" },
-    { section:"Prototypes Tracker", owner:"—", basis:"—" }
+    { section:"External / Internal Performance", owner:"Firas Abuzinada — Head of Business Development", basis:"Owns tender pipeline sourcing and RFP submissions" },
+    { section:"Projects in Operations", owner:"Sameer Gulam — Head of Operations", basis:"Owns live project execution and status tracking" },
+    { section:"Prototypes Tracker", owner:"Mohammed Alsanie — Head of Creative", basis:"Owns prototype development and creative scoring" },
+    { section:"Marketing", owner:"Faisal Almadani — Head of Marketing", basis:"Owns campaigns, brand, and external communications" }
   ],
   sources: [ "Connect GitHub sync above to load the real data-source citations." ],
   methodology: [ "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab." ],
@@ -668,6 +697,7 @@ const STAGE_COLOR = { "Not started":"#a79a82", Drafting:"#3987e5", Submitted:"#3
 const PROJECT_STATUS_COLOR = { Closed:"#a79a82", "Not started":"#d99a1a", "In progress":"#0ca30c", "On hold":"#d03b3b" };
 const PROTO_STATUS_COLOR = { "In the Makers":"#d99a1a", "On shelf":"#a79a82", Done:"#0ca30c" };
 const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
+const MARKETING_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
 const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Other/Uncategorized"];
@@ -823,7 +853,7 @@ function migrateState(){
   Object.keys(DEFAULT_STATE.titles).forEach(k=>{
     if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
   });
-  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","tasks","milestones","todos","raci","sources","methodology"];
+  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","marketing","tasks","milestones","todos","raci","sources","methodology"];
   arrayFields.forEach(k=>{ if(!Array.isArray(state[k])) state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k])); });
   if(typeof state.notes !== "string") state.notes = DEFAULT_STATE.notes;
 
@@ -917,6 +947,7 @@ function renderAll(){
   renderProbTable();
   renderProjects();
   renderPrototypes();
+  renderMarketing();
   renderTasks();
   renderMilestones();
   renderTodos();
@@ -983,6 +1014,7 @@ function renderOverviewNav(){
     { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
     { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
     { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
+    { page:"marketing", tKey:"navMarketingTitle", dKey:"navMarketingDesc", oKey:"navMarketingOwner" },
     { page:"tasks", tKey:"navTasksTitle", dKey:"navTasksDesc", oKey:"navTasksOwner" },
     { page:"notes", tKey:"navNotesTitle", dKey:"navNotesDesc", oKey:"navNotesOwner" }
   ];
@@ -1236,6 +1268,39 @@ function renderPrototypes(){
   });
 }
 RENDER_FN.prototypes = renderPrototypes;
+
+/* ---------- Marketing ---------- */
+function renderMarketing(){
+  const body = document.getElementById("marketingBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(MARKETING_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("marketingStatusOptionsList", statusOptions);
+  state.marketing.forEach((r,i)=>{
+    const color = MARKETING_STATUS_COLOR[r.status] || MARKETING_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="marketing.${i}.initiative">${escapeHtml(r.initiative)}</td>
+        <td data-bind="marketing.${i}.channel">${escapeHtml(r.channel)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="marketingStatusOptionsList" data-marketingstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="marketing.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
+        <td data-bind="marketing.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('marketing', i, state.marketing.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('marketing',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-marketingstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.marketing[+e.target.dataset.marketingstatus].status = e.target.value;
+    renderMarketing(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.marketing = renderMarketing;
 
 /* ---------- Tasks & Next Steps ---------- */
 function renderTasks(){
@@ -1750,6 +1815,9 @@ async function exportPPTX(){
 
     tableSlide(state.titles.sectionPrototypes || "Prototypes Tracker", ["Prototype","Status","Team","Notes","Value"],
       state.prototypes.map(r=>[r.name,r.status,r.team,r.notes,r.value]), [3.4,1.8,1.6,4.5,1.2]);
+
+    tableSlide(state.titles.sectionMarketing || "Marketing", ["Initiative / Campaign","Channel","Status","Target Date","Notes"],
+      state.marketing.map(r=>[r.initiative,r.channel,r.status,r.targetDate,r.notes]), [3.6,1.8,1.6,1.8,3.7]);
 
     tableSlide("Recurring Tasks", ["Task","Owner","Status","Cadence","Notes"],
       state.tasks.map(r=>[r.task,r.owner,r.status,r.cadence,r.notes]), [3.4,1.8,1.6,1.6,4.1]);

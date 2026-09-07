@@ -169,6 +169,16 @@
   .overview-nav .navcard .d{font-size:12px; color:var(--muted); line-height:1.4;}
   .overview-nav .navcard .o{font-size:11px; color:var(--copper); margin-top:6px; font-style:italic;}
 
+  .team-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  .teamcard{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .teamcard-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .teamcard-name{font-size:15px; font-weight:700; color:var(--cream);}
+  .teamcard-title{font-size:12.5px; color:var(--copper); margin-top:2px; font-weight:600;}
+  .teamcard-reports{font-size:11.5px; color:var(--muted); margin-top:8px; font-style:italic;}
+  .teamcard-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:10px; margin-bottom:4px;}
+  .teamcard-resp{font-size:13px; color:var(--sand); line-height:1.6; white-space:pre-line;}
+  .teamcard-actions{display:flex; gap:4px; align-items:center; margin-top:10px;}
+
   .fill-note{background:rgba(217,154,26,.14); }
 
   .toast-container{position:fixed; bottom:18px; right:18px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
@@ -194,11 +204,12 @@
     .stat-row{grid-template-columns:repeat(2,1fr);}
     .kpi-row{grid-template-columns:repeat(2,1fr);}
     .overview-nav{grid-template-columns:1fr;}
+    .team-grid{grid-template-columns:1fr;}
   }
 
   @media print{
     .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
-    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav{ display:none !important; }
+    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions{ display:none !important; }
     .page{ display:block !important; }
     body{ background:#fff; color:#111; }
     .stat-tile, .notes, table, .prob-table{ background:#f4f4f4; border-color:#ccc; }
@@ -490,6 +501,14 @@
 
     <section>
       <div class="sechead">
+        <h2 data-bind="titles.sectionTeam"></h2>
+        <button class="addbtn" onclick="addRow('team', {name:'New team member', title:'Title', reports:'Reports to: —', responsibilities:'• Responsibility one\n• Responsibility two'})"><span data-bind="titles.addBtnTeam"></span></button>
+      </div>
+      <div class="team-grid" id="teamGrid"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
         <h2 data-bind="titles.sectionSources"></h2>
         <button class="addbtn" onclick="addStringRow('sources', 'New source')"><span data-bind="titles.addBtnSource"></span></button>
       </div>
@@ -551,6 +570,7 @@ const DEFAULT_STATE = {
     sectionMilestones: "Next Steps (Milestones) — Next Month",
     sectionTodos: "To-Do List",
     sectionRaci: "Ownership (RACI-lite)",
+    sectionTeam: "Team",
     sectionSources: "Data Sources",
     sectionMethodology: "Methodology",
     sectionLegend: "Legend",
@@ -631,7 +651,8 @@ const DEFAULT_STATE = {
     addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
     addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnMarketing: "+ add campaign", addBtnTask: "+ add task",
     addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
-    addBtnSource: "+ add source", addBtnMethodNote: "+ add note",
+    addBtnSource: "+ add source", addBtnMethodNote: "+ add note", addBtnTeam: "+ add team member",
+    labelTeamReports: "Reports:", labelTeamResponsibilities: "Key Responsibilities:",
 
     labelLastUpdated: "Last updated:", btnSetToday: "Set to today",
 
@@ -685,6 +706,16 @@ const DEFAULT_STATE = {
     { section:"Projects in Operations", owner:"Sameer Gulam — Head of Operations", basis:"Owns live project execution and status tracking" },
     { section:"Prototypes Tracker", owner:"Mohammed Alsanie — Head of Creative", basis:"Owns prototype development and creative scoring" },
     { section:"Marketing", owner:"Faisal Almadani — Head of Marketing", basis:"Owns campaigns, brand, and external communications" }
+  ],
+  team: [
+    { name:"Firas Abuzinada", title:"Head of Business Development", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Sources and qualifies new tender opportunities (Etimad + direct outreach)\n• Owns proposal development and RFP submissions\n• Tracks win probability and pipeline value" },
+    { name:"Sameer Gulam", title:"Head of Operations", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Oversees live project execution and delivery\n• Manages operational status, issues, and deadlines\n• Coordinates cross-team resourcing" },
+    { name:"Mohammed Alsanie", title:"Head of Creative", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Leads prototype development and creative direction\n• Owns creative scoring and concept development\n• Reviews creative output before client delivery" },
+    { name:"Faisal Almadani", title:"Head of Marketing", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Owns campaign planning and brand strategy\n• Manages external communications and marketing channels\n• Tracks marketing initiative status and outcomes" }
   ],
   sources: [ "Connect GitHub sync above to load the real data-source citations." ],
   methodology: [ "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab." ],
@@ -853,7 +884,7 @@ function migrateState(){
   Object.keys(DEFAULT_STATE.titles).forEach(k=>{
     if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
   });
-  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","marketing","tasks","milestones","todos","raci","sources","methodology"];
+  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","marketing","tasks","milestones","todos","raci","team","sources","methodology"];
   arrayFields.forEach(k=>{ if(!Array.isArray(state[k])) state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k])); });
   if(typeof state.notes !== "string") state.notes = DEFAULT_STATE.notes;
 
@@ -952,6 +983,7 @@ function renderAll(){
   renderMilestones();
   renderTodos();
   renderRaci();
+  renderTeam();
   renderStringList('sources','sourcesList');
   renderStringList('methodology','methodologyList');
   renderNotes();
@@ -1411,6 +1443,31 @@ function renderRaci(){
   });
 }
 RENDER_FN.raci = renderRaci;
+
+function renderTeam(){
+  const grid = document.getElementById("teamGrid"); if(!grid) return;
+  grid.innerHTML = "";
+  const t = state.titles;
+  state.team.forEach((r,i)=>{
+    grid.appendChild(el(`
+      <div class="teamcard">
+        <div class="teamcard-head">
+          <div>
+            <div class="teamcard-name" data-bind="team.${i}.name">${escapeHtml(r.name)}</div>
+            <div class="teamcard-title" data-bind="team.${i}.title">${escapeHtml(r.title)}</div>
+          </div>
+        </div>
+        <div class="teamcard-reports" data-bind="team.${i}.reports">${escapeHtml(r.reports)}</div>
+        <div class="teamcard-label" data-bind="titles.labelTeamResponsibilities">${escapeHtml(t.labelTeamResponsibilities||"")}</div>
+        <div class="teamcard-resp" data-bind="team.${i}.responsibilities">${escapeHtml(r.responsibilities)}</div>
+        <div class="teamcard-actions edit-only">
+          ${reorderBtns('team', i, state.team.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('team',${i}))">✕</button>
+        </div>
+      </div>`));
+  });
+}
+RENDER_FN.team = renderTeam;
 
 function renderStringList(section, elementId){
   const list = document.getElementById(elementId); if(!list) return;

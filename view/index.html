@@ -1,0 +1,3494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Saud — Business Tracking Dashboard</title>
+<style>
+  :root{
+    --night:   #1F1B16;
+    --night2:  #2B241C;
+    --sand:    #E4D5B0;
+    --copper:  #C1701E;
+    --cream:   #FBF6EA;
+    --dark:    #2A2018;
+    --card:    #F5EFE1;
+    --muted:   #A79A82;
+    --border:  rgba(255,255,255,0.08);
+    --good:      #0ca30c;
+    --warning:   #d99a1a;
+    --serious:   #ec835a;
+    --critical:  #d03b3b;
+    --series-blue:   #3987e5;
+    --series-orange: #d95926;
+    --series-aqua:   #199e70;
+    --muted-bar: #6b6456;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Tahoma", sans-serif;
+    background: var(--night); color: var(--cream);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 24px 80px;}
+  header{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:28px; flex-wrap:wrap;}
+  header .brand{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper); font-weight:700; margin-bottom:6px;}
+  header h1{margin:0; font-size:28px; font-weight:700; color:var(--cream);}
+  header p{margin:6px 0 0; color:var(--muted); font-size:14px;}
+  [data-bind][contenteditable="true"]{outline:1px dashed var(--copper); border-radius:4px; padding:1px 4px;}
+  .meta{text-align:right; font-size:12px; color:var(--muted);}
+  .meta span{display:block;}
+  .meta .lastup-row{display:flex; align-items:center; justify-content:flex-end; gap:6px;}
+  .meta .tinybtn{background:none; border:1px solid var(--border); color:var(--muted); font-size:9px; padding:1px 6px; border-radius:5px; cursor:pointer;}
+  .meta .tinybtn:hover{color:var(--cream); border-color:var(--copper);}
+  .editbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+  button.editbtn{
+    background:var(--copper); color:var(--cream); border:none; border-radius:8px;
+    padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  button.editbtn.secondary{background:transparent; border:1px solid var(--border); color:var(--sand);}
+  button.editbtn:disabled{opacity:.45; cursor:default;}
+  button.editbtn:hover:not(:disabled){opacity:.9;}
+  .autosave-indicator{font-size:10.5px; color:var(--muted); display:none; align-items:center; gap:4px;}
+  .autosave-indicator.show{display:flex;}
+
+  /* read-only viewer build: hide every editing/sync control, no exceptions */
+  body.readonly #toggleEdit, body.readonly #undoBtn, body.readonly #saveBtn,
+  body.readonly #toggleSync, body.readonly #syncPanel, body.readonly #draftBanner,
+  body.readonly .autosave-indicator{ display:none !important; }
+
+  .sync-panel{
+    background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
+    margin-bottom:24px; display:none; font-size:13px; color:var(--sand); line-height:1.6;
+  }
+  .sync-panel.open{display:block;}
+  .sync-panel .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  .sync-panel input{
+    background:var(--night); border:1px solid #4A3E2C; color:var(--cream); padding:8px 12px; border-radius:6px;
+    font-size:13px;
+  }
+  .sync-panel input.token{width:340px;}
+  .sync-panel input.short{width:150px;}
+  .sync-panel input[type="color"]{
+    width:36px; height:32px; padding:2px; border-radius:6px; border:1px solid #4A3E2C; background:var(--night); cursor:pointer;
+  }
+  .sync-panel ul{margin:8px 0 0; padding-left:20px;}
+  .sync-panel li{margin-bottom:6px;}
+  .sync-panel kbd{background:var(--night); border:1px solid #4A3E2C; border-radius:4px; padding:1px 6px; font-size:11px; font-family:inherit;}
+  .theme-swatch{
+    width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,.2); cursor:pointer; flex-shrink:0;
+  }
+  .theme-swatch.active{border-color:var(--cream); box-shadow:0 0 0 2px var(--copper);}
+  .sync-status{margin-top:10px; font-size:12px; color:var(--muted);}
+  .sync-status.ok{color:#5fd3a8;}
+  .sync-status.err{color:#f0a06f;}
+
+  .stat-row{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:28px;}
+  .stat-tile{
+    background:var(--night2); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px; position:relative;
+  }
+  .stat-tile .label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;}
+  .stat-tile .icon{font-size:15px; margin-right:6px;}
+  .stat-tile .value{font-size:24px; font-weight:700; color:var(--copper); font-variant-numeric:proportional-nums;}
+  .stat-tile .sub{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  section{margin-bottom:32px;}
+  section .sechead{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:14px; padding-bottom:8px; flex-wrap:wrap; gap:8px;}
+  section h2{
+    font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--sand);
+    margin:0; background:none; border:none; font-family:inherit;
+  }
+  .sechead-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .addbtn{background:none; border:1px dashed var(--copper); color:var(--sand); font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;}
+  .addbtn.show{display:inline-block;}
+  .reorder{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
+  .reorder:hover{color:var(--copper);}
+  .reorder:disabled{opacity:.25; cursor:default;}
+  .dupbtn{background:none; border:none; color:var(--muted); cursor:pointer; font-size:12px; padding:0 3px; line-height:1;}
+  .dupbtn:hover{color:var(--series-blue);}
+  .reordergrp{display:flex; flex-direction:column;}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11px; color:var(--muted); align-items:center;}
+  .legend .litem{display:flex; align-items:center; gap:5px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
+
+  .draft-banner{
+    background:rgba(193,112,30,.12); border:1px solid var(--copper); border-radius:10px; padding:10px 16px;
+    margin-bottom:20px; font-size:12.5px; color:var(--sand); display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .draft-banner.show{display:flex;}
+  .draft-banner button{background:none; border:1px solid var(--border); color:var(--sand); border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer;}
+  .draft-banner button:hover{border-color:var(--copper); color:var(--cream);}
+  .row-search{
+    background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:8px;
+    padding:7px 12px; font-size:12.5px; width:240px; margin-bottom:10px;
+  }
+  section.collapsed > *:not(.sechead){display:none;}
+  .sechead h2{cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px;}
+  .sechead h2::before{content:"▾"; font-size:9px; opacity:.55;}
+  section.collapsed .sechead h2::before{content:"▸";}
+
+  table{width:100%; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden;}
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--muted); padding:10px 14px; border-bottom:1px solid var(--border); font-weight:600;
+  }
+  thead th.actions{width:90px;}
+  tbody td{padding:9px 12px; font-size:13.5px; border-bottom:1px solid var(--border); color:var(--cream); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  td.actions-cell{display:flex; gap:4px; align-items:center;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
+  input[type="color"].tiny{width:26px; height:24px; padding:1px; border-radius:5px; border:1px solid var(--border); background:var(--night); cursor:pointer;}
+  .rowdel{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; border-radius:4px; padding:0 3px;}
+  .rowdel:hover{color:var(--critical);}
+  .rowdel.confirming{background:var(--critical); color:#fff; font-size:10px; padding:2px 6px;}
+  .status-select{border:none; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; field-sizing:content; min-width:60px; max-width:220px;}
+  .status-pill{display:inline-block; padding:2px 9px; border-radius:5px; font-size:11px; font-weight:700;}
+
+  .kpi-row{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px; margin-bottom:18px;}
+  .table-scroll{overflow-x:auto; border-radius:12px;}
+  .wide-table td, .wide-table th{vertical-align:top; white-space:normal; max-width:280px;}
+
+  .prob-table{width:100%; max-width:380px; border-collapse:collapse; background:var(--night2); border-radius:12px; overflow:hidden; margin-top:4px;}
+  .prob-table th{text-align:left; font-size:11px; text-transform:uppercase; color:var(--muted); padding:8px 12px; border-bottom:1px solid var(--border);}
+  .prob-table td{padding:7px 12px; font-size:13px; border-bottom:1px solid var(--border);}
+  .prob-table tr:last-child td{border-bottom:none;}
+  .prob-table input[type=number]{width:60px; background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:5px; padding:3px 6px; font-size:12px;}
+  .prob-note{font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5;}
+
+  .todo-row.done td{ opacity:.55; text-decoration:line-through; }
+  input[type="checkbox"].donecheck{ width:16px; height:16px; cursor:pointer; }
+
+  .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
+  .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
+  .subhead{font-size:12px; color:var(--muted); margin:-6px 0 12px; line-height:1.5;}
+
+  .overview-nav{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  .overview-nav .navcard{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; text-align:left; width:100%; font-family:inherit;}
+  .overview-nav .navcard:hover{border-color:var(--copper);}
+  .overview-nav .navcard .t{font-size:14px; font-weight:700; color:var(--cream); margin-bottom:4px;}
+  .overview-nav .navcard .d{font-size:12px; color:var(--muted); line-height:1.4;}
+  .overview-nav .navcard .o{font-size:11px; color:var(--copper); margin-top:6px; font-style:italic;}
+
+  .team-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  .teamcard{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .teamcard-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .teamcard-name{font-size:15px; font-weight:700; color:var(--cream);}
+  .teamcard-title{font-size:12.5px; color:var(--copper); margin-top:2px; font-weight:600;}
+  .teamcard-reports{font-size:11.5px; color:var(--muted); margin-top:8px; font-style:italic;}
+  .teamcard-label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:10px; margin-bottom:4px;}
+  .teamcard-resp{font-size:13px; color:var(--sand); line-height:1.6; white-space:pre-line;}
+  .teamcard-actions{display:flex; gap:4px; align-items:center; margin-top:10px;}
+
+  .fill-note{background:rgba(217,154,26,.14); }
+
+  .toast-container{position:fixed; bottom:18px; right:18px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
+  .toast{
+    background:var(--night2); border:1px solid var(--copper); color:var(--cream); padding:10px 16px; border-radius:8px;
+    font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.35); opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s;
+    max-width:320px;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
+
+  /* ---------- page tabs ---------- */
+  .tabs-nav{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0; flex-wrap:wrap;}
+  .tab-btn{
+    background:none; border:none; color:var(--muted); font-size:13.5px; font-weight:600; cursor:pointer;
+    padding:10px 4px; margin-right:18px; border-bottom:2px solid transparent; font-family:inherit;
+  }
+  .tab-btn:hover{color:var(--cream);}
+  .tab-btn.active{color:var(--cream); border-bottom-color:var(--copper);}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  @media (max-width:820px){
+    .stat-row{grid-template-columns:repeat(2,1fr);}
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .overview-nav{grid-template-columns:1fr;}
+    .team-grid{grid-template-columns:1fr;}
+  }
+
+  @media print{
+    .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
+    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions{ display:none !important; }
+    .page{ display:block !important; }
+    body{ background:#fff; color:#111; }
+    .stat-tile, .notes, table, .prob-table{ background:#f4f4f4; border-color:#ccc; }
+    section.collapsed > *:not(.sechead){ display:block !important; }
+  }
+</style>
+</head>
+<body>
+<script>
+  window.__SAUD_READONLY__ = true;
+  window.__SAUD_DATA__ = {
+  "lastUpdated": "Sep 8, 2026",
+  "theme": {
+    "accent": "#199E70",
+    "bg": "#14201A",
+    "text": "#FBF6EA"
+  },
+  "stats": [
+    {
+      "label": "PHASES ADDRESSED",
+      "value": "2 of 4",
+      "sub": "Definition approved; piloting on real work not yet started",
+      "icon": ""
+    },
+    {
+      "label": "Capabilities defined",
+      "value": "12",
+      "sub": "Across Firas/Mohammed/Sameer + cross-cutting; 1 live, 11 framework-only"
+    },
+    {
+      "label": "Heads to pilot individually",
+      "value": "3",
+      "sub": "Firas, Mohammed, Sameer — each to try Saud once in their own lane"
+    },
+    {
+      "label": "Real-work pilots run",
+      "value": "0",
+      "sub": "Waiting on the first real RFP, lead, or proposal"
+    }
+  ],
+  "notes": "Saud is defined and approved, and is now live in the regular Claude app under Harith's account (the shared Project path, not the standalone API console). The next real milestone isn't a build — it's using Saud on real work and seeing whether the definition holds up. Deeper system access (Phase 3) and a standalone website (Phase 4) both wait on that answer. Owner: Harith — updates happen whenever he decides they're needed, not on a fixed schedule.",
+  "titles": {
+    "brand": "SAUD THE INTELLIGENCE AGENT",
+    "h1": "Saud - Progress Dashboard",
+    "subtitle": "The Creative Intelligence Agent - where things stand, what's proven, what's next.",
+    "ownerLine": "Owner: Al-Harith Hindi",
+    "sectionPhases": "Phase progress",
+    "sectionCaps": "Capabilities implemented, by team",
+    "sectionMatrix": "Capability & status matrix",
+    "sectionGaps": "Known gaps",
+    "sectionSteps": "Next steps",
+    "sectionNotes": "Notes",
+    "colCap": "Capability",
+    "colOwner": "Owner",
+    "colTier": "Tier",
+    "colStatus": "STATUS",
+    "footerNote": "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table headers, even section headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only.",
+    "sectionEtimad": "ETIMAD OPPORTUNITIES",
+    "sectionExternal": "EXTERNAL — ETIMAD TENDER PIPELINE",
+    "sectionInternal": "Internal Performance — RFP / Opportunity Pipeline",
+    "sectionProjects": "PROJECTS",
+    "sectionPrototypes": "PROTOTYPES TRACKER",
+    "sectionNews": "News — Coverage Tracker",
+    "sectionProbTable": "Win Probability by Stage",
+    "sectionTasks": "Recurring Tasks",
+    "sectionMilestones": "Next Steps (Milestones) — Next Month",
+    "sectionTodos": "To-Do List",
+    "sectionRaci": "OWNERSHIP",
+    "sectionSources": "Data Sources",
+    "sectionMethodology": "Methodology",
+    "sectionLegend": "Legend",
+    "sectionNextStep": "Next Step",
+    "sectionOverviewNav": "Sections",
+    "externalOwnerLine": "Owner: Firas · Etimad tender pipeline, tourism/exhibition filter.",
+    "internalOwnerLine": "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
+    "projectsOwnerLine": "Owner: Sameer · Status, financial, and operational tracking for live projects.",
+    "prototypesOwnerLine": "Owner: Mohammed · 'Value' is a placeholder score — redefine once a real scoring method is agreed.",
+    "externalFooterNote": "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic tender title by keyword match; feel free to keep that convention when filling this in.",
+    "internalFooterNote": "Weighted Value = Value × the win probability for that row's Stage, from the probability table below.",
+    "probNote": "Placeholder probabilities — replace with real figures once enough closed opportunities exist to calibrate a win-rate history.",
+    "legendPlaceholder": "Pale/amber highlight — placeholder or example data, still needs a real value.",
+    "legendStatusPills": "Status pills are colored by meaning (green = good/done, amber = in progress, red = blocked/lost) — the same convention across every tab.",
+    "legendKpiNote": "KPI tiles at the top of each tab recompute automatically from that tab's table rows — edit the rows, not the tiles.",
+    "navExternalTitle": "External",
+    "navExternalDesc": "Etimad tender pipeline + industry/press news tracking.",
+    "navExternalOwner": "Firas",
+    "navInternalTitle": "Internal Performance",
+    "navInternalDesc": "RFP pipeline — submitted, value, stage, next step.",
+    "navInternalOwner": "Firas",
+    "navProjectsTitle": "Projects & Prototypes",
+    "navProjectsDesc": "Live projects + the prototypes tracker.",
+    "navProjectsOwner": "Sameer / Mohammed",
+    "navTasksTitle": "Tasks & Next Steps",
+    "navTasksDesc": "Recurring tasks, next-month milestones, to-do list.",
+    "navTasksOwner": "All",
+    "navNotesTitle": "Notes & Legend",
+    "navNotesDesc": "Ownership, data sources, methodology.",
+    "navNotesOwner": "—",
+    "colExtRn": "RN",
+    "colExtName": "Competition Name",
+    "colExtAgency": "Agency",
+    "colExtFit": "Fit",
+    "colExtCategory": "Category",
+    "colExtDeadline": "Bid Deadline",
+    "colExtNotes": "Notes",
+    "colNewsDate": "Date",
+    "colNewsSource": "Source",
+    "colNewsHeadline": "Headline",
+    "colNewsRelevance": "Relevance to Midwam",
+    "colNewsLink": "Link",
+    "colNewsNotes": "Notes",
+    "colIntName": "Opportunity",
+    "colIntClient": "Client / Agency",
+    "colIntValue": "Value (SAR)",
+    "colIntStage": "Stage",
+    "colIntSubDate": "Submitted Date",
+    "colIntNext": "Next Step",
+    "colIntOwner": "Owner",
+    "colIntWeighted": "Weighted Value (SAR)",
+    "colProbStage": "Stage",
+    "colProbWin": "Win Probability",
+    "colProjName": "Project",
+    "colProjStatus": "Status",
+    "colProjFin": "Financially",
+    "colProjOps": "Operationally",
+    "colProjIssues": "Issues",
+    "colProjDeadline": "Deadline",
+    "colProtoName": "Prototype",
+    "colProtoStatus": "Status",
+    "colProtoTeam": "Team",
+    "colProtoNotes": "Notes",
+    "colProtoValue": "Value (score)",
+    "colTaskTask": "Task",
+    "colTaskOwner": "Owner",
+    "colTaskStatus": "Status",
+    "colTaskCadence": "Cadence",
+    "colTaskNotes": "Notes",
+    "colMsMilestone": "Milestone",
+    "colMsOwner": "Owner",
+    "colMsTarget": "Target Date",
+    "colMsStatus": "Status",
+    "colMsNotes": "Notes",
+    "colTodoDone": "Done",
+    "colTodoItem": "Item",
+    "colTodoOwner": "Owner",
+    "colTodoDue": "Due",
+    "colTodoNotes": "Notes",
+    "colRaciSection": "SECTION",
+    "colRaciOwner": "Primary Owner",
+    "colRaciBasis": "Basis",
+    "tabOverview": "Overview",
+    "tabExternal": "External",
+    "tabInternal": "Internal Performance",
+    "tabProjects": "Projects & Prototypes",
+    "tabTasks": "Tasks & Next Steps",
+    "tabNotes": "Notes & Legend",
+    "kpiRfpLabel": "RFP Submitted",
+    "kpiRfpSub": "from Internal Performance",
+    "kpiOppValueLabel": "Opportunity Value",
+    "kpiOppValueSub": "pipeline total, unweighted",
+    "kpiProjectsLabel": "Projects Tracked",
+    "kpiProjectsSub": "incl. closed cases",
+    "kpiPrototypesLabel": "Prototypes Tracked",
+    "kpiPrototypesSub": "in the Makers + on shelf",
+    "kpiOpenTasksLabel": "Open Tasks",
+    "kpiOpenTasksSub": "not yet marked Done",
+    "kpiExtOpenLabel": "Open Tenders Tracked",
+    "kpiExtOpenSub": "current baseline",
+    "kpiExtMissingLabel": "Missing Fit",
+    "kpiExtMissingSub": "need enrichment",
+    "kpiExtTopCatLabel": "Largest Category",
+    "kpiIntLoggedLabel": "Opportunities Logged",
+    "kpiIntLoggedSub": "all stages",
+    "kpiIntSubmittedLabel": "Submitted",
+    "kpiIntSubmittedSub": "stage = Submitted",
+    "kpiIntPipelineLabel": "Pipeline Value (SAR)",
+    "kpiIntPipelineSub": "sum, unweighted",
+    "kpiIntWeightedLabel": "Weighted Value (SAR)",
+    "kpiIntWeightedSub": "probability-adjusted",
+    "kpiProtoProgressLabel": "In Progress",
+    "kpiProtoProgressSub": "in the Makers",
+    "kpiProtoShelfLabel": "On Shelf",
+    "kpiProtoShelfSub": "paused / parked",
+    "kpiProtoValueLabel": "Value (score)",
+    "kpiProtoValueSub": "placeholder unit",
+    "btnHelp": "❓ Help",
+    "btnImportJson": "⬆ Import JSON",
+    "btnExportExcel": "⬇ Export Excel",
+    "btnExportPptx": "⬇ Export PPTX",
+    "btnExportJson": "⬇ Export JSON",
+    "btnPrint": "🖨 Print",
+    "btnTheme": "🎨 Theme",
+    "btnGithubSync": "⇄ GitHub sync",
+    "btnUndo": "↺ Undo",
+    "btnEdit": "✎ Edit",
+    "btnDoneEditing": "✓ Done editing",
+    "btnSaveToGithub": "Save to GitHub",
+    "btnConnectLoad": "Connect & Load",
+    "btnDismissDraft": "Dismiss",
+    "btnDiscardDraft": "Discard draft",
+    "btnResetTheme": "Reset to default",
+    "draftRestoredMsg": "📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.",
+    "helpHeading": "Tips & keyboard shortcuts",
+    "themeHeading": "Theme — change the dashboard's colors any time.",
+    "themeDesc": "Pick a preset (including a light \"Daylight\" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.",
+    "labelAccentColor": "Accent color",
+    "labelBackgroundColor": "Background color",
+    "labelTextColor": "Text color",
+    "githubSyncHeading": "GitHub sync — makes edits permanent and gives you a full history of every change.",
+    "githubSyncDesc": "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo (kept in this browser tab's memory only — never saved, never sent anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.",
+    "syncNotConnectedMsg": "Not connected — this page shows its built-in starting content until you connect.",
+    "addBtnTender": "+ add tender",
+    "addBtnNewsItem": "+ add item",
+    "addBtnOpportunity": "+ add opportunity",
+    "addBtnProject": "+ add project",
+    "addBtnPrototype": "+ add prototype",
+    "addBtnTask": "+ add task",
+    "addBtnMilestone": "+ add milestone",
+    "addBtnTodo": "+ add to-do",
+    "addBtnRaciRow": "+ add row",
+    "addBtnSource": "+ add source",
+    "addBtnMethodNote": "+ add note",
+    "labelLastUpdated": "Last updated:",
+    "btnSetToday": "Set to today",
+    "iconMoveUpTip": "Move up",
+    "iconMoveDownTip": "Move down",
+    "iconDuplicateTip": "Duplicate",
+    "tipChatOpen": "Ask Saud",
+    "tipChatClose": "Close",
+    "tipChatSend": "Send",
+    "chatFabIcon": "💬",
+    "chatHeaderIcon": "💬",
+    "chatCloseIcon": "✕",
+    "chatSendIcon": "➤",
+    "chatHeaderTitle": "Ask Saud",
+    "chatHeaderSub": "Grounded in this dashboard's live data",
+    "chatEmptyMsg": "Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
+    "helpBody": "• Click “✎ Edit” to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.\n• Ctrl/Cmd + S while editing saves straight to GitHub.\n• Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.\n• “↺ Undo” reverts the last structural change (add, remove, move, duplicate, color, or import).\n• Click any section title (outside edit mode) to collapse or expand it.\n• The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.\n• “Export JSON” / “Import JSON” let you back up or restore the whole dashboard without GitHub.\n• Connect “GitHub sync” to make edits permanent with full commit history; otherwise changes only autosave to this browser.",
+    "sectionMarketing": "Marketing — Campaigns & Initiatives",
+    "sectionTeam": "Team",
+    "marketingOwnerLine": "Owner: Faisal Almadani · Head of Marketing — campaigns, brand, and external communications for Saud's initiatives.",
+    "navMarketingTitle": "Marketing",
+    "navMarketingDesc": "Campaigns, brand, and external communications tracking.",
+    "navMarketingOwner": "Faisal",
+    "colMktInitiative": "Initiative / Campaign",
+    "colMktChannel": "Channel",
+    "colMktStatus": "Status",
+    "colMktTarget": "Target Date",
+    "colMktNotes": "Notes",
+    "tabMarketing": "Marketing",
+    "addBtnMarketing": "+ add campaign",
+    "addBtnTeam": "+ add team member",
+    "labelTeamReports": "Reports:",
+    "labelTeamResponsibilities": "Key Responsibilities:"
+  },
+  "autoColorPhases": true,
+  "external": [
+    {
+      "rn": "260839007106",
+      "name": "تفعيل خطة الاحتفال بمرور 300 عام على تأسيس الدولة السعودية",
+      "agency": "الهيئة السعودية للمواصفات والمقاييس والجودة",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-08 (time TBC)",
+      "notes": "National milestone celebration activation, year-round — squarely Event Management + Concept Design; large general competition (not a small direct-purchase job). — Request full RFP document via Etimad; confirm scope covers all SASO premises vs. HQ only; assess year-round activation logistics before bidding."
+    },
+    {
+      "rn": "260839005068",
+      "name": "اتفاقية اطارية لتنظيم وتشغيل الفعاليات في نادي سباقات الخيل",
+      "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-03 09:59",
+      "notes": "Multi-year framework agreement for full event organization/operation at a major sports venue — directly matches Event Management + Immersive Spaces pillars and the Sports target sector; recurring-revenue potential. — High-priority bid — request full framework terms, confirm duration/call-off structure, and prepare a portfolio-led proposal citing Midwam's sports/entertainment work."
+    },
+    {
+      "rn": "260839005227",
+      "name": "الاتفاقية الاطارية لتنفيذ فعاليات ومبادرات التواصل لمركز الملك عبدالعزيز للخيل العربية الأصيلة",
+      "agency": "مركز الملك عبدالعزيز للخيل العربية الأصيلة",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-18 09:59",
+      "notes": "Multi-supplier framework agreement for ongoing event execution, including external exhibition participations — strong match for Event Management, Booth Design & Exhibition, and Concept Design pillars; recurring call-off work. — High-priority bid — being one of several framework suppliers lowers the bar to entry; prepare a strong portfolio-based technical file."
+    },
+    {
+      "rn": "260839004514",
+      "name": "تنفيذ جولة كبار الشخصيات بمقر هيئة تطوير محافظة جدة",
+      "agency": "هيئة تطوير محافظة جدة",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-29 09:59",
+      "notes": "Visitor-center design showcasing strategy/projects for a VIP audience — a near-exact match for Midwam's Immersive Spaces and Concept Design pillars (comparable to the Masar and RCU experience-center portfolio work). — High-priority bid — lean directly on the Masar / Umm Al-Qura and RCU (Kidana) portfolio pieces as proof points; tight timeline so start technical file early."
+    },
+    {
+      "rn": "260839003549",
+      "name": "تنظيم وتشغيل فعاليات موسم سباقات الرياض 2026-2027م",
+      "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-30 09:59",
+      "notes": "Flagship, multi-month national sporting/social event — top-tier match for Event Management, Sports target sector, and Immersive Spaces at scale. — High-priority bid — this is likely the single highest-profile opportunity in the set; assemble a strong consortium proposal citing sports/entertainment portfolio work."
+    },
+    {
+      "rn": "260839003554",
+      "name": "مشاركة هيئة الصحة العامة (وقاية) في مؤتمر ومعرض الصحة العالمي 2026",
+      "agency": "هيئة الصحة العامة (وقاية)",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-30 10:00",
+      "notes": "A direct exhibition-booth design and delivery brief — exactly the Booth Design & Exhibition pillar, and a health-sector exhibition Midwam already has experience-center precedent for (Ithra, Masar). — High-priority bid — reuse Ithra/Masar interactive-exhibit case studies directly in the technical proposal."
+    },
+    {
+      "rn": "260839002543",
+      "name": "مشروع تصميم وتنفيذ وتشغيل جناح المدينة الطبية الجامعية في ملتقى الصحة العالمي 2026م",
+      "agency": "جامعة الملك سعود - المدينة الطبية الجامعية",
+      "fit": "Strong",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-25 09:59",
+      "notes": "Design + build + operate a full exhibition pavilion — the single closest match to Midwam's exact service line (Booth Design & Exhibition, Concept Design, Immersive Spaces) in the entire list. — Top priority, but bid deadline (2026-08-25) is very close — mobilize immediately; lean on Ithra/Masar/RCU pavilion-grade portfolio work."
+    },
+    {
+      "rn": "260839005192",
+      "name": "المناسبات الوطنية والأعياد الدينية لعام 1448هـ",
+      "agency": "رئاسة هيئة الأركان العامة - إدارة المشتريات (وزارة الدفاع)",
+      "fit": "Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-04 09:59",
+      "notes": "Larger general competition (military), recurring national-occasions program fits Event Management — but defense-sector contracts often carry security-clearance/vendor-vetting requirements Midwam should check first. — Confirm vendor eligibility/clearance requirements before investing in a proposal."
+    },
+    {
+      "rn": "260839002012",
+      "name": "تقديم وتنفيذ برنامج مسابقة وزارة الرياضة للقرآن الكريم والحديث الشريف — النسخة 18",
+      "agency": "وزارة الرياضة",
+      "fit": "Low-Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-04 09:59",
+      "notes": "A national competition program is closer to event operations/broadcast logistics than experience design — feasible but not a core strength. — Only pursue if Midwam wants to diversify into competition-program management."
+    },
+    {
+      "rn": "260839000010",
+      "name": "الإحتفاء باليوم العالمي للتطوع لمستفيدي الصندوق 2027-2028م",
+      "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
+      "fit": "Low-Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-10-08 09:59",
+      "notes": "Small-scale charity commemoration event; longer runway (into 2028) but modest production scope. — Low priority; consider only if pipeline is thin."
+    },
+    {
+      "rn": "260839005402",
+      "name": "إقامة فعالية الملتقى السنوي مع الرئيس التنفيذي لتجمع جدة الصحي الثاني",
+      "agency": "تجمع جدة الصحي الثاني",
+      "fit": "Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-02 09:59",
+      "notes": "Corporate town-hall event — fits Event Management but is a modest, single-day internal forum rather than a flagship experience project. — Viable if Midwam wants a foothold with Jeddah Health Cluster; moderate priority."
+    },
+    {
+      "rn": "260839004100",
+      "name": "إقامة احتفال اليوم الوطني 96",
+      "agency": "بلدية محافظة القريات",
+      "fit": "Low-Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-30 09:50",
+      "notes": "Larger municipal National Day event (2,000 SAR doc fee, general competition, not direct-purchase) — bigger than the other municipal listings but still a standard civic celebration. — Consider only if geographically convenient; not a flagship opportunity."
+    },
+    {
+      "rn": "260839002742",
+      "name": "منافسة تنفيذ وتغطية الجوانب الإعلامية للمؤتمرات وفعاليات جامعة شقراء",
+      "agency": "جامعة شقراء",
+      "fit": "Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-26 09:59",
+      "notes": "Media/content coverage work fits the Content Development pillar, but is production/coverage-led rather than design-led — a secondary rather than flagship fit. Note: the inquiry window has already closed, so only direct bid submission remains possible. — Viable but time-sensitive — confirm inquiry deadline has genuinely passed before allocating bid-writing resources."
+    },
+    {
+      "rn": "260839000243",
+      "name": "برنامج ضيوف خادم الحرمين الشريفين للعمرة والزيارة",
+      "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد",
+      "fit": "Medium",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-09-06 09:00",
+      "notes": "High-prestige national hospitality program, but core scope (guest logistics, travel, accommodation, religious-program hospitality) sits mostly outside Midwam's experience-design core and closer to full-service hospitality/DMC operations. — Pursue only in partnership with a hospitality/logistics operator; Midwam alone is unlikely to be competitive as prime contractor."
+    },
+    {
+      "rn": "260839002458",
+      "name": "تجهيز إحتفال اليوم الوطني لعام 1448ه لبلدية محافظة عيون الجواء",
+      "agency": "بلدية محافظة عيون الجواء",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-27 09:59",
+      "notes": "Small direct-purchase (200 SAR doc fee); typical scope is basic decor/staging for a small municipality — below Midwam's design-led positioning and likely too low-margin. — Skip unless Midwam wants a foothold with this municipality; otherwise not worth bid preparation cost."
+    },
+    {
+      "rn": "260839006553",
+      "name": "فعالية اليوم الوطني لعام 2026م بمجمع الملك عبدالله الطبي بجدة",
+      "agency": "تجمع جدة الصحي الثاني - مجمع الملك عبدالله الطبي بجدة",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-26 09:59",
+      "notes": "Small direct-purchase, hospital internal event — minimal design scope. — Skip — low value, tight 2-day turnaround."
+    },
+    {
+      "rn": "260839006597",
+      "name": "تأمين وتجهيز وتنفيذ إقامة احتفالات اليوم الوطني 96 لبلدية محافظة البدائع",
+      "agency": "بلدية محافظة البدائع",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-28 09:59",
+      "notes": "Small direct-purchase municipal decor job. — Skip."
+    },
+    {
+      "rn": "260839006580",
+      "name": "إقامة فعالية اليوم الوطني السعودي 96 لعام 2026م لمجمع إرادة والصحة النفسية بجدة",
+      "agency": "تجمع جدة الصحي الثاني - الموارد الذاتية",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-26 09:59",
+      "notes": "Small direct-purchase internal hospital event. — Skip."
+    },
+    {
+      "rn": "260839006052",
+      "name": "طلبات اليوم الوطني لعام 2026",
+      "agency": "مدينة الملك عبدالله الطبية بالعاصمة المقدسة",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-29 09:59",
+      "notes": "Supply-only request for materials, not design/production services. — Skip — this is a supplies tender, not experience design."
+    },
+    {
+      "rn": "260839006266",
+      "name": "التوعية الفكرية والإدارية",
+      "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع تبوك",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-25 09:59",
+      "notes": "Title suggests a training/awareness program rather than an event or exhibition — likely mis-tagged under the Exhibitions activity code; scope doesn't match Midwam's services. — Skip — verify scope before bidding; likely not a design/production fit."
+    },
+    {
+      "rn": "260839005798",
+      "name": "تجهيزات بمناسبة اليوم الوطني لفرع وزارة الشؤون الإسلامية بمنطقة جازان",
+      "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع جازان",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-24 09:59",
+      "notes": "Small direct-purchase decor job. — Skip."
+    },
+    {
+      "rn": "260839005217",
+      "name": "استئجار معدات وتجهيزات لحفل اليوم الوطني 96",
+      "agency": "كلية الملك خالد العـسكرية",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-29 09:59",
+      "notes": "Equipment-rental scope, not design services; military venue adds vetting overhead. — Skip."
+    },
+    {
+      "rn": "260839004866",
+      "name": "تظليل زجاج مركز الرقمنة لمجمع الملك عبد العزيز للمكتبات الوقفية",
+      "agency": "مجمع الملك عبدالعزيز للمكتبات الوقفية",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-08-24 09:59",
+      "notes": "Pure facilities/glazing works, not an event or experience-design scope — appears mis-tagged under the Exhibitions activity code. — Skip — outside Midwam's services entirely."
+    },
+    {
+      "rn": "260839000066",
+      "name": "حملة صندوق الشهداء للتبرع بالدم لمستفيدي الصندوق 2027-2028م",
+      "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
+      "fit": "Low",
+      "category": "Other/Uncategorized",
+      "bidDeadline": "2026-10-17 09:59",
+      "notes": "Medical/charity campaign logistics, not experience design. — Skip unless diversifying into CSR-campaign management."
+    }
+  ],
+  "news": [
+    {
+      "date": "—",
+      "source": "—",
+      "headline": "Connect GitHub sync above to load the real news tracker",
+      "relevance": "—",
+      "link": "—",
+      "notes": "—"
+    }
+  ],
+  "internal": [
+    {
+      "name": "Connect GitHub sync above to load the real opportunity pipeline",
+      "client": "—",
+      "value": 0,
+      "stage": "Not started",
+      "subDate": "—",
+      "nextStep": "—",
+      "owner": "—"
+    }
+  ],
+  "stageProbs": [
+    {
+      "stage": "Not started",
+      "prob": 10
+    },
+    {
+      "stage": "Drafting",
+      "prob": 20
+    },
+    {
+      "stage": "Submitted",
+      "prob": 50
+    },
+    {
+      "stage": "Shortlisted",
+      "prob": 70
+    },
+    {
+      "stage": "Awarded",
+      "prob": 100
+    },
+    {
+      "stage": "Lost",
+      "prob": 0
+    }
+  ],
+  "projects": [
+    {
+      "name": "Connect GitHub sync above to load the real projects list",
+      "status": "In progress",
+      "financially": "—",
+      "operationally": "—",
+      "issues": "—",
+      "deadline": "—"
+    }
+  ],
+  "prototypes": [
+    {
+      "name": "Connect GitHub sync above to load the real prototypes list",
+      "status": "On shelf",
+      "team": "—",
+      "notes": "—",
+      "value": "0"
+    }
+  ],
+  "tasks": [
+    {
+      "task": "Connect GitHub sync above to load the real recurring tasks list",
+      "owner": "—",
+      "status": "Not started",
+      "cadence": "—",
+      "notes": "—"
+    }
+  ],
+  "milestones": [
+    {
+      "milestone": "Connect GitHub sync above to load the real milestones list",
+      "owner": "—",
+      "targetDate": "—",
+      "status": "Not started",
+      "notes": "—"
+    }
+  ],
+  "todos": [
+    {
+      "done": false,
+      "item": "Connect GitHub sync above to load the real to-do list",
+      "owner": "—",
+      "due": "—",
+      "notes": "—"
+    }
+  ],
+  "raci": [
+    {
+      "section": "External / Internal Performance",
+      "owner": "—",
+      "basis": "—"
+    },
+    {
+      "section": "Projects in Operations",
+      "owner": "—",
+      "basis": "—"
+    },
+    {
+      "section": "Prototypes Tracker",
+      "owner": "—",
+      "basis": "—"
+    }
+  ],
+  "sources": [
+    "Connect GitHub sync above to load the real data-source citations."
+  ],
+  "methodology": [
+    "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab."
+  ],
+  "legacyV1": {
+    "phases": [
+      {
+        "name": "Phase 1 — Understand the Project",
+        "pct": 100,
+        "label": "Closed (Ghar Thawr test case)",
+        "color": "good"
+      },
+      {
+        "name": "Phase 2 — Define Saud's Capabilities",
+        "pct": 74,
+        "label": "Approved — piloting not started",
+        "color": "warning"
+      },
+      {
+        "name": "Interim — Delivery path (Claude Project)",
+        "pct": 100,
+        "label": "Live under Harith's account",
+        "color": "good"
+      },
+      {
+        "name": "Phase 3 — Build as Midwam's AI Employee",
+        "pct": 0,
+        "label": "Not started (deliberately deferred)",
+        "color": "muted"
+      },
+      {
+        "name": "Phase 4 — Saud's own website",
+        "pct": 0,
+        "label": "Not started, not yet decided",
+        "color": "muted"
+      }
+    ],
+    "capTeams": [
+      {
+        "team": "Firas — Business Development",
+        "role": "Client relationship & creative direction",
+        "num": "4",
+        "pct": 100,
+        "color": "orange",
+        "caption": "Framework locked (2 Tier 1, 2 Tier 2) — 0 piloted on real work yet"
+      },
+      {
+        "team": "Mohammed — Technical",
+        "role": "Technology/platform choice & coding only",
+        "num": "3",
+        "pct": 100,
+        "color": "blue",
+        "caption": "Framework locked (2 Tier 1, 1 Tier 2) — 0 piloted on real work yet"
+      },
+      {
+        "team": "Sameer — Operations",
+        "role": "Operations, vendors & cost",
+        "num": "2",
+        "pct": 100,
+        "color": "aqua",
+        "caption": "Framework locked (1 Tier 1, 1 Tier 2) — 0 piloted on real work yet"
+      }
+    ],
+    "matrix": [
+      {
+        "cap": "Competitor / market benchmarking",
+        "owner": "Firas",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Draft RFP evaluation doc",
+        "owner": "Firas",
+        "tier": "2",
+        "status": "Framework only",
+        "tierColor": "#f0a06f",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Draft proposal narrative sections",
+        "owner": "Firas",
+        "tier": "2",
+        "status": "Framework only",
+        "tierColor": "#f0a06f",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Tone / portfolio consistency check",
+        "owner": "Firas",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Capability / vendor feasibility check",
+        "owner": "Mohammed",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Draft technical-section input",
+        "owner": "Mohammed",
+        "tier": "2",
+        "status": "Framework only",
+        "tierColor": "#f0a06f",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Feasibility / timeline risk flagging",
+        "owner": "Mohammed",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Deliverable-readiness checklist",
+        "owner": "Sameer",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Draft risk / timeline section",
+        "owner": "Sameer",
+        "tier": "2",
+        "status": "Framework only",
+        "tierColor": "#f0a06f",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Independent / \"blind\" creative reads",
+        "owner": "Cross-cutting",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      },
+      {
+        "cap": "Self-critique pass on every analysis",
+        "owner": "Cross-cutting",
+        "tier": "1",
+        "status": "Live in console",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#5fd3a8"
+      },
+      {
+        "cap": "Knowledge-base staleness flagging",
+        "owner": "Cross-cutting",
+        "tier": "1",
+        "status": "Framework only",
+        "tierColor": "#5fd3a8",
+        "statusColor": "#f0a06f"
+      }
+    ],
+    "gaps": [
+      {
+        "text": "Framework is approved but untested on real business work — the actual pilot (Masterplan Step 3) hasn't happened yet.",
+        "sev": "critical"
+      },
+      {
+        "text": "Job descriptions (scope of responsibility) for Firas's, Mohammed's, and Sameer's teams not yet provided by each head.",
+        "sev": "warning"
+      },
+      {
+        "text": "No vendor pricing or commercial terms on file yet.",
+        "sev": "warning"
+      },
+      {
+        "text": "No visibility into past proposal win/loss history to sharpen benchmarking.",
+        "sev": "warning"
+      },
+      {
+        "text": "Two parallel systems exist (Claude Project + standalone Live Console) — Step 5 hasn't decided which one survives.",
+        "sev": "warning"
+      }
+    ],
+    "steps": [
+      "Use Saud yourself on real or near-real questions before anyone else touches it — deliberately try crossing lanes to test whether the role boundaries actually hold.",
+      "Pilot 2-3 Tier 1/2 capabilities on the first real RFP, lead, or proposal that comes in — this is the missing proof point everything else depends on.",
+      "Bring in Firas, Mohammed, and Sameer individually, each in their own lane, and ask honestly whether Saud helped or got in the way.",
+      "Decide whether the standalone Live Console gets retired, kept as a lightweight tool, or becomes the seed of a real backend app.",
+      "Only after the pilot and head trials show real signal, revisit Phase 3 (giving Saud real system access) with a proper scoping conversation.",
+      "Only after Phase 3 is proven, revisit Phase 4 — a standalone Saud website."
+    ],
+    "etimad": [
+      {
+        "fit": "Strong",
+        "name": "تفعيل خطة الاحتفال بمرور 300 عام على تأسيس الدولة السعودية",
+        "agency": "الهيئة السعودية للمواصفات والمقاييس والجودة",
+        "rn": "260839007106",
+        "type": "منافسة عامة",
+        "inqStart": "2026-08-23",
+        "inqDeadline": "2026-08-29",
+        "bidDeadline": "2026-09-08 (time TBC)",
+        "award": "2026-09-20 (est., per detail page)",
+        "projStart": "2026-09-21 (est., per detail page)",
+        "method": "Single combined technical & financial file",
+        "place": "Within the Kingdom (multiple SASO premises)",
+        "details": "Year-round activation of the 300-year Saudi founding-anniversary celebration across SASO premises, per requirements from the Ministry of HR & Social Development.",
+        "price": "1,500 SAR",
+        "rationale": "National milestone celebration activation, year-round — squarely Event Management + Concept Design; large general competition (not a small direct-purchase job).",
+        "partners": "Possible AV/fabrication subcontractor for multi-site rollout.",
+        "next": "Request full RFP document via Etimad; confirm scope covers all SASO premises vs. HQ only; assess year-round activation logistics before bidding."
+      },
+      {
+        "fit": "Strong",
+        "name": "اتفاقية اطارية لتنظيم وتشغيل الفعاليات في نادي سباقات الخيل",
+        "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
+        "rn": "260839005068",
+        "type": "منافسة اتفاقية إطارية",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-28",
+        "bidDeadline": "2026-09-03 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Framework agreement to organize and operate events at the Jockey Club that fall outside the racing-season calendar.",
+        "price": "1,000 SAR",
+        "rationale": "Multi-year framework agreement for full event organization/operation at a major sports venue — directly matches Event Management + Immersive Spaces pillars and the Sports target sector; recurring-revenue potential.",
+        "partners": "Hospitality/catering subcontractor for large crowd events.",
+        "next": "High-priority bid — request full framework terms, confirm duration/call-off structure, and prepare a portfolio-led proposal citing Midwam's sports/entertainment work."
+      },
+      {
+        "fit": "Strong",
+        "name": "الاتفاقية الاطارية لتنفيذ فعاليات ومبادرات التواصل لمركز الملك عبدالعزيز للخيل العربية الأصيلة",
+        "agency": "مركز الملك عبدالعزيز للخيل العربية الأصيلة",
+        "rn": "260839005227",
+        "type": "منافسة اتفاقية إطارية",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-09-02",
+        "bidDeadline": "2026-09-18 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Two separate files (technical & financial)",
+        "place": "Not specified on public listing",
+        "details": "Framework agreement with a panel of specialized suppliers to organize/execute internal and external communication events and initiatives supporting the Center's staff and visitors, including external participations, for the agreement's full term.",
+        "price": "1,000 SAR",
+        "rationale": "Multi-supplier framework agreement for ongoing event execution, including external exhibition participations — strong match for Event Management, Booth Design & Exhibition, and Concept Design pillars; recurring call-off work.",
+        "partners": "Equestrian-sector specialist may strengthen technical narrative.",
+        "next": "High-priority bid — being one of several framework suppliers lowers the bar to entry; prepare a strong portfolio-based technical file."
+      },
+      {
+        "fit": "Strong",
+        "name": "تنفيذ جولة كبار الشخصيات بمقر هيئة تطوير محافظة جدة",
+        "agency": "هيئة تطوير محافظة جدة",
+        "rn": "260839004514",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-20",
+        "bidDeadline": "2026-08-29 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Fit-out of a visitor center at the Jeddah Development Authority's HQ to showcase the Authority's strategy, flagship projects and development initiatives, timed to coincide with a VIP tour attended by senior officials.",
+        "price": "550 SAR",
+        "rationale": "Visitor-center design showcasing strategy/projects for a VIP audience — a near-exact match for Midwam's Immersive Spaces and Concept Design pillars (comparable to the Masar and RCU experience-center portfolio work).",
+        "partners": "None likely needed — well within core capability.",
+        "next": "High-priority bid — lean directly on the Masar / Umm Al-Qura and RCU (Kidana) portfolio pieces as proof points; tight timeline so start technical file early."
+      },
+      {
+        "fit": "Strong",
+        "name": "تنظيم وتشغيل فعاليات موسم سباقات الرياض 2026-2027م",
+        "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
+        "rn": "260839003549",
+        "type": "منافسة اتفاقية إطارية",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-08-30 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Organization and operation of the Riyadh Racing Season 2026-2027, one of Saudi Arabia's flagship sporting/social events, held over several months at the King Abdulaziz Racetrack, Riyadh, from October 2026 to April 2027.",
+        "price": "1,500 SAR",
+        "rationale": "Flagship, multi-month national sporting/social event — top-tier match for Event Management, Sports target sector, and Immersive Spaces at scale.",
+        "partners": "Large-scale AV/production and hospitality subcontractors will be needed given the multi-month scale.",
+        "next": "High-priority bid — this is likely the single highest-profile opportunity in the set; assemble a strong consortium proposal citing sports/entertainment portfolio work."
+      },
+      {
+        "fit": "Strong",
+        "name": "مشاركة هيئة الصحة العامة (وقاية) في مؤتمر ومعرض الصحة العالمي 2026",
+        "agency": "هيئة الصحة العامة (وقاية)",
+        "rn": "260839003554",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-08-30 10:00",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Two separate files (technical & financial)",
+        "place": "Not specified on public listing",
+        "details": "Design and delivery of the Public Health Authority (Waqaya)'s participation/booth at the Global Health Exhibition 2026, to promote its programs and raise public-health awareness among visitors.",
+        "price": "700 SAR",
+        "rationale": "A direct exhibition-booth design and delivery brief — exactly the Booth Design & Exhibition pillar, and a health-sector exhibition Midwam already has experience-center precedent for (Ithra, Masar).",
+        "partners": "None likely needed.",
+        "next": "High-priority bid — reuse Ithra/Masar interactive-exhibit case studies directly in the technical proposal."
+      },
+      {
+        "fit": "Strong",
+        "name": "مشروع تصميم وتنفيذ وتشغيل جناح المدينة الطبية الجامعية في ملتقى الصحة العالمي 2026م",
+        "agency": "جامعة الملك سعود - المدينة الطبية الجامعية",
+        "rn": "260839002543",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-19 (already passed at time of review)",
+        "bidDeadline": "2026-08-25 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Design, execution, and operation of King Saud University Medical City's pavilion at the Global Health Exhibition 2026.",
+        "price": "1,000 SAR",
+        "rationale": "Design + build + operate a full exhibition pavilion — the single closest match to Midwam's exact service line (Booth Design & Exhibition, Concept Design, Immersive Spaces) in the entire list.",
+        "partners": "None likely needed.",
+        "next": "Top priority, but bid deadline (2026-08-25) is very close — mobilize immediately; lean on Ithra/Masar/RCU pavilion-grade portfolio work."
+      },
+      {
+        "fit": "Medium",
+        "name": "المناسبات الوطنية والأعياد الدينية لعام 1448هـ",
+        "agency": "رئاسة هيئة الأركان العامة - إدارة المشتريات (وزارة الدفاع)",
+        "rn": "260839005192",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-29",
+        "bidDeadline": "2026-09-04 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National occasions and religious holidays program for 1448H, Ministry of Defense / General Staff.",
+        "price": "700 SAR",
+        "rationale": "Larger general competition (military), recurring national-occasions program fits Event Management — but defense-sector contracts often carry security-clearance/vendor-vetting requirements Midwam should check first.",
+        "partners": "Possible security-cleared local logistics partner.",
+        "next": "Confirm vendor eligibility/clearance requirements before investing in a proposal."
+      },
+      {
+        "fit": "Low-Medium",
+        "name": "تقديم وتنفيذ برنامج مسابقة وزارة الرياضة للقرآن الكريم والحديث الشريف — النسخة 18",
+        "agency": "وزارة الرياضة",
+        "rn": "260839002012",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-29",
+        "bidDeadline": "2026-09-04 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Two separate files (technical & financial)",
+        "place": "Not specified on public listing",
+        "details": "Delivery and execution of the Ministry of Sport's 18th Quran & Hadith competition program (local & central).",
+        "price": "1,000 SAR",
+        "rationale": "A national competition program is closer to event operations/broadcast logistics than experience design — feasible but not a core strength.",
+        "partners": "Broadcast/production partner likely needed.",
+        "next": "Only pursue if Midwam wants to diversify into competition-program management."
+      },
+      {
+        "fit": "Low-Medium",
+        "name": "الإحتفاء باليوم العالمي للتطوع لمستفيدي الصندوق 2027-2028م",
+        "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
+        "rn": "260839000010",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-09-07",
+        "bidDeadline": "2026-10-08 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "World Volunteer Day observance for beneficiaries of the Martyrs' Fund, spanning 2027-2028.",
+        "price": "700 SAR",
+        "rationale": "Small-scale charity commemoration event; longer runway (into 2028) but modest production scope.",
+        "partners": "N/A",
+        "next": "Low priority; consider only if pipeline is thin."
+      },
+      {
+        "fit": "Medium",
+        "name": "إقامة فعالية الملتقى السنوي مع الرئيس التنفيذي لتجمع جدة الصحي الثاني",
+        "agency": "تجمع جدة الصحي الثاني",
+        "rn": "260839005402",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-09-02 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Annual town-hall forum opening a direct communication channel between the CEO and health-cluster staff.",
+        "price": "500 SAR",
+        "rationale": "Corporate town-hall event — fits Event Management but is a modest, single-day internal forum rather than a flagship experience project.",
+        "partners": "N/A",
+        "next": "Viable if Midwam wants a foothold with Jeddah Health Cluster; moderate priority."
+      },
+      {
+        "fit": "Low-Medium",
+        "name": "إقامة احتفال اليوم الوطني 96",
+        "agency": "بلدية محافظة القريات",
+        "rn": "260839004100",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-23",
+        "bidDeadline": "2026-08-30 09:50",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Two separate files (technical & financial)",
+        "place": "Not specified on public listing",
+        "details": "National Day 96 celebration for a municipality.",
+        "price": "2,000 SAR",
+        "rationale": "Larger municipal National Day event (2,000 SAR doc fee, general competition, not direct-purchase) — bigger than the other municipal listings but still a standard civic celebration.",
+        "partners": "N/A",
+        "next": "Consider only if geographically convenient; not a flagship opportunity."
+      },
+      {
+        "fit": "Medium",
+        "name": "منافسة تنفيذ وتغطية الجوانب الإعلامية للمؤتمرات وفعاليات جامعة شقراء",
+        "agency": "جامعة شقراء",
+        "rn": "260839002742",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-17 (already passed at time of review)",
+        "bidDeadline": "2026-08-26 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Media execution and coverage of the university's conferences and events.",
+        "price": "1,000 SAR",
+        "rationale": "Media/content coverage work fits the Content Development pillar, but is production/coverage-led rather than design-led — a secondary rather than flagship fit. Note: the inquiry window has already closed, so only direct bid submission remains possible.",
+        "partners": "Videography/production crew if not already staffed for this scale.",
+        "next": "Viable but time-sensitive — confirm inquiry deadline has genuinely passed before allocating bid-writing resources."
+      },
+      {
+        "fit": "Medium",
+        "name": "برنامج ضيوف خادم الحرمين الشريفين للعمرة والزيارة",
+        "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد",
+        "rn": "260839000243",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-20 (already passed at time of review)",
+        "bidDeadline": "2026-09-06 09:00",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Two separate files (technical & financial)",
+        "place": "Not specified on public listing",
+        "details": "Execution of the Ministry's Custodian of the Two Holy Mosques' Guests program for Umrah and visitation.",
+        "price": "1,000 SAR",
+        "rationale": "High-prestige national hospitality program, but core scope (guest logistics, travel, accommodation, religious-program hospitality) sits mostly outside Midwam's experience-design core and closer to full-service hospitality/DMC operations.",
+        "partners": "A hospitality/DMC operator partner would very likely be required to lead logistics, with Midwam contributing experience-design touches.",
+        "next": "Pursue only in partnership with a hospitality/logistics operator; Midwam alone is unlikely to be competitive as prime contractor."
+      },
+      {
+        "fit": "Low",
+        "name": "تجهيز إحتفال اليوم الوطني لعام 1448ه لبلدية محافظة عيون الجواء",
+        "agency": "بلدية محافظة عيون الجواء",
+        "rn": "260839002458",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-25",
+        "bidDeadline": "2026-08-27 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National Day celebration setup for a small-town municipality.",
+        "price": "200 SAR",
+        "rationale": "Small direct-purchase (200 SAR doc fee); typical scope is basic decor/staging for a small municipality — below Midwam's design-led positioning and likely too low-margin.",
+        "partners": "N/A",
+        "next": "Skip unless Midwam wants a foothold with this municipality; otherwise not worth bid preparation cost."
+      },
+      {
+        "fit": "Low",
+        "name": "فعالية اليوم الوطني لعام 2026م بمجمع الملك عبدالله الطبي بجدة",
+        "agency": "تجمع جدة الصحي الثاني - مجمع الملك عبدالله الطبي بجدة",
+        "rn": "260839006553",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-24",
+        "bidDeadline": "2026-08-26 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National Day event for a hospital complex in Jeddah.",
+        "price": "200 SAR",
+        "rationale": "Small direct-purchase, hospital internal event — minimal design scope.",
+        "partners": "N/A",
+        "next": "Skip — low value, tight 2-day turnaround."
+      },
+      {
+        "fit": "Low",
+        "name": "تأمين وتجهيز وتنفيذ إقامة احتفالات اليوم الوطني 96 لبلدية محافظة البدائع",
+        "agency": "بلدية محافظة البدائع",
+        "rn": "260839006597",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-23",
+        "bidDeadline": "2026-08-28 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National Day celebration setup for a small municipality.",
+        "price": "200 SAR",
+        "rationale": "Small direct-purchase municipal decor job.",
+        "partners": "N/A",
+        "next": "Skip."
+      },
+      {
+        "fit": "Low",
+        "name": "إقامة فعالية اليوم الوطني السعودي 96 لعام 2026م لمجمع إرادة والصحة النفسية بجدة",
+        "agency": "تجمع جدة الصحي الثاني - الموارد الذاتية",
+        "rn": "260839006580",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-08-26 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National Day event for a mental-health complex in Jeddah.",
+        "price": "200 SAR",
+        "rationale": "Small direct-purchase internal hospital event.",
+        "partners": "N/A",
+        "next": "Skip."
+      },
+      {
+        "fit": "Low",
+        "name": "طلبات اليوم الوطني لعام 2026",
+        "agency": "مدينة الملك عبدالله الطبية بالعاصمة المقدسة",
+        "rn": "260839006052",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-24",
+        "bidDeadline": "2026-08-29 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Supply of National Day celebration requirements/materials for a medical city.",
+        "price": "200 SAR",
+        "rationale": "Supply-only request for materials, not design/production services.",
+        "partners": "N/A",
+        "next": "Skip — this is a supplies tender, not experience design."
+      },
+      {
+        "fit": "Low",
+        "name": "التوعية الفكرية والإدارية",
+        "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع تبوك",
+        "rn": "260839006266",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-08-25 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "\"Intellectual and administrative awareness\" services — appears to be an internal training/awareness program, not an event or exhibition.",
+        "price": "200 SAR",
+        "rationale": "Title suggests a training/awareness program rather than an event or exhibition — likely mis-tagged under the Exhibitions activity code; scope doesn't match Midwam's services.",
+        "partners": "N/A",
+        "next": "Skip — verify scope before bidding; likely not a design/production fit."
+      },
+      {
+        "fit": "Low",
+        "name": "تجهيزات بمناسبة اليوم الوطني لفرع وزارة الشؤون الإسلامية بمنطقة جازان",
+        "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع جازان",
+        "rn": "260839005798",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-22",
+        "bidDeadline": "2026-08-24 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "National Day preparations for a regional ministry branch.",
+        "price": "200 SAR",
+        "rationale": "Small direct-purchase decor job.",
+        "partners": "N/A",
+        "next": "Skip."
+      },
+      {
+        "fit": "Low",
+        "name": "استئجار معدات وتجهيزات لحفل اليوم الوطني 96",
+        "agency": "كلية الملك خالد العـسكرية",
+        "rn": "260839005217",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-27",
+        "bidDeadline": "2026-08-29 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Rental of equipment and setup for a National Day ceremony at a military college.",
+        "price": "200 SAR",
+        "rationale": "Equipment-rental scope, not design services; military venue adds vetting overhead.",
+        "partners": "N/A",
+        "next": "Skip."
+      },
+      {
+        "fit": "Low",
+        "name": "تظليل زجاج مركز الرقمنة لمجمع الملك عبد العزيز للمكتبات الوقفية",
+        "agency": "مجمع الملك عبدالعزيز للمكتبات الوقفية",
+        "rn": "260839004866",
+        "type": "شراء مباشر",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-08-20",
+        "bidDeadline": "2026-08-24 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Glass tinting/shading for a digitization center's windows.",
+        "price": "200 SAR",
+        "rationale": "Pure facilities/glazing works, not an event or experience-design scope — appears mis-tagged under the Exhibitions activity code.",
+        "partners": "N/A",
+        "next": "Skip — outside Midwam's services entirely."
+      },
+      {
+        "fit": "Low",
+        "name": "حملة صندوق الشهداء للتبرع بالدم لمستفيدي الصندوق 2027-2028م",
+        "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
+        "rn": "260839000066",
+        "type": "منافسة عامة",
+        "inqStart": "Not published — confirm after purchasing tender documents",
+        "inqDeadline": "2026-09-05",
+        "bidDeadline": "2026-10-17 09:59",
+        "award": "Not published — confirm after purchasing tender documents",
+        "projStart": "Not published — confirm after purchasing tender documents",
+        "method": "Single combined technical & financial file",
+        "place": "Not specified on public listing",
+        "details": "Blood-donation campaign run as a charitable activity benefiting the Fund's beneficiaries, 2027-2028.",
+        "price": "700 SAR",
+        "rationale": "Medical/charity campaign logistics, not experience design.",
+        "partners": "Medical logistics partner would be required regardless.",
+        "next": "Skip unless diversifying into CSR-campaign management."
+      }
+    ],
+    "etimadExcluded": [
+      {
+        "name": "تنظيم فعاليات الإعاقة لعام 2026م",
+        "agency": "DISABILITY CARE AUTHORITY",
+        "rn": "2000002225",
+        "deadline": "2026-07-13 12:00",
+        "reason": "Bid deadline already passed despite showing under the Active filter; legacy-system listing with no working visitor detail page."
+      },
+      {
+        "name": "تنظيم اللقاءات وورش العمل",
+        "agency": "AL-AHSA DEVELOPMENT AUTHORITY",
+        "rn": "2000002085",
+        "deadline": "2026-06-28 13:00",
+        "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+      },
+      {
+        "name": "تأمين مواد الضيافة للهيئة لعام 2026م",
+        "agency": "DISABILITY CARE AUTHORITY",
+        "rn": "2000001422",
+        "deadline": "2026-07-29 13:00",
+        "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+      },
+      {
+        "name": "تفعيل قطاع الاستثمار وتطوير الشراكات",
+        "agency": "AL-AHSA DEVELOPMENT AUTHORITY",
+        "rn": "2000001632",
+        "deadline": "2026-06-03 14:00",
+        "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+      }
+    ],
+    "customSections": []
+  },
+  "_migratedV2": true,
+  "marketing": [
+    {
+      "initiative": "Connect GitHub sync above to load the real marketing initiatives list",
+      "channel": "—",
+      "status": "Not started",
+      "targetDate": "—",
+      "notes": "—"
+    }
+  ],
+  "team": [
+    {
+      "name": "Firas Abuzinada",
+      "title": "Head of Business Development",
+      "reports": "Reports to: Trad Nazer",
+      "responsibilities": "• Sources and qualifies new tender opportunities (Etimad + direct outreach)\n• Owns proposal development and RFP submissions\n• Tracks win probability and pipeline value"
+    },
+    {
+      "name": "Sameer Gulam",
+      "title": "Head of Operations",
+      "reports": "Reports to: Trad Nazer",
+      "responsibilities": "• Oversees live project execution and delivery\n• Manages operational status, issues, and deadlines\n• Coordinates cross-team resourcing"
+    },
+    {
+      "name": "Mohammed Alsanie",
+      "title": "Head of Creative",
+      "reports": "Reports to: Trad Nazer",
+      "responsibilities": "• Leads prototype development and creative direction\n• Owns creative scoring and concept development\n• Reviews creative output before client delivery"
+    },
+    {
+      "name": "Faisal Almadani",
+      "title": "Head of Marketing",
+      "reports": "Reports to: Trad Nazer",
+      "responsibilities": "• Owns campaign planning and brand strategy\n• Manages external communications and marketing channels\n• Tracks marketing initiative status and outcomes"
+    }
+  ]
+};
+</script>
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand" id="brandEl" data-bind="titles.brand"></div>
+      <h1 id="h1El" data-bind="titles.h1"></h1>
+      <p id="subtitleEl" data-bind="titles.subtitle"></p>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+      <div class="meta">
+        <div class="lastup-row">
+          <span><span data-bind="titles.labelLastUpdated"></span> <span id="lastUpdatedText" data-bind="lastUpdated"></span></span>
+          <button class="tinybtn edit-only" id="setTodayBtn"><span data-bind="titles.btnSetToday"></span></button>
+        </div>
+        <span id="ownerLineEl" data-bind="titles.ownerLine"></span>
+        <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
+      </div>
+      <div class="editbar">
+        <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
+        <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
+        <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
+        <button class="editbtn secondary" id="toggleSync"><span data-bind="titles.btnGithubSync"></span></button>
+        <button class="editbtn secondary edit-only" id="undoBtn" disabled><span data-bind="titles.btnUndo"></span></button>
+        <button class="editbtn secondary" id="toggleEdit"><span data-bind="titles.btnEdit"></span></button>
+        <button class="editbtn" id="saveBtn" style="display:none;"><span data-bind="titles.btnSaveToGithub"></span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="draft-banner" id="draftBanner">
+    <span data-bind="titles.draftRestoredMsg"></span>
+    <span>
+      <button onclick="dismissLocalDraft()" data-bind="titles.btnDismissDraft"></button>
+      <button onclick="discardLocalDraft()" data-bind="titles.btnDiscardDraft"></button>
+    </span>
+  </div>
+
+  <div class="sync-panel" id="themePanel">
+    <b data-bind="titles.themeHeading"></b><br>
+    <span data-bind="titles.themeDesc"></span>
+    <div class="row" id="themePresets"></div>
+    <div class="row" style="align-items:center;">
+      <span style="font-size:12px; color:var(--muted);" data-bind="titles.labelAccentColor"></span>
+      <input type="color" id="accentPicker" value="#C1701E">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelBackgroundColor"></span>
+      <input type="color" id="bgPicker" value="#1F1B16">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelTextColor"></span>
+      <input type="color" id="textPicker" value="#FBF6EA">
+      <button class="editbtn secondary" onclick="resetTheme()"><span data-bind="titles.btnResetTheme"></span></button>
+    </div>
+  </div>
+
+  <div class="sync-panel" id="syncPanel">
+    <b data-bind="titles.githubSyncHeading"></b><br>
+    <span data-bind="titles.githubSyncDesc"></span>
+    <div class="row">
+      <input class="token" type="password" id="ghToken" placeholder="GitHub personal access token (ghp_...)">
+      <input class="short" type="text" id="ghOwner" placeholder="repo owner / org">
+      <input class="short" type="text" id="ghRepo" placeholder="repo name">
+      <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
+      <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
+      <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
+    </div>
+    <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
+  </div>
+
+  <div class="tabs-nav" id="tabsNav">
+    <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
+    <button class="tab-btn" data-page="external" onclick="switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
+    <button class="tab-btn" data-page="internal" onclick="switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
+    <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
+    <button class="tab-btn" data-page="marketing" onclick="switchPage('marketing')"><span data-bind="titles.tabMarketing"></span></button>
+    <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
+    <button class="tab-btn" data-page="notes" onclick="switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
+  </div>
+
+  <!-- ============================== OVERVIEW ============================== -->
+  <div class="page active" id="page-overview">
+    <div class="stat-row" id="statRow"></div>
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionOverviewNav"></h2></div>
+      <div class="overview-nav" id="overviewNav"></div>
+    </section>
+  </div>
+
+  <!-- ============================== EXTERNAL ============================== -->
+  <div class="page" id="page-external">
+    <section>
+      <div class="sechead">
+        <h2 id="secExternalTitle" data-bind="titles.sectionExternal"></h2>
+        <div class="sechead-actions">
+          <button class="editbtn secondary" id="exportExternalExcelBtn" onclick="exportExternalExcel()"><span data-bind="titles.btnExportExcel"></span></button>
+          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New tender', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})"><span data-bind="titles.addBtnTender"></span></button>
+        </div>
+      </div>
+      <div class="subhead" data-bind="titles.externalOwnerLine"></div>
+      <div class="kpi-row" id="externalKpis"></div>
+      <input type="text" class="row-search" id="externalSearch" placeholder="🔎 Search competition name, agency, or RN...">
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colExtRn"></th><th data-bind="titles.colExtName"></th><th data-bind="titles.colExtAgency"></th>
+            <th data-bind="titles.colExtFit"></th><th data-bind="titles.colExtCategory"></th><th data-bind="titles.colExtDeadline"></th>
+            <th data-bind="titles.colExtNotes"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="externalBody"></tbody>
+        </table>
+      </div>
+      <div class="footer-note" data-bind="titles.externalFooterNote"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionNews"></h2>
+        <button class="addbtn" onclick="addRow('news', {date:'', source:'', headline:'New headline', relevance:'', link:'', notes:''})"><span data-bind="titles.addBtnNewsItem"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colNewsDate"></th><th data-bind="titles.colNewsSource"></th><th data-bind="titles.colNewsHeadline"></th>
+            <th data-bind="titles.colNewsRelevance"></th><th data-bind="titles.colNewsLink"></th><th data-bind="titles.colNewsNotes"></th>
+            <th class="actions"></th>
+          </tr></thead>
+          <tbody id="newsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== INTERNAL PERFORMANCE ============================== -->
+  <div class="page" id="page-internal">
+    <section>
+      <div class="sechead">
+        <h2 id="secInternalTitle" data-bind="titles.sectionInternal"></h2>
+        <button class="addbtn" onclick="addRow('internal', {name:'New opportunity', client:'', value:0, stage:'Not started', subDate:'', nextStep:'', owner:''})"><span data-bind="titles.addBtnOpportunity"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.internalOwnerLine"></div>
+      <div class="kpi-row" id="internalKpis"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colIntName"></th><th data-bind="titles.colIntClient"></th><th data-bind="titles.colIntValue"></th>
+            <th data-bind="titles.colIntStage"></th><th data-bind="titles.colIntSubDate"></th><th data-bind="titles.colIntNext"></th>
+            <th data-bind="titles.colIntOwner"></th><th data-bind="titles.colIntWeighted"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="internalBody"></tbody>
+        </table>
+      </div>
+      <div class="footer-note" data-bind="titles.internalFooterNote"></div>
+    </section>
+
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionProbTable"></h2></div>
+      <table class="prob-table" id="probTable"></table>
+      <div class="prob-note" data-bind="titles.probNote"></div>
+    </section>
+  </div>
+
+  <!-- ============================== PROJECTS & PROTOTYPES ============================== -->
+  <div class="page" id="page-projects">
+    <section>
+      <div class="sechead">
+        <h2 id="secProjectsTitle" data-bind="titles.sectionProjects"></h2>
+        <button class="addbtn" onclick="addRow('projects', {name:'New project', status:'Not started', financially:'', operationally:'', issues:'', deadline:''})"><span data-bind="titles.addBtnProject"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.projectsOwnerLine"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colProjName"></th><th data-bind="titles.colProjStatus"></th><th data-bind="titles.colProjFin"></th>
+            <th data-bind="titles.colProjOps"></th><th data-bind="titles.colProjIssues"></th><th data-bind="titles.colProjDeadline"></th>
+            <th class="actions"></th>
+          </tr></thead>
+          <tbody id="projectsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 id="secPrototypesTitle" data-bind="titles.sectionPrototypes"></h2>
+        <button class="addbtn" onclick="addRow('prototypes', {name:'New prototype', status:'In the Makers', team:'', notes:'', value:0})"><span data-bind="titles.addBtnPrototype"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.prototypesOwnerLine"></div>
+      <div class="kpi-row" id="prototypesKpis"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colProtoName"></th><th data-bind="titles.colProtoStatus"></th><th data-bind="titles.colProtoTeam"></th>
+            <th data-bind="titles.colProtoNotes"></th><th data-bind="titles.colProtoValue"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="prototypesBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== MARKETING ============================== -->
+  <div class="page" id="page-marketing">
+    <section>
+      <div class="sechead">
+        <h2 id="secMarketingTitle" data-bind="titles.sectionMarketing"></h2>
+        <button class="addbtn" onclick="addRow('marketing', {initiative:'New initiative', channel:'', status:'Not started', targetDate:'', notes:''})"><span data-bind="titles.addBtnMarketing"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.marketingOwnerLine"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr>
+            <th data-bind="titles.colMktInitiative"></th><th data-bind="titles.colMktChannel"></th><th data-bind="titles.colMktStatus"></th>
+            <th data-bind="titles.colMktTarget"></th><th data-bind="titles.colMktNotes"></th><th class="actions"></th>
+          </tr></thead>
+          <tbody id="marketingBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== TASKS & NEXT STEPS ============================== -->
+  <div class="page" id="page-tasks">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionTasks"></h2>
+        <button class="addbtn" onclick="addRow('tasks', {task:'New task', owner:'', status:'Not started', cadence:'Monthly', notes:''})"><span data-bind="titles.addBtnTask"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colTaskTask"></th><th data-bind="titles.colTaskOwner"></th><th data-bind="titles.colTaskStatus"></th><th data-bind="titles.colTaskCadence"></th><th data-bind="titles.colTaskNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="tasksBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMilestones"></h2>
+        <button class="addbtn" onclick="addRow('milestones', {milestone:'New milestone', owner:'', targetDate:'', status:'Not started', notes:''})"><span data-bind="titles.addBtnMilestone"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colMsMilestone"></th><th data-bind="titles.colMsOwner"></th><th data-bind="titles.colMsTarget"></th><th data-bind="titles.colMsStatus"></th><th data-bind="titles.colMsNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="milestonesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionTodos"></h2>
+        <button class="addbtn" onclick="addRow('todos', {done:false, item:'New item', owner:'', due:'', notes:''})"><span data-bind="titles.addBtnTodo"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colTodoDone"></th><th data-bind="titles.colTodoItem"></th><th data-bind="titles.colTodoOwner"></th><th data-bind="titles.colTodoDue"></th><th data-bind="titles.colTodoNotes"></th><th class="actions"></th></tr></thead>
+          <tbody id="todosBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================== NOTES & LEGEND ============================== -->
+  <div class="page" id="page-notes">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionRaci"></h2>
+        <button class="addbtn" onclick="addRow('raci', {section:'New section', owner:'', basis:''})"><span data-bind="titles.addBtnRaciRow"></span></button>
+      </div>
+      <table>
+        <thead><tr><th data-bind="titles.colRaciSection"></th><th data-bind="titles.colRaciOwner"></th><th data-bind="titles.colRaciBasis"></th><th class="actions"></th></tr></thead>
+        <tbody id="raciBody"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionTeam"></h2>
+        <button class="addbtn" onclick="addRow('team', {name:'New team member', title:'Title', reports:'Reports to: —', responsibilities:'• Responsibility one\n• Responsibility two'})"><span data-bind="titles.addBtnTeam"></span></button>
+      </div>
+      <div class="team-grid" id="teamGrid"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionSources"></h2>
+        <button class="addbtn" onclick="addStringRow('sources', 'New source')"><span data-bind="titles.addBtnSource"></span></button>
+      </div>
+      <ol class="steps" id="sourcesList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMethodology"></h2>
+        <button class="addbtn" onclick="addStringRow('methodology', 'New methodology note')"><span data-bind="titles.addBtnMethodNote"></span></button>
+      </div>
+      <ol class="steps" id="methodologyList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionLegend"></h2></div>
+      <div class="notes" style="line-height:2;">
+        <div><span class="dot" style="background:var(--warning); width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:8px;"></span><span data-bind="titles.legendPlaceholder"></span></div>
+        <div><span class="dot" style="background:var(--good); width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:8px;"></span><span data-bind="titles.legendStatusPills"></span></div>
+        <div><span data-bind="titles.legendKpiNote"></span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="margin-bottom:14px;" data-bind="titles.sectionNextStep"></h2>
+      <div class="notes" id="notesArea" contenteditable="false"></div>
+      <div class="footer-note" id="footerNote" data-bind="titles.footerNote"></div>
+    </section>
+  </div>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ---------- default state (used until a GitHub file is loaded) ---------- */
+/* PUBLIC / PUBLISHABLE VERSION: this is the file meant to be committed to a
+   PUBLIC repo or GitHub Pages. It deliberately ships with no real Midwam data —
+   only this generic placeholder shell. Real content only ever appears in a
+   visitor's browser after THEY connect their own token to your PRIVATE data
+   repo (see the "GitHub sync" panel) — it is fetched client-side, never baked
+   into this file, so nothing sensitive is exposed to a public visitor. */
+const DEFAULT_STATE = {
+  lastUpdated: "—",
+  theme: { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" },
+  titles: {
+    brand: "Midwam · Saud",
+    h1: "Saud — Business Tracking Dashboard",
+    subtitle: "External pipeline, internal performance, projects, prototypes, and tasks — where things stand.",
+    ownerLine: "Owner: Harith · Midwam",
+    sectionExternal: "External — Etimad Tender Pipeline",
+    sectionNews: "News — Coverage Tracker",
+    sectionInternal: "Internal Performance — RFP / Opportunity Pipeline",
+    sectionProbTable: "Win Probability by Stage",
+    sectionProjects: "Projects in Operations",
+    sectionPrototypes: "Prototypes Tracker",
+    sectionMarketing: "Marketing — Campaigns & Initiatives",
+    sectionTasks: "Recurring Tasks",
+    sectionMilestones: "Next Steps (Milestones) — Next Month",
+    sectionTodos: "To-Do List",
+    sectionRaci: "Ownership (RACI-lite)",
+    sectionTeam: "Team",
+    sectionSources: "Data Sources",
+    sectionMethodology: "Methodology",
+    sectionLegend: "Legend",
+    sectionNextStep: "Next Step",
+    sectionOverviewNav: "Sections",
+
+    externalOwnerLine: "Owner: Firas · Etimad tender pipeline, tourism/exhibition filter.",
+    internalOwnerLine: "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
+    projectsOwnerLine: "Owner: Sameer · Status, financial, and operational tracking for live projects.",
+    prototypesOwnerLine: "Owner: Mohammed · 'Value' is a placeholder score — redefine once a real scoring method is agreed.",
+    marketingOwnerLine: "Owner: Faisal Almadani · Head of Marketing — campaigns, brand, and external communications for Saud's initiatives.",
+
+    externalFooterNote: "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic tender title by keyword match; feel free to keep that convention when filling this in.",
+    internalFooterNote: "Weighted Value = Value × the win probability for that row's Stage, from the probability table below.",
+    probNote: "Placeholder probabilities — replace with real figures once enough closed opportunities exist to calibrate a win-rate history.",
+
+    legendPlaceholder: "Pale/amber highlight — placeholder or example data, still needs a real value.",
+    legendStatusPills: "Status pills are colored by meaning (green = good/done, amber = in progress, red = blocked/lost) — the same convention across every tab.",
+    legendKpiNote: "KPI tiles at the top of each tab recompute automatically from that tab's table rows — edit the rows, not the tiles.",
+
+    navExternalTitle: "External", navExternalDesc: "Etimad tender pipeline + industry/press news tracking.", navExternalOwner: "Firas",
+    navInternalTitle: "Internal Performance", navInternalDesc: "RFP pipeline — submitted, value, stage, next step.", navInternalOwner: "Firas",
+    navProjectsTitle: "Projects & Prototypes", navProjectsDesc: "Live projects in operations + the prototypes tracker.", navProjectsOwner: "Sameer / Mohammed",
+    navMarketingTitle: "Marketing", navMarketingDesc: "Campaigns, brand, and external communications tracking.", navMarketingOwner: "Faisal",
+    navTasksTitle: "Tasks & Next Steps", navTasksDesc: "Recurring tasks, next-month milestones, to-do list.", navTasksOwner: "All",
+    navNotesTitle: "Notes & Legend", navNotesDesc: "Ownership (RACI), data sources, methodology.", navNotesOwner: "—",
+
+    colExtRn: "RN", colExtName: "Competition Name", colExtAgency: "Agency", colExtFit: "Fit", colExtCategory: "Category", colExtDeadline: "Bid Deadline", colExtNotes: "Notes",
+    colNewsDate: "Date", colNewsSource: "Source", colNewsHeadline: "Headline", colNewsRelevance: "Relevance to Midwam", colNewsLink: "Link", colNewsNotes: "Notes",
+    colIntName: "Opportunity", colIntClient: "Client / Agency", colIntValue: "Value (SAR)", colIntStage: "Stage", colIntSubDate: "Submitted Date", colIntNext: "Next Step", colIntOwner: "Owner", colIntWeighted: "Weighted Value (SAR)",
+    colProbStage: "Stage", colProbWin: "Win Probability",
+    colProjName: "Project", colProjStatus: "Status", colProjFin: "Financially", colProjOps: "Operationally", colProjIssues: "Issues", colProjDeadline: "Deadline",
+    colProtoName: "Prototype", colProtoStatus: "Status", colProtoTeam: "Team", colProtoNotes: "Notes", colProtoValue: "Value (score)",
+    colMktInitiative: "Initiative / Campaign", colMktChannel: "Channel", colMktStatus: "Status", colMktTarget: "Target Date", colMktNotes: "Notes",
+    colTaskTask: "Task", colTaskOwner: "Owner", colTaskStatus: "Status", colTaskCadence: "Cadence", colTaskNotes: "Notes",
+    colMsMilestone: "Milestone", colMsOwner: "Owner", colMsTarget: "Target Date", colMsStatus: "Status", colMsNotes: "Notes",
+    colTodoDone: "Done", colTodoItem: "Item", colTodoOwner: "Owner", colTodoDue: "Due", colTodoNotes: "Notes",
+    colRaciSection: "Section", colRaciOwner: "Primary Owner", colRaciBasis: "Basis",
+
+    tabOverview: "Overview", tabExternal: "External", tabInternal: "Internal Performance",
+    tabProjects: "Projects & Prototypes", tabMarketing: "Marketing", tabTasks: "Tasks & Next Steps", tabNotes: "Notes & Legend",
+
+    kpiRfpLabel: "RFP Submitted", kpiRfpSub: "from Internal Performance",
+    kpiOppValueLabel: "Opportunity Value", kpiOppValueSub: "pipeline total, unweighted",
+    kpiProjectsLabel: "Projects Tracked", kpiProjectsSub: "incl. closed cases",
+    kpiPrototypesLabel: "Prototypes Tracked", kpiPrototypesSub: "in the Makers + on shelf",
+    kpiOpenTasksLabel: "Open Tasks", kpiOpenTasksSub: "not yet marked Done",
+
+    kpiExtOpenLabel: "Open Tenders Tracked", kpiExtOpenSub: "current baseline",
+    kpiExtMissingLabel: "Missing Fit", kpiExtMissingSub: "need enrichment",
+    kpiExtTopCatLabel: "Largest Category",
+
+    kpiIntLoggedLabel: "Opportunities Logged", kpiIntLoggedSub: "all stages",
+    kpiIntSubmittedLabel: "Submitted", kpiIntSubmittedSub: "stage = Submitted",
+    kpiIntPipelineLabel: "Pipeline Value (SAR)", kpiIntPipelineSub: "sum, unweighted",
+    kpiIntWeightedLabel: "Weighted Value (SAR)", kpiIntWeightedSub: "probability-adjusted",
+
+    kpiProtoProgressLabel: "In Progress", kpiProtoProgressSub: "in the Makers",
+    kpiProtoShelfLabel: "On Shelf", kpiProtoShelfSub: "paused / parked",
+    kpiProtoValueLabel: "Value (score)", kpiProtoValueSub: "placeholder unit",
+
+    btnExportExcel: "⬇ Export Excel",
+    btnExportPptx: "⬇ Export PPTX", btnPrint: "🖨 Print",
+    btnTheme: "🎨 Theme", btnGithubSync: "⇄ GitHub sync", btnUndo: "↺ Undo",
+    btnEdit: "✎ Edit", btnDoneEditing: "✓ Done editing", btnSaveToGithub: "Save to GitHub",
+    btnConnectLoad: "Connect & Load", btnDismissDraft: "Dismiss", btnDiscardDraft: "Discard draft",
+    btnResetTheme: "Reset to default",
+
+    draftRestoredMsg: "📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.",
+    themeHeading: "Theme — change the dashboard's colors any time.",
+    themeDesc: "Pick a preset (including a light \"Daylight\" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.",
+    labelAccentColor: "Accent color", labelBackgroundColor: "Background color", labelTextColor: "Text color",
+    githubSyncHeading: "GitHub sync — makes edits permanent and gives you a full history of every change.",
+    githubSyncDesc: "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo (kept in this browser tab's memory only — never saved, never sent anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.",
+    syncNotConnectedMsg: "Not connected — this page shows its built-in starting content until you connect.",
+
+    addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
+    addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnMarketing: "+ add campaign", addBtnTask: "+ add task",
+    addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
+    addBtnSource: "+ add source", addBtnMethodNote: "+ add note", addBtnTeam: "+ add team member",
+    labelTeamReports: "Reports:", labelTeamResponsibilities: "Key Responsibilities:",
+
+    labelLastUpdated: "Last updated:", btnSetToday: "Set to today",
+
+    iconMoveUpTip: "Move up", iconMoveDownTip: "Move down", iconDuplicateTip: "Duplicate",
+    tipChatOpen: "Ask Saud", tipChatClose: "Close", tipChatSend: "Send",
+    chatFabIcon: "💬", chatHeaderIcon: "💬", chatCloseIcon: "✕", chatSendIcon: "➤",
+    chatHeaderTitle: "Ask Saud", chatHeaderSub: "Grounded in this dashboard's live data",
+    chatEmptyMsg: "Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
+
+    footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
+  },
+  external: [
+    { rn:"—", name:"Connect GitHub sync above to load the real Etimad tender list", agency:"—", fit:"Unknown", category:"Other/Uncategorized", bidDeadline:"—", notes:"—" }
+  ],
+  news: [
+    { date:"—", source:"—", headline:"Connect GitHub sync above to load the real news tracker", relevance:"—", link:"—", notes:"—" }
+  ],
+  internal: [
+    { name:"Connect GitHub sync above to load the real opportunity pipeline", client:"—", value:0, stage:"Not started", subDate:"—", nextStep:"—", owner:"—" }
+  ],
+  stageProbs: [
+    { stage:"Not started", prob:10 },
+    { stage:"Drafting", prob:20 },
+    { stage:"Submitted", prob:50 },
+    { stage:"Shortlisted", prob:70 },
+    { stage:"Awarded", prob:100 },
+    { stage:"Lost", prob:0 }
+  ],
+  projects: [
+    { name:"Connect GitHub sync above to load the real projects list", status:"Not started", financially:"—", operationally:"—", issues:"—", deadline:"—" }
+  ],
+  prototypes: [
+    { name:"Connect GitHub sync above to load the real prototypes list", status:"On shelf", team:"—", notes:"—", value:0 }
+  ],
+  marketing: [
+    { initiative:"Connect GitHub sync above to load the real marketing initiatives list", channel:"—", status:"Not started", targetDate:"—", notes:"—" }
+  ],
+  tasks: [
+    { task:"Connect GitHub sync above to load the real recurring tasks list", owner:"—", status:"Not started", cadence:"—", notes:"—" }
+  ],
+  milestones: [
+    { milestone:"Connect GitHub sync above to load the real milestones list", owner:"—", targetDate:"—", status:"Not started", notes:"—" }
+  ],
+  todos: [
+    { done:false, item:"Connect GitHub sync above to load the real to-do list", owner:"—", due:"—", notes:"—" }
+  ],
+  raci: [
+    { section:"External / Internal Performance", owner:"Firas Abuzinada — Head of Business Development", basis:"Owns tender pipeline sourcing and RFP submissions" },
+    { section:"Projects in Operations", owner:"Sameer Gulam — Head of Operations", basis:"Owns live project execution and status tracking" },
+    { section:"Prototypes Tracker", owner:"Mohammed Alsanie — Head of Creative", basis:"Owns prototype development and creative scoring" },
+    { section:"Marketing", owner:"Faisal Almadani — Head of Marketing", basis:"Owns campaigns, brand, and external communications" }
+  ],
+  team: [
+    { name:"Firas Abuzinada", title:"Head of Business Development", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Sources and qualifies new tender opportunities (Etimad + direct outreach)\n• Owns proposal development and RFP submissions\n• Tracks win probability and pipeline value" },
+    { name:"Sameer Gulam", title:"Head of Operations", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Oversees live project execution and delivery\n• Manages operational status, issues, and deadlines\n• Coordinates cross-team resourcing" },
+    { name:"Mohammed Alsanie", title:"Head of Creative", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Leads prototype development and creative direction\n• Owns creative scoring and concept development\n• Reviews creative output before client delivery" },
+    { name:"Faisal Almadani", title:"Head of Marketing", reports:"Reports to: Al-Harith Hindi",
+      responsibilities:"• Owns campaign planning and brand strategy\n• Manages external communications and marketing channels\n• Tracks marketing initiative status and outcomes" }
+  ],
+  sources: [ "Connect GitHub sync above to load the real data-source citations." ],
+  methodology: [ "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab." ],
+  notes: "This is the public shell of Saud's dashboard — it ships with no real Midwam data. Connect your GitHub token above to load and edit the real content, which lives only in your private repo."
+};
+
+const FIT_COLOR = { Strong:"#0ca30c", Medium:"#d99a1a", "Low-Medium":"#d99a1a", Low:"#d03b3b", Unknown:"#a79a82" };
+const FIT_COLOR_HEX = { Strong:"0ca30c", Medium:"d99a1a", "Low-Medium":"d99a1a", Low:"d03b3b", Unknown:"a79a82" };
+const STAGE_COLOR = { "Not started":"#a79a82", Drafting:"#3987e5", Submitted:"#3987e5", Shortlisted:"#d99a1a", Awarded:"#0ca30c", Lost:"#d03b3b" };
+const PROJECT_STATUS_COLOR = { Closed:"#a79a82", "Not started":"#d99a1a", "In progress":"#0ca30c", "On hold":"#d03b3b" };
+const PROTO_STATUS_COLOR = { "In the Makers":"#d99a1a", "On shelf":"#a79a82", Done:"#0ca30c" };
+const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
+const MARKETING_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
+const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
+
+const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Other/Uncategorized"];
+
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+let editing = false;
+let gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
+
+/* ---------- read-only viewer mode ---------- */
+/* When window.__SAUD_READONLY__ is set to true (by the auto-generated view/index.html build),
+   this dashboard becomes a pure read-only snapshot: no local draft, no GitHub sync UI, no
+   editing possible anywhere, and — if window.__SAUD_DATA__ is present — it loads that
+   pre-baked live data instead of the placeholder DEFAULT_STATE. */
+const READONLY = window.__SAUD_READONLY__ === true;
+if(READONLY) document.body.classList.add("readonly");
+
+/* ---------- undo history ---------- */
+let history = [];
+const HISTORY_LIMIT = 25;
+function pushHistory(){
+  try{
+    history.push(JSON.stringify(state));
+    if(history.length > HISTORY_LIMIT) history.shift();
+    const btn = document.getElementById("undoBtn");
+    if(btn) btn.disabled = false;
+  } catch(e){}
+}
+function undo(){
+  if(!history.length) return;
+  const prev = history.pop();
+  state = JSON.parse(prev);
+  renderAll();
+  const btn = document.getElementById("undoBtn");
+  if(btn) btn.disabled = history.length === 0;
+  showToast("Undone");
+}
+
+/* ---------- toasts ---------- */
+function showToast(msg){
+  const c = document.getElementById("toastContainer");
+  if(!c) return;
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add("show"));
+  setTimeout(()=>{
+    t.classList.remove("show");
+    setTimeout(()=>t.remove(), 250);
+  }, 2600);
+}
+
+/* ---------- inline click-to-confirm delete ---------- */
+function confirmDelete(btn, fn){
+  if(btn.dataset.confirming === "1"){
+    clearTimeout(btn._confirmTimer);
+    fn();
+    return;
+  }
+  btn.dataset.confirming = "1";
+  btn.dataset.origText = btn.textContent;
+  btn.textContent = "Confirm?";
+  btn.classList.add("confirming");
+  btn._confirmTimer = setTimeout(()=>{
+    btn.dataset.confirming = "";
+    btn.textContent = btn.dataset.origText || "✕";
+    btn.classList.remove("confirming");
+  }, 2500);
+}
+
+/* ---------- theme ---------- */
+const THEME_PRESETS = [
+  { name:"Night Desert (default)", accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" },
+  { name:"Ocean", accent:"#3987E5", bg:"#101820", text:"#FBF6EA" },
+  { name:"Forest", accent:"#199E70", bg:"#14201A", text:"#FBF6EA" },
+  { name:"Berry", accent:"#D55181", bg:"#201018", text:"#FBF6EA" },
+  { name:"Slate Violet", accent:"#9085E9", bg:"#1A1A22", text:"#FBF6EA" },
+  { name:"Daylight (light mode)", accent:"#B75E12", bg:"#F5EFE1", text:"#2A2018" }
+];
+
+function hexToRgb(hex){
+  hex = hex.replace("#","");
+  if(hex.length===3) hex = hex.split("").map(c=>c+c).join("");
+  const n = parseInt(hex,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
+}
+function lighten(hex, amt){
+  const { r,g,b } = hexToRgb(hex);
+  return rgbToHex(r+(255-r)*amt, g+(255-g)*amt, b+(255-b)*amt);
+}
+function darken(hex, amt){
+  const { r,g,b } = hexToRgb(hex);
+  return rgbToHex(r*(1-amt), g*(1-amt), b*(1-amt));
+}
+function relLuminance(hex){
+  const { r,g,b } = hexToRgb(hex);
+  return (0.299*r + 0.587*g + 0.114*b) / 255;
+}
+
+function applyTheme(theme){
+  if(!theme.text) theme.text = "#FBF6EA";
+  const root = document.documentElement.style;
+  root.setProperty("--copper", theme.accent);
+  root.setProperty("--night", theme.bg);
+  root.setProperty("--cream", theme.text);
+  const light = relLuminance(theme.bg) > 0.5;
+  root.setProperty("--night2", light ? darken(theme.bg, 0.05) : lighten(theme.bg, 0.06));
+  root.setProperty("--border", light ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.08)");
+  renderThemePanel();
+}
+
+function renderThemePanel(){
+  const wrap = document.getElementById("themePresets");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  THEME_PRESETS.forEach(p=>{
+    const active = state.theme.accent.toLowerCase()===p.accent.toLowerCase() && state.theme.bg.toLowerCase()===p.bg.toLowerCase();
+    const sw = document.createElement("div");
+    sw.className = "theme-swatch" + (active ? " active" : "");
+    sw.title = p.name;
+    sw.style.background = `linear-gradient(135deg, ${p.accent} 50%, ${p.bg} 50%)`;
+    sw.onclick = ()=>{ pushHistory(); state.theme = { accent:p.accent, bg:p.bg, text:p.text }; applyTheme(state.theme); syncThemeInputs(); saveLocalDraft(); };
+    wrap.appendChild(sw);
+  });
+  syncThemeInputs();
+}
+function syncThemeInputs(){
+  const a = document.getElementById("accentPicker"), b = document.getElementById("bgPicker"), t = document.getElementById("textPicker");
+  if(a) a.value = state.theme.accent;
+  if(b) b.value = state.theme.bg;
+  if(t) t.value = state.theme.text || "#FBF6EA";
+}
+function resetTheme(){
+  pushHistory();
+  state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
+  applyTheme(state.theme);
+  saveLocalDraft();
+}
+
+/* ---------- generic dom helpers ---------- */
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function elTR(html){ const t=document.createElement("tbody"); t.innerHTML=html.trim(); return t.firstElementChild; }
+function elLI(html){ const l=document.createElement("ol"); l.innerHTML=html.trim(); return l.firstElementChild; }
+function escapeHtml(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function ensureDatalist(id, optionsHtml){
+  let dl = document.getElementById(id);
+  if(!dl){ dl = document.createElement("datalist"); dl.id = id; document.body.appendChild(dl); }
+  dl.innerHTML = optionsHtml;
+}
+
+const RENDER_FN = {};
+
+/* ---------- migration from any older saved shape ---------- */
+function migrateState(){
+  if(!state.theme) state.theme = { accent:"#C1701E", bg:"#1F1B16", text:"#FBF6EA" };
+  if(!state.theme.text) state.theme.text = "#FBF6EA";
+  if(!state.titles) state.titles = {};
+  Object.keys(DEFAULT_STATE.titles).forEach(k=>{
+    if(typeof state.titles[k] !== "string") state.titles[k] = DEFAULT_STATE.titles[k];
+  });
+  const arrayFields = ["external","news","internal","stageProbs","projects","prototypes","marketing","tasks","milestones","todos","raci","team","sources","methodology"];
+  arrayFields.forEach(k=>{ if(!Array.isArray(state[k])) state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k])); });
+  if(typeof state.notes !== "string") state.notes = DEFAULT_STATE.notes;
+
+  /* one-time best-effort carry-over from the old phases/matrix/etimad dashboard shape,
+     so a private data file saved under the previous version doesn't just vanish —
+     only runs the first time a legacy file is loaded (no state.external yet AND old
+     state.etimad present), and stashes anything it can't cleanly map into state.legacyV1
+     rather than silently dropping it. */
+  if(Array.isArray(state.etimad) && !state._migratedV2){
+    if(!state.external || !state.external.length || state.external[0].name === DEFAULT_STATE.external[0].name){
+      state.external = state.etimad.map(r=>({
+        rn: r.rn||"", name: r.name||"", agency: r.agency||"",
+        fit: FIT_COLOR[r.fit] ? r.fit : "Unknown",
+        category: "Other/Uncategorized",
+        bidDeadline: r.bidDeadline||"", notes: [r.rationale, r.next].filter(Boolean).join(" — ")
+      }));
+    }
+    state.legacyV1 = { phases:state.phases, capTeams:state.capTeams, matrix:state.matrix, gaps:state.gaps, steps:state.steps, etimad:state.etimad, etimadExcluded:state.etimadExcluded, customSections:state.customSections };
+    delete state.phases; delete state.capTeams; delete state.matrix; delete state.gaps; delete state.steps; delete state.etimad; delete state.etimadExcluded; delete state.customSections;
+    state._migratedV2 = true;
+  }
+}
+
+/* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
+function reorderBtns(section, i, len){
+  const t = state.titles;
+  const upTip = escapeHtml(t.iconMoveUpTip || "Move up");
+  const downTip = escapeHtml(t.iconMoveDownTip || "Move down");
+  const dupTip = escapeHtml(t.iconDuplicateTip || "Duplicate");
+  return `<span class="reordergrp edit-only">
+      <button class="reorder" onclick="moveItem('${section}',${i},-1)" ${i===0?"disabled":""} title="${upTip}">▲</button>
+      <button class="reorder" onclick="moveItem('${section}',${i},1)" ${i===len-1?"disabled":""} title="${downTip}">▼</button>
+    </span>
+    <button class="dupbtn edit-only" onclick="duplicateRow('${section}',${i})" title="${dupTip}">⧉</button>`;
+}
+function moveItem(section, i, dir){
+  const arr = state[section];
+  const j = i + dir;
+  if(j < 0 || j >= arr.length) return;
+  pushHistory();
+  const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+}
+function duplicateRow(section, i){
+  pushHistory();
+  const clone = JSON.parse(JSON.stringify(state[section][i]));
+  state[section].splice(i+1, 0, clone);
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Duplicated");
+}
+function addRow(section, template){
+  pushHistory();
+  state[section].push(JSON.parse(JSON.stringify(template)));
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Added");
+}
+function addStringRow(section, text){
+  pushHistory();
+  state[section].push(text);
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Added");
+}
+function removeRow(section, i){
+  pushHistory();
+  state[section].splice(i,1);
+  RENDER_FN[section]();
+  applyEditMode();
+  saveLocalDraft();
+  showToast("Removed");
+}
+
+/* ---------- render: everything ---------- */
+function renderAll(){
+  migrateState();
+  applyTheme(state.theme);
+  renderTitles();
+  renderLastUpdated();
+  renderStats();
+  renderOverviewNav();
+  renderExternal();
+  renderNews();
+  renderInternal();
+  renderProbTable();
+  renderProjects();
+  renderPrototypes();
+  renderMarketing();
+  renderTasks();
+  renderMilestones();
+  renderTodos();
+  renderRaci();
+  renderTeam();
+  renderStringList('sources','sourcesList');
+  renderStringList('methodology','methodologyList');
+  renderNotes();
+  applyEditMode();
+  saveLocalDraft();
+}
+
+function renderLastUpdated(){
+  document.getElementById("lastUpdatedText").innerText = state.lastUpdated;
+}
+
+function renderTitles(){
+  const t = state.titles;
+  document.querySelectorAll('[data-bind^="titles."]').forEach(el=>{
+    const key = el.dataset.bind.slice(7);
+    if(typeof t[key] === "string") el.innerText = t[key];
+  });
+  if(t.h1) document.title = t.h1;
+  const fab = document.getElementById("saud-chat-fab"); if(fab) fab.title = t.tipChatOpen || "Ask Saud";
+  const chatClose = document.getElementById("saud-chat-close"); if(chatClose) chatClose.title = t.tipChatClose || "Close";
+  const chatSend = document.getElementById("saud-chat-send"); if(chatSend) chatSend.title = t.tipChatSend || "Send";
+}
+
+/* ---------- helper: probability lookup for a stage ---------- */
+function probForStage(stage){
+  const row = state.stageProbs.find(p=>p.stage===stage);
+  return row ? (+row.prob||0)/100 : 0.3;
+}
+
+/* ---------- Overview: computed KPI tiles + section nav ---------- */
+function renderStats(){
+  const row = document.getElementById("statRow"); row.innerHTML = "";
+  const submitted = state.internal.filter(r=>r.stage==="Submitted").length;
+  const oppValue = state.internal.reduce((s,r)=>s+(+r.value||0),0);
+  const projectsTracked = state.projects.length;
+  const prototypesTracked = state.prototypes.length;
+  const openTasks = state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length;
+  const t = state.titles;
+  const tiles = [
+    { labelKey:"kpiRfpLabel", subKey:"kpiRfpSub", value:String(submitted) },
+    { labelKey:"kpiOppValueLabel", subKey:"kpiOppValueSub", value:oppValue.toLocaleString()+" SAR" },
+    { labelKey:"kpiProjectsLabel", subKey:"kpiProjectsSub", value:String(projectsTracked) },
+    { labelKey:"kpiPrototypesLabel", subKey:"kpiPrototypesSub", value:String(prototypesTracked) },
+    { labelKey:"kpiOpenTasksLabel", subKey:"kpiOpenTasksSub", value:String(openTasks) }
+  ];
+  tiles.forEach(s=>{
+    row.appendChild(el(`
+      <div class="stat-tile">
+        <div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div>
+        <div class="value">${escapeHtml(s.value)}</div>
+        <div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div>
+      </div>`));
+  });
+}
+
+function renderOverviewNav(){
+  const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
+  const t = state.titles;
+  const nav = [
+    { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
+    { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
+    { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
+    { page:"marketing", tKey:"navMarketingTitle", dKey:"navMarketingDesc", oKey:"navMarketingOwner" },
+    { page:"tasks", tKey:"navTasksTitle", dKey:"navTasksDesc", oKey:"navTasksOwner" },
+    { page:"notes", tKey:"navNotesTitle", dKey:"navNotesDesc", oKey:"navNotesOwner" }
+  ];
+  nav.forEach(n=>{
+    const btn = document.createElement("button");
+    btn.className = "navcard";
+    btn.innerHTML = `<div class="t" data-bind="titles.${n.tKey}">${escapeHtml(t[n.tKey]||"")}</div><div class="d" data-bind="titles.${n.dKey}">${escapeHtml(t[n.dKey]||"")}</div><div class="o" data-bind="titles.${n.oKey}">${escapeHtml(t[n.oKey]||"")}</div>`;
+    btn.onclick = (e)=>{ switchPage(n.page); };
+    wrap.appendChild(btn);
+  });
+}
+
+/* ---------- External ---------- */
+let externalFilter = "";
+function renderExternal(){
+  const kpiWrap = document.getElementById("externalKpis"); kpiWrap.innerHTML = "";
+  const list = state.external;
+  const missing = list.filter(r=>!r.fit || r.fit==="Unknown").length;
+  const catCounts = {};
+  list.forEach(r=>{ const c=r.category||"Other/Uncategorized"; catCounts[c]=(catCounts[c]||0)+1; });
+  let topCat = "—", topCount = 0;
+  Object.keys(catCounts).forEach(c=>{ if(catCounts[c]>topCount){ topCount=catCounts[c]; topCat=c; } });
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiExtOpenLabel", value:String(list.length), subKey:"kpiExtOpenSub" },
+      { labelKey:"kpiExtMissingLabel", value:String(missing), subKey:"kpiExtMissingSub" },
+      { labelKey:"kpiExtTopCatLabel", value:topCat, sub:topCount+" tender"+(topCount===1?"":"s") }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub"${s.subKey?` data-bind="titles.${s.subKey}"`:""}>${escapeHtml(s.subKey ? (t[s.subKey]||"") : s.sub)}</div></div>`)));
+  }
+
+  const body = document.getElementById("externalBody"); body.innerHTML = "";
+  const q = externalFilter.trim().toLowerCase();
+  const fitOptions = Object.keys(FIT_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  const catOptions = CATEGORY_OPTIONS.map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("fitOptionsList", fitOptions);
+  ensureDatalist("catOptionsList", catOptions);
+  list.forEach((r,i)=>{
+    if(q && !((r.name||"").toLowerCase().includes(q) || (r.agency||"").toLowerCase().includes(q) || (r.rn||"").toLowerCase().includes(q))) return;
+    const fitColor = FIT_COLOR[r.fit] || FIT_COLOR.Unknown;
+    const tr = elTR(`
+      <tr>
+        <td data-bind="external.${i}.rn">${escapeHtml(r.rn)}</td>
+        <td data-bind="external.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="external.${i}.agency">${escapeHtml(r.agency)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(r.fit)}</span>
+          <input class="status-select edit-only" list="fitOptionsList" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};" value="${escapeHtml(r.fit)}">
+        </td>
+        <td>
+          <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(r.category)}</span>
+          <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
+        </td>
+        <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
+        <td data-bind="external.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('external', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.external[+e.target.dataset.fitselect].fit = e.target.value;
+    renderExternal(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  body.querySelectorAll("[data-catselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.external[+e.target.dataset.catselect].category = e.target.value;
+    renderExternal(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.external = renderExternal;
+document.addEventListener("DOMContentLoaded", ()=>{
+  const s = document.getElementById("externalSearch");
+  if(s) s.addEventListener("input", e=>{ externalFilter = e.target.value; renderExternal(); applyEditMode(); });
+});
+
+function renderNews(){
+  const body = document.getElementById("newsBody"); if(!body) return;
+  body.innerHTML = "";
+  const fields = ["date","source","headline","relevance","link","notes"];
+  state.news.forEach((r,i)=>{
+    const cells = fields.map(f=>`<td data-bind="news.${i}.${f}">${escapeHtml(r[f])}</td>`).join("");
+    body.appendChild(elTR(`
+      <tr>
+        ${cells}
+        <td class="actions-cell edit-only">
+          ${reorderBtns('news', i, state.news.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('news',${i}))">✕</button>
+        </td>
+      </tr>`));
+  });
+}
+RENDER_FN.news = renderNews;
+
+/* ---------- Internal Performance ---------- */
+function renderInternal(){
+  const kpiWrap = document.getElementById("internalKpis"); kpiWrap.innerHTML = "";
+  const list = state.internal;
+  const submitted = list.filter(r=>r.stage==="Submitted").length;
+  const total = list.reduce((s,r)=>s+(+r.value||0),0);
+  const weighted = list.reduce((s,r)=>s+(+r.value||0)*probForStage(r.stage),0);
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiIntLoggedLabel", subKey:"kpiIntLoggedSub", value:String(list.length) },
+      { labelKey:"kpiIntSubmittedLabel", subKey:"kpiIntSubmittedSub", value:String(submitted) },
+      { labelKey:"kpiIntPipelineLabel", subKey:"kpiIntPipelineSub", value:total.toLocaleString() },
+      { labelKey:"kpiIntWeightedLabel", subKey:"kpiIntWeightedSub", value:Math.round(weighted).toLocaleString() }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div></div>`)));
+  }
+
+  const body = document.getElementById("internalBody"); body.innerHTML = "";
+  const stageOptions = state.stageProbs.map(p=>`<option value="${p.stage}">${p.stage}</option>`).join("");
+  ensureDatalist("stageOptionsList", stageOptions);
+  list.forEach((r,i)=>{
+    const stageColor = STAGE_COLOR[r.stage] || STAGE_COLOR["Not started"];
+    const weightedVal = Math.round((+r.value||0) * probForStage(r.stage));
+    const tr = elTR(`
+      <tr>
+        <td data-bind="internal.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="internal.${i}.client">${escapeHtml(r.client)}</td>
+        <td data-bind="internal.${i}.value">${escapeHtml(r.value)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(r.stage)}</span>
+          <input class="status-select edit-only" list="stageOptionsList" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};" value="${escapeHtml(r.stage)}">
+        </td>
+        <td data-bind="internal.${i}.subDate">${escapeHtml(r.subDate)}</td>
+        <td data-bind="internal.${i}.nextStep">${escapeHtml(r.nextStep)}</td>
+        <td data-bind="internal.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td>${weightedVal.toLocaleString()}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('internal', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('internal',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-valuebind]");
+  body.querySelectorAll("[data-stageselect]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.internal[+e.target.dataset.stageselect].stage = e.target.value;
+    renderInternal(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  // value column needs to recompute weighted value + KPIs on edit, not just save text
+  body.querySelectorAll('[data-bind^="internal."][data-bind$=".value"]').forEach(td=>{
+    td.addEventListener("focusout", ()=>{ renderInternal(); renderStats(); saveLocalDraft(); });
+  });
+}
+RENDER_FN.internal = renderInternal;
+
+function renderProbTable(){
+  const t = document.getElementById("probTable"); if(!t) return;
+  t.innerHTML = `<thead><tr><th data-bind="titles.colProbStage">${escapeHtml(state.titles.colProbStage||"")}</th><th data-bind="titles.colProbWin">${escapeHtml(state.titles.colProbWin||"")}</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  state.stageProbs.forEach((p,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td data-bind="stageProbs.${i}.stage">${escapeHtml(p.stage)}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+  t.querySelectorAll("[data-probinput]").forEach(inp=>inp.addEventListener("change", e=>{
+    pushHistory();
+    let v = Math.max(0, Math.min(100, +e.target.value || 0));
+    state.stageProbs[+e.target.dataset.probinput].prob = v;
+    renderProbTable(); renderInternal(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.stageProbs = renderProbTable;
+
+/* ---------- Projects & Prototypes ---------- */
+function renderProjects(){
+  const body = document.getElementById("projectsBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(PROJECT_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("projStatusOptionsList", statusOptions);
+  state.projects.forEach((r,i)=>{
+    const color = PROJECT_STATUS_COLOR[r.status] || PROJECT_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="projects.${i}.name">${escapeHtml(r.name)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="projStatusOptionsList" data-projstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="projects.${i}.financially">${escapeHtml(r.financially)}</td>
+        <td data-bind="projects.${i}.operationally">${escapeHtml(r.operationally)}</td>
+        <td data-bind="projects.${i}.issues">${escapeHtml(r.issues)}</td>
+        <td data-bind="projects.${i}.deadline">${escapeHtml(r.deadline)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('projects', i, state.projects.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('projects',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-projstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.projects[+e.target.dataset.projstatus].status = e.target.value;
+    renderProjects(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.projects = renderProjects;
+
+function renderPrototypes(){
+  const kpiWrap = document.getElementById("prototypesKpis"); kpiWrap.innerHTML = "";
+  const list = state.prototypes;
+  const inMakers = list.filter(r=>r.status==="In the Makers").length;
+  const onShelf = list.filter(r=>r.status==="On shelf").length;
+  const valSum = list.reduce((s,r)=>s+(+r.value||0),0);
+  {
+    const t = state.titles;
+    [
+      { labelKey:"kpiProtoProgressLabel", subKey:"kpiProtoProgressSub", value:String(inMakers) },
+      { labelKey:"kpiProtoShelfLabel", subKey:"kpiProtoShelfSub", value:String(onShelf) },
+      { labelKey:"kpiProtoValueLabel", subKey:"kpiProtoValueSub", value:String(valSum) }
+    ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub" data-bind="titles.${s.subKey}">${escapeHtml(t[s.subKey]||"")}</div></div>`)));
+  }
+
+  const body = document.getElementById("prototypesBody"); body.innerHTML = "";
+  const statusOptions = Object.keys(PROTO_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("protoStatusOptionsList", statusOptions);
+  list.forEach((r,i)=>{
+    const color = PROTO_STATUS_COLOR[r.status] || PROTO_STATUS_COLOR["On shelf"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="prototypes.${i}.name">${escapeHtml(r.name)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="protoStatusOptionsList" data-protostatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="prototypes.${i}.team">${escapeHtml(r.team)}</td>
+        <td data-bind="prototypes.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="prototypes.${i}.value">${escapeHtml(r.value)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('prototypes', i, list.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('prototypes',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-protostatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.prototypes[+e.target.dataset.protostatus].status = e.target.value;
+    renderPrototypes(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+  body.querySelectorAll('[data-bind^="prototypes."][data-bind$=".value"]').forEach(td=>{
+    td.addEventListener("focusout", ()=>{ renderPrototypes(); saveLocalDraft(); });
+  });
+}
+RENDER_FN.prototypes = renderPrototypes;
+
+/* ---------- Marketing ---------- */
+function renderMarketing(){
+  const body = document.getElementById("marketingBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(MARKETING_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("marketingStatusOptionsList", statusOptions);
+  state.marketing.forEach((r,i)=>{
+    const color = MARKETING_STATUS_COLOR[r.status] || MARKETING_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="marketing.${i}.initiative">${escapeHtml(r.initiative)}</td>
+        <td data-bind="marketing.${i}.channel">${escapeHtml(r.channel)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="marketingStatusOptionsList" data-marketingstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="marketing.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
+        <td data-bind="marketing.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('marketing', i, state.marketing.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('marketing',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-marketingstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.marketing[+e.target.dataset.marketingstatus].status = e.target.value;
+    renderMarketing(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.marketing = renderMarketing;
+
+/* ---------- Tasks & Next Steps ---------- */
+function renderTasks(){
+  const body = document.getElementById("tasksBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(TASK_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("taskStatusOptionsList", statusOptions);
+  state.tasks.forEach((r,i)=>{
+    const color = TASK_STATUS_COLOR[r.status] || TASK_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="tasks.${i}.task">${escapeHtml(r.task)}</td>
+        <td data-bind="tasks.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="taskStatusOptionsList" data-taskstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="tasks.${i}.cadence">${escapeHtml(r.cadence)}</td>
+        <td data-bind="tasks.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('tasks', i, state.tasks.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('tasks',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-taskstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.tasks[+e.target.dataset.taskstatus].status = e.target.value;
+    renderTasks(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.tasks = renderTasks;
+
+function renderMilestones(){
+  const body = document.getElementById("milestonesBody"); if(!body) return;
+  body.innerHTML = "";
+  const statusOptions = Object.keys(MILESTONE_STATUS_COLOR).map(k=>`<option value="${k}">${k}</option>`).join("");
+  ensureDatalist("mstatusOptionsList", statusOptions);
+  state.milestones.forEach((r,i)=>{
+    const color = MILESTONE_STATUS_COLOR[r.status] || MILESTONE_STATUS_COLOR["Not started"];
+    const tr = elTR(`
+      <tr>
+        <td data-bind="milestones.${i}.milestone">${escapeHtml(r.milestone)}</td>
+        <td data-bind="milestones.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="milestones.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
+        <td>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <input class="status-select edit-only" list="mstatusOptionsList" data-mstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
+        </td>
+        <td data-bind="milestones.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('milestones', i, state.milestones.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('milestones',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-mstatus]").forEach(s=>s.addEventListener("change", e=>{
+    pushHistory();
+    state.milestones[+e.target.dataset.mstatus].status = e.target.value;
+    renderMilestones(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.milestones = renderMilestones;
+
+function renderTodos(){
+  const body = document.getElementById("todosBody"); if(!body) return;
+  body.innerHTML = "";
+  state.todos.forEach((r,i)=>{
+    const tr = elTR(`
+      <tr class="todo-row ${r.done?'done':''}">
+        <td><input type="checkbox" class="donecheck" data-donecheck="${i}" ${r.done?"checked":""}></td>
+        <td data-bind="todos.${i}.item">${escapeHtml(r.item)}</td>
+        <td data-bind="todos.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="todos.${i}.due">${escapeHtml(r.due)}</td>
+        <td data-bind="todos.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('todos', i, state.todos.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('todos',${i}))">✕</button>
+        </td>
+      </tr>`);
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("[data-donecheck]").forEach(cb=>cb.addEventListener("change", e=>{
+    pushHistory();
+    state.todos[+e.target.dataset.donecheck].done = e.target.checked;
+    renderTodos(); renderStats(); applyEditMode(); saveLocalDraft();
+  }));
+}
+RENDER_FN.todos = renderTodos;
+
+/* ---------- Notes & Legend ---------- */
+function renderRaci(){
+  const body = document.getElementById("raciBody"); if(!body) return;
+  body.innerHTML = "";
+  state.raci.forEach((r,i)=>{
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="raci.${i}.section">${escapeHtml(r.section)}</td>
+        <td data-bind="raci.${i}.owner" style="color:var(--copper); font-weight:700;">${escapeHtml(r.owner)}</td>
+        <td data-bind="raci.${i}.basis">${escapeHtml(r.basis)}</td>
+        <td class="actions-cell edit-only">
+          ${reorderBtns('raci', i, state.raci.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('raci',${i}))">✕</button>
+        </td>
+      </tr>`));
+  });
+}
+RENDER_FN.raci = renderRaci;
+
+function renderTeam(){
+  const grid = document.getElementById("teamGrid"); if(!grid) return;
+  grid.innerHTML = "";
+  const t = state.titles;
+  state.team.forEach((r,i)=>{
+    grid.appendChild(el(`
+      <div class="teamcard">
+        <div class="teamcard-head">
+          <div>
+            <div class="teamcard-name" data-bind="team.${i}.name">${escapeHtml(r.name)}</div>
+            <div class="teamcard-title" data-bind="team.${i}.title">${escapeHtml(r.title)}</div>
+          </div>
+        </div>
+        <div class="teamcard-reports" data-bind="team.${i}.reports">${escapeHtml(r.reports)}</div>
+        <div class="teamcard-label" data-bind="titles.labelTeamResponsibilities">${escapeHtml(t.labelTeamResponsibilities||"")}</div>
+        <div class="teamcard-resp" data-bind="team.${i}.responsibilities">${escapeHtml(r.responsibilities)}</div>
+        <div class="teamcard-actions edit-only">
+          ${reorderBtns('team', i, state.team.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('team',${i}))">✕</button>
+        </div>
+      </div>`));
+  });
+}
+RENDER_FN.team = renderTeam;
+
+function renderStringList(section, elementId){
+  const list = document.getElementById(elementId); if(!list) return;
+  list.innerHTML = "";
+  state[section].forEach((s,i)=>{
+    list.appendChild(elLI(`
+      <li style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <span class="dot" style="background:var(--copper); margin-top:6px;"></span>
+        <div class="txt" data-bind="${section}.${i}" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(s)}</div>
+        ${reorderBtns(section, i, state[section].length)}
+        <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('${section}',${i}))">✕</button>
+      </li>`));
+  });
+}
+RENDER_FN.sources = ()=>renderStringList('sources','sourcesList');
+RENDER_FN.methodology = ()=>renderStringList('methodology','methodologyList');
+
+function renderNotes(){
+  document.getElementById("notesArea").innerText = state.notes;
+  document.getElementById("notesArea").setAttribute("data-bind","notes");
+}
+
+/* ---------- tabs ---------- */
+function switchPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id === "page-"+page));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.page === page));
+}
+
+/* ---------- editing: generic contenteditable -> state binding ---------- */
+document.addEventListener("focusin", e=>{
+  const t = e.target;
+  if(!t.dataset || !t.dataset.bind || !editing) return;
+  if(t._historySnapped) return;
+  t._historySnapped = true;
+  pushHistory();
+});
+document.addEventListener("focusout", e=>{
+  const t = e.target;
+  if(!t.dataset || !t.dataset.bind) return;
+  t._historySnapped = false;
+  const path = t.dataset.bind.split(".");
+  let obj = state;
+  for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
+  obj[path[path.length-1]] = t.innerText.trim();
+  if(path[0] === "stageProbs" && path[path.length-1] === "stage"){ renderInternal(); applyEditMode(); }
+  if(path[0] === "titles" && path[1] === "h1" && state.titles.h1) document.title = state.titles.h1;
+  saveLocalDraft();
+});
+
+function applyEditMode(){
+  document.querySelectorAll("[data-bind]").forEach(el=>el.setAttribute("contenteditable", editing ? "true" : "false"));
+  document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
+  document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");
+  document.querySelectorAll(".addbtn").forEach(el=>el.classList.toggle("show", editing));
+  document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
+  document.getElementById("undoBtn").disabled = history.length === 0;
+}
+
+document.getElementById("toggleEdit").addEventListener("click", ()=>{
+  if(READONLY) return;
+  editing = !editing;
+  const span = document.querySelector("#toggleEdit span[data-bind]");
+  const key = editing ? "btnDoneEditing" : "btnEdit";
+  span.dataset.bind = "titles." + key;
+  span.textContent = state.titles[key];
+  applyEditMode();
+});
+document.getElementById("undoBtn").addEventListener("click", undo);
+document.getElementById("setTodayBtn").addEventListener("click", ()=>{
+  pushHistory();
+  const d = new Date();
+  state.lastUpdated = d.toLocaleDateString(undefined, {year:"numeric", month:"short", day:"numeric"});
+  renderLastUpdated();
+  saveLocalDraft();
+  showToast("Date updated");
+});
+
+/* ---------- search filters ---------- */
+document.getElementById("externalSearch") && document.getElementById("externalSearch").addEventListener("input", e=>{
+  externalFilter = e.target.value; renderExternal(); applyEditMode();
+});
+
+/* ---------- collapsible sections ---------- */
+document.addEventListener("click", e=>{
+  if(editing) return;
+  const h2 = e.target.closest(".sechead h2");
+  if(!h2) return;
+  const section = h2.closest("section");
+  if(section) section.classList.toggle("collapsed");
+});
+
+/* ---------- keyboard shortcut: Ctrl/Cmd+S to save while editing ---------- */
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && editing){
+    e.preventDefault();
+    saveToGitHub();
+  }
+});
+
+/* ---------- local browser autosave / draft restore ---------- */
+const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
+function saveLocalDraft(){
+  if(READONLY) return;
+  try{
+    localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
+    const ind = document.getElementById("autosaveIndicator");
+    const timeEl = document.getElementById("autosaveTime");
+    if(ind && timeEl){
+      timeEl.innerText = "Saved locally " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      ind.classList.add("show");
+    }
+  } catch(e){ /* ignore quota/availability errors */ }
+}
+function loadLocalDraft(){
+  try{
+    const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function dismissLocalDraft(){
+  document.getElementById("draftBanner").classList.remove("show");
+}
+function discardLocalDraft(){
+  try{ localStorage.removeItem(LOCAL_DRAFT_KEY); } catch(e){}
+  pushHistory();
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  document.getElementById("draftBanner").classList.remove("show");
+  renderAll();
+  showToast("Draft discarded");
+}
+
+/* ---------- theme panel wiring ---------- */
+document.getElementById("toggleTheme").addEventListener("click", ()=>{
+  document.getElementById("themePanel").classList.toggle("open");
+});
+document.getElementById("accentPicker").addEventListener("input", e=>{
+  state.theme.accent = e.target.value; applyTheme(state.theme); saveLocalDraft();
+});
+document.getElementById("bgPicker").addEventListener("input", e=>{
+  state.theme.bg = e.target.value; applyTheme(state.theme); saveLocalDraft();
+});
+document.getElementById("textPicker").addEventListener("input", e=>{
+  state.theme.text = e.target.value; applyTheme(state.theme); saveLocalDraft();
+});
+
+/* ---------- GitHub sync ---------- */
+document.getElementById("toggleSync").addEventListener("click", ()=>{
+  document.getElementById("syncPanel").classList.toggle("open");
+});
+
+function b64EncodeUnicode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; bytes.forEach(b=>bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+function b64DecodeUnicode(b64){
+  const bin = atob(b64);
+  const bytes = Uint8Array.from(bin, c=>c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function ghApiUrl(){ return `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${gh.branch}`; }
+
+async function connectGitHub(){
+  gh.token  = document.getElementById("ghToken").value.trim();
+  gh.owner  = document.getElementById("ghOwner").value.trim();
+  gh.repo   = document.getElementById("ghRepo").value.trim();
+  gh.path   = document.getElementById("ghPath").value.trim() || "saud-dashboard-data.json";
+  gh.branch = document.getElementById("ghBranch").value.trim() || "main";
+  const statusEl = document.getElementById("syncStatus");
+  if(!gh.token || !gh.owner || !gh.repo){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Fill in the token, repo owner, and repo name first.";
+    return;
+  }
+  statusEl.className = "sync-status";
+  statusEl.innerText = "Connecting...";
+  try{
+    const resp = await fetch(ghApiUrl(), {
+      headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json" }
+    });
+    if(resp.status === 404){
+      gh.connected = true; gh.sha = null;
+      statusEl.className = "sync-status ok";
+      statusEl.innerText = "Connected. No saved file yet at this path — click \"Edit\" then \"Save to GitHub\" to create it with the current content.";
+      return;
+    }
+    if(!resp.ok){
+      const err = await resp.json().catch(()=>({}));
+      statusEl.className = "sync-status err";
+      statusEl.innerText = "Connection failed (" + resp.status + "): " + (err.message || "check the token and repo details.");
+      return;
+    }
+    const data = await resp.json();
+    gh.sha = data.sha;
+    const content = b64DecodeUnicode(data.content.replace(/\n/g,""));
+    const loaded = JSON.parse(content);
+    state = loaded;
+    gh.connected = true;
+    dismissLocalDraft();
+    renderAll();
+    statusEl.className = "sync-status ok";
+    statusEl.innerText = "Connected and loaded from GitHub. Every future save writes a new commit to this file.";
+  } catch(e){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Connection failed — " + e.message;
+  }
+}
+
+async function saveToGitHub(){
+  const statusEl = document.getElementById("syncStatus");
+  if(!gh.connected){
+    document.getElementById("syncPanel").classList.add("open");
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.";
+    return;
+  }
+  const btn = document.getElementById("saveBtn");
+  const origBtnHTML = btn.innerHTML;
+  btn.disabled = true; btn.innerText = "Saving...";
+  try{
+    const body = {
+      message: "Update Saud dashboard — " + new Date().toISOString(),
+      content: b64EncodeUnicode(JSON.stringify(state, null, 2)),
+      branch: gh.branch
+    };
+    if(gh.sha) body.sha = gh.sha;
+    const resp = await fetch(ghApiUrl().split("?")[0], {
+      method:"PUT",
+      headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json", "content-type":"application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    if(!resp.ok){
+      statusEl.className = "sync-status err";
+      statusEl.innerText = "Save failed (" + resp.status + "): " + (data.message || "unknown error");
+      return;
+    }
+    gh.sha = data.content.sha;
+    statusEl.className = "sync-status ok";
+    statusEl.innerText = "Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.";
+    showToast("Saved to GitHub");
+  } catch(e){
+    statusEl.className = "sync-status err";
+    statusEl.innerText = "Save failed — " + e.message;
+  } finally {
+    btn.disabled = false; btn.innerHTML = origBtnHTML;
+  }
+}
+document.getElementById("saveBtn").addEventListener("click", saveToGitHub);
+
+/* ---------- Excel export (External tenders) ---------- */
+function loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    if(document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = src; s.onload = ()=>resolve(); s.onerror = ()=>reject(new Error("Failed to load " + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function exportExternalExcel(){
+  const btn = document.getElementById("exportExternalExcelBtn");
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.textContent = "Building...";
+  try{
+    if(typeof ExcelJS === "undefined"){
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
+    }
+    const wb = new ExcelJS.Workbook();
+    const dateStr = new Date().toISOString().slice(0,10);
+    const ws = wb.addWorksheet("External Tenders");
+    const headers = ["RN","Competition Name","Agency","Fit","Category","Bid Deadline","Notes"];
+    const widths = [16,42,28,12,20,16,42];
+    ws.columns = headers.map((h,i)=>({ header:h, width: widths[i] }));
+    const headerRow = ws.getRow(1);
+    headerRow.eachCell(c=>{
+      c.font = { name:"Arial", bold:true, color:{argb:"FFFFFFFF"} };
+      c.fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF1F4E78"} };
+      c.alignment = { wrapText:true, vertical:"top" };
+    });
+    const fitFillArgb = { Strong:"FFC6EFCE", Medium:"FFFFEB9C", "Low-Medium":"FFFFEB9C", Low:"FFFFC7CE", Unknown:"FFD9D9D9" };
+    state.external.forEach(r=>{
+      const row = ws.addRow([r.rn, r.name, r.agency, r.fit, r.category, r.bidDeadline, r.notes]);
+      row.eachCell(c=>{ c.font = { name:"Arial", size:9 }; c.alignment = { wrapText:true, vertical:"top" }; });
+      const fitCell = row.getCell(4);
+      fitCell.font = { name:"Arial", size:9, bold:true };
+      fitCell.fill = { type:"pattern", pattern:"solid", fgColor:{argb: fitFillArgb[r.fit] || "FFD9D9D9"} };
+    });
+    ws.views = [{ state:"frozen", ySplit:1 }];
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `Midwam_External_Tenders_${dateStr}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast("Excel exported");
+  } catch(e){
+    alert("Excel export failed: " + e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+}
+
+/* ---------- PPTX export ---------- */
+async function exportPPTX(){
+  const btn = document.getElementById("exportPptxBtn");
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.textContent = "Building...";
+  try{
+    if(typeof PptxGenJS === "undefined"){
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js");
+    }
+    const accentHex = (state.theme.accent || "#C1701E").replace("#","");
+    const bgHex = (state.theme.bg || "#1F1B16").replace("#","");
+    const textHex = (state.theme.text || "#FBF6EA").replace("#","");
+    const pptx = new PptxGenJS();
+    pptx.defineLayout({ name:"WIDE", width:13.33, height:7.5 });
+    pptx.layout = "WIDE";
+    const headOpts = { bold:true, color:textHex, fill:{color:"2B241C"}, fontSize:9 };
+    const bodyOpts = (extra)=>Object.assign({color:textHex, fontSize:9}, extra||{});
+
+    let slide = pptx.addSlide();
+    slide.background = { color: bgHex };
+    slide.addText(state.titles.brand || "", { x:0.6, y:0.5, w:10, h:0.4, fontSize:12, color:accentHex, bold:true, charSpacing:2 });
+    slide.addText(state.titles.h1 || "Saud — Business Tracking Dashboard", { x:0.6, y:2.7, w:12, h:1.1, fontSize:34, bold:true, color:textHex });
+    slide.addText(state.titles.subtitle || "", { x:0.6, y:3.7, w:11.5, h:0.7, fontSize:15, color:"A79A82" });
+    slide.addText("Last updated: " + state.lastUpdated, { x:0.6, y:6.7, w:6, h:0.4, fontSize:11, color:"A79A82" });
+    slide.addText(state.titles.ownerLine || "", { x:0.6, y:7.0, w:6, h:0.35, fontSize:11, color:"A79A82" });
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText("OVERVIEW — PORTFOLIO KPIS", { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const submitted = state.internal.filter(r=>r.stage==="Submitted").length;
+    const oppValue = state.internal.reduce((s,r)=>s+(+r.value||0),0);
+    const tiles = [
+      {v:String(submitted), l:"RFP Submitted"}, {v:oppValue.toLocaleString()+" SAR", l:"Opportunity Value"},
+      {v:String(state.projects.length), l:"Projects Tracked"}, {v:String(state.prototypes.length), l:"Prototypes Tracked"},
+      {v:String(state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length), l:"Open Tasks"}
+    ];
+    const statW = 2.3, statGap = 0.2;
+    tiles.forEach((s,i)=>{
+      const x = 0.5 + i*(statW+statGap);
+      slide.addShape("roundRect", { x, y:1.3, w:statW, h:1.6, fill:{color:"2B241C"}, line:{color:"2B241C"}, rectRadius:0.1 });
+      slide.addText(s.v, { x, y:1.5, w:statW, h:0.6, fontSize:18, bold:true, color:textHex, align:"center" });
+      slide.addText(s.l, { x:x+0.1, y:2.1, w:statW-0.2, h:0.6, fontSize:9, color:"A79A82", align:"center" });
+    });
+
+    function tableSlide(title, headers, rows, colW){
+      const sl = pptx.addSlide(); sl.background = { color: bgHex };
+      sl.addText(title.toUpperCase(), { x:0.5, y:0.35, w:11, h:0.45, fontSize:15, bold:true, color:accentHex, charSpacing:2 });
+      const tblRows = [headers.map(h=>({text:h, options:headOpts}))];
+      rows.forEach(r=>tblRows.push(r.map(c=>({text:String(c==null?"":c), options:bodyOpts()}))));
+      sl.addTable(tblRows, { x:0.4, y:0.9, w:12.5, colW, border:{color:"3A3226", pt:0.5}, autoPage:true, autoPageLineWeight:0.5, newSlideStartY:0.9 });
+    }
+
+    tableSlide(state.titles.sectionExternal || "External", ["RN","Competition Name","Agency","Fit","Category","Bid Deadline"],
+      state.external.map(r=>[r.rn,r.name,r.agency,r.fit,r.category,r.bidDeadline]), [1.4,4.6,2.5,1.2,2.2,1.6]);
+
+    tableSlide(state.titles.sectionInternal || "Internal Performance", ["Opportunity","Client/Agency","Value (SAR)","Stage","Owner"],
+      state.internal.map(r=>[r.name,r.client,(+r.value||0).toLocaleString(),r.stage,r.owner]), [4.7,2.8,2,1.6,1.4]);
+
+    tableSlide(state.titles.sectionProjects || "Projects in Operations", ["Project","Status","Financially","Operationally","Deadline"],
+      state.projects.map(r=>[r.name,r.status,r.financially,r.operationally,r.deadline]), [3.4,1.8,2.7,2.9,1.7]);
+
+    tableSlide(state.titles.sectionPrototypes || "Prototypes Tracker", ["Prototype","Status","Team","Notes","Value"],
+      state.prototypes.map(r=>[r.name,r.status,r.team,r.notes,r.value]), [3.4,1.8,1.6,4.5,1.2]);
+
+    tableSlide(state.titles.sectionMarketing || "Marketing", ["Initiative / Campaign","Channel","Status","Target Date","Notes"],
+      state.marketing.map(r=>[r.initiative,r.channel,r.status,r.targetDate,r.notes]), [3.6,1.8,1.6,1.8,3.7]);
+
+    tableSlide("Recurring Tasks", ["Task","Owner","Status","Cadence","Notes"],
+      state.tasks.map(r=>[r.task,r.owner,r.status,r.cadence,r.notes]), [3.4,1.8,1.6,1.6,4.1]);
+
+    tableSlide("Next Steps (Milestones)", ["Milestone","Owner","Target Date","Status","Notes"],
+      state.milestones.map(r=>[r.milestone,r.owner,r.targetDate,r.status,r.notes]), [3.6,1.6,1.8,1.6,3.9]);
+
+    tableSlide("To-Do List", ["Done","Item","Owner","Due","Notes"],
+      state.todos.map(r=>[r.done?"Yes":"No",r.item,r.owner,r.due,r.notes]), [1,4,1.8,1.6,4.1]);
+
+    slide = pptx.addSlide(); slide.background = { color: bgHex };
+    slide.addText("NOTES & LEGEND", { x:0.5, y:0.4, w:10, h:0.5, fontSize:16, bold:true, color:accentHex, charSpacing:2 });
+    const raciText = state.raci.map(r=>`${r.section}: ${r.owner}`).join("\n");
+    const sourcesText = state.sources.map(s=>"•  "+s).join("\n\n");
+    const methodText = state.methodology.map(s=>"•  "+s).join("\n\n");
+    slide.addText("OWNERSHIP\n"+raciText+"\n\nDATA SOURCES\n"+sourcesText+"\n\nMETHODOLOGY\n"+methodText,
+      { x:0.5, y:1.1, w:12.3, h:5.9, fontSize:11, color:textHex, lineSpacingMultiple:1.25, valign:"top" });
+
+    const fname = (state.titles.h1 || "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".pptx";
+    await pptx.writeFile({ fileName: fname });
+  } catch(e){
+    alert("PPTX export failed: " + e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+}
+
+/* ---------- boot ---------- */
+(function boot(){
+  if(READONLY){
+    if(window.__SAUD_DATA__) state = window.__SAUD_DATA__;
+    renderAll();
+    return;
+  }
+  const draft = loadLocalDraft();
+  if(draft){
+    state = draft;
+    document.getElementById("draftBanner").classList.add("show");
+  }
+  renderAll();
+})();
+if(!READONLY) document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
+</script>
+
+<style>
+  #saud-chat-fab{
+    position:fixed; bottom:20px; right:20px; width:56px; height:56px; border-radius:50%;
+    background:var(--copper,#C1701E); color:#fff; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.35); z-index:9999; font-size:24px; border:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  #saud-chat-fab:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,.4); }
+
+  #saud-chat-panel{
+    display:none; position:fixed; bottom:88px; right:20px; width:390px; max-width:92vw;
+    height:min(600px, 75vh); background:var(--night2,#2B241C); border:1px solid var(--border,rgba(255,255,255,.08));
+    border-radius:16px; box-shadow:0 16px 40px rgba(0,0,0,.45); z-index:9999;
+    flex-direction:column; overflow:hidden; font-family:inherit; color:var(--cream,#FBF6EA);
+  }
+  @media (max-width:480px){
+    #saud-chat-panel{ right:4vw; bottom:84px; width:92vw; height:min(560px, 78vh); }
+    #saud-chat-fab{ bottom:16px; right:16px; }
+  }
+
+  #saud-chat-header{
+    background:var(--copper,#C1701E); color:#fff; padding:14px 16px; font-weight:700; font-size:14px;
+    display:flex; justify-content:space-between; align-items:center; flex-shrink:0;
+  }
+  #saud-chat-header .saud-chat-title{ display:flex; align-items:center; gap:8px; }
+  #saud-chat-header .saud-chat-sub{ font-weight:400; font-size:11px; opacity:.85; margin-top:1px; }
+  #saud-chat-close{
+    cursor:pointer; font-weight:400; font-size:16px; line-height:1; padding:4px 6px; border-radius:6px; opacity:.85;
+  }
+  #saud-chat-close:hover{ opacity:1; background:rgba(255,255,255,.15); }
+
+  #saud-chat-log{
+    flex:1; overflow-y:auto; padding:14px; background:var(--night,#1F1B16);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  #saud-chat-log::-webkit-scrollbar{ width:8px; }
+  #saud-chat-log::-webkit-scrollbar-thumb{ background:var(--border,rgba(255,255,255,.15)); border-radius:8px; }
+  #saud-chat-log::-webkit-scrollbar-track{ background:transparent; }
+
+  #saud-chat-empty{ color:var(--muted,#A79A82); font-size:12.5px; line-height:1.6; text-align:center; margin:auto; padding:0 12px; }
+
+  .saud-msg-row{ display:flex; }
+  .saud-msg-row.user{ justify-content:flex-end; }
+  .saud-msg-row.assistant{ justify-content:flex-start; }
+
+  .saud-bubble{
+    max-width:86%; padding:10px 13px; font-size:13.5px; line-height:1.55; word-wrap:break-word;
+  }
+  .saud-msg-row.user .saud-bubble{
+    background:var(--copper,#C1701E); color:#fff; border-radius:14px 14px 3px 14px;
+  }
+  .saud-msg-row.assistant .saud-bubble{
+    background:var(--night2,#2B241C); color:var(--cream,#FBF6EA);
+    border:1px solid var(--border,rgba(255,255,255,.08)); border-radius:14px 14px 14px 3px;
+  }
+
+  /* markdown rendering inside assistant bubbles */
+  .saud-bubble p{ margin:0 0 8px 0; }
+  .saud-bubble p:last-child{ margin-bottom:0; }
+  .saud-bubble h1,.saud-bubble h2,.saud-bubble h3{
+    margin:2px 0 8px 0; font-size:14px; font-weight:700; color:var(--cream,#FBF6EA);
+  }
+  .saud-bubble strong{ font-weight:700; color:var(--cream,#FBF6EA); }
+  .saud-bubble em{ font-style:italic; }
+  .saud-bubble code{
+    background:rgba(0,0,0,.28); padding:1px 5px; border-radius:4px; font-size:12px;
+    font-family:ui-monospace,"SF Mono",Consolas,monospace;
+  }
+  .saud-bubble ul,.saud-bubble ol{ margin:4px 0 8px 0; padding-left:18px; }
+  .saud-bubble li{ margin:2px 0; }
+  .saud-bubble hr{ border:none; border-top:1px solid var(--border,rgba(255,255,255,.15)); margin:10px 0; }
+  .saud-bubble a{ color:#fff; text-decoration:underline; }
+  .saud-msg-row.assistant .saud-bubble a{ color:var(--copper,#C1701E); }
+  .saud-bubble .saud-table-wrap{ overflow-x:auto; margin:6px 0 8px 0; }
+  .saud-bubble table{ border-collapse:collapse; width:100%; font-size:12px; }
+  .saud-bubble th,.saud-bubble td{
+    border:1px solid var(--border,rgba(255,255,255,.15)); padding:5px 8px; text-align:left; vertical-align:top;
+  }
+  .saud-bubble th{ background:rgba(255,255,255,.06); font-weight:700; color:var(--cream,#FBF6EA); }
+
+  .saud-typing{ display:flex; gap:4px; align-items:center; padding:2px 0; }
+  .saud-typing span{
+    width:6px; height:6px; border-radius:50%; background:var(--muted,#A79A82);
+    animation:saud-bounce 1.2s infinite ease-in-out;
+  }
+  .saud-typing span:nth-child(2){ animation-delay:.15s; }
+  .saud-typing span:nth-child(3){ animation-delay:.3s; }
+  @keyframes saud-bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-4px); opacity:1; } }
+
+  #saud-chat-inputrow{
+    display:flex; align-items:flex-end; gap:8px; border-top:1px solid var(--border,rgba(255,255,255,.08));
+    padding:10px; background:var(--night2,#2B241C); flex-shrink:0;
+  }
+  #saud-chat-input{
+    flex:1; border:1px solid var(--border,rgba(255,255,255,.12)); background:var(--night,#1F1B16);
+    color:var(--cream,#FBF6EA); border-radius:10px; padding:9px 12px; font-size:13.5px; font-family:inherit;
+    outline:none; resize:none; max-height:110px; line-height:1.4;
+  }
+  #saud-chat-input::placeholder{ color:var(--muted,#A79A82); }
+  #saud-chat-input:focus{ border-color:var(--copper,#C1701E); }
+  #saud-chat-send{
+    border:none; background:var(--copper,#C1701E); color:#fff; width:36px; height:36px; border-radius:10px;
+    cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:15px;
+    transition:opacity .15s ease;
+  }
+  #saud-chat-send:disabled{ opacity:.5; cursor:default; }
+  #saud-chat-send:not(:disabled):hover{ opacity:.9; }
+</style>
+
+<button id="saud-chat-fab" title="Ask Saud"><span data-bind="titles.chatFabIcon">💬</span></button>
+
+<div id="saud-chat-panel">
+  <div id="saud-chat-header">
+    <div class="saud-chat-title">
+      <span data-bind="titles.chatHeaderIcon">💬</span>
+      <div>
+        <div data-bind="titles.chatHeaderTitle">Ask Saud</div>
+        <div class="saud-chat-sub" data-bind="titles.chatHeaderSub">Grounded in this dashboard's live data</div>
+      </div>
+    </div>
+    <span id="saud-chat-close" title="Close" data-bind="titles.chatCloseIcon">✕</span>
+  </div>
+  <div id="saud-chat-log">
+    <div id="saud-chat-empty" data-bind="titles.chatEmptyMsg">Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.</div>
+  </div>
+  <div id="saud-chat-inputrow">
+    <textarea id="saud-chat-input" rows="1" placeholder="Ask about tenders, pipeline, projects…"></textarea>
+    <button id="saud-chat-send" title="Send"><span data-bind="titles.chatSendIcon">➤</span></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const WORKER_URL = "https://orange-queen-ead8.alhindiharith.workers.dev/";
+
+  // the chat widget's own DOM only exists after this point, so re-run the
+  // generic titles binder now that these elements are present — otherwise
+  // any customized icon/label text loaded from a local draft or GitHub
+  // sync during boot() (which ran before this markup was parsed) would
+  // never reach these spans.
+  if (typeof renderTitles === "function") { try { renderTitles(); } catch (e) {} }
+
+  const fab = document.getElementById('saud-chat-fab');
+  const panel = document.getElementById('saud-chat-panel');
+  const closeBtn = document.getElementById('saud-chat-close');
+  const log = document.getElementById('saud-chat-log');
+  const emptyState = document.getElementById('saud-chat-empty');
+  const input = document.getElementById('saud-chat-input');
+  const sendBtn = document.getElementById('saud-chat-send');
+  let history = [];
+  let busy = false;
+
+  fab.onclick = () => {
+    if (typeof editing !== 'undefined' && editing) return;
+    const opening = panel.style.display !== 'flex';
+    panel.style.display = opening ? 'flex' : 'none';
+    if (opening) input.focus();
+  };
+  closeBtn.onclick = () => {
+    if (typeof editing !== 'undefined' && editing) return;
+    panel.style.display = 'none';
+  };
+
+  function escapeHtmlChat(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderMarkdown(md) {
+    let html = escapeHtmlChat(md);
+    html = html.replace(/```([\s\S]*?)```/g, (m, code) => '<pre><code>' + code.trim() + '</code></pre>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    html = html.replace(/^---$/gm, '<hr>');
+
+    // tables
+    const lines = html.split('\n');
+    let out = [];
+    let i = 0;
+    while (i < lines.length) {
+      if (lines[i].includes('|') && lines[i + 1] && /^\s*\|?\s*[-:]+[-| :]*\s*$/.test(lines[i + 1])) {
+        const headerCells = lines[i].split('|').map(c => c.trim()).filter(Boolean);
+        let tbl = '<div class="saud-table-wrap"><table><thead><tr>' +
+          headerCells.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+        i += 2;
+        while (i < lines.length && lines[i].includes('|')) {
+          const cells = lines[i].split('|').map(c => c.trim()).filter((c, idx, arr) => !(idx === 0 && c === '') && !(idx === arr.length - 1 && c === ''));
+          tbl += '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
+          i++;
+        }
+        tbl += '</tbody></table></div>';
+        out.push(tbl);
+      } else {
+        out.push(lines[i]);
+        i++;
+      }
+    }
+    html = out.join('\n');
+
+    // lists
+    html = html.replace(/(^|\n)((?:[-*] .*(?:\n|$))+)/g, (m, pre, block) => {
+      const items = block.trim().split('\n').map(l => '<li>' + l.replace(/^[-*]\s+/, '') + '</li>').join('');
+      return pre + '<ul>' + items + '</ul>\n';
+    });
+    html = html.replace(/(^|\n)((?:\d+\. .*(?:\n|$))+)/g, (m, pre, block) => {
+      const items = block.trim().split('\n').map(l => '<li>' + l.replace(/^\d+\.\s+/, '') + '</li>').join('');
+      return pre + '<ol>' + items + '</ol>\n';
+    });
+
+    // paragraphs
+    html = html.split(/\n{2,}/).map(chunk => {
+      if (/^\s*<(h1|h2|h3|ul|ol|pre|table|div|hr)/.test(chunk.trim())) return chunk;
+      const withBr = chunk.trim().replace(/\n/g, '<br>');
+      return withBr ? `<p>${withBr}</p>` : '';
+    }).join('\n');
+
+    return html;
+  }
+
+  function addBubble(role) {
+    emptyState.style.display = 'none';
+    const row = document.createElement('div');
+    row.className = 'saud-msg-row ' + role;
+    const bubble = document.createElement('div');
+    bubble.className = 'saud-bubble';
+    row.appendChild(bubble);
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+    return bubble;
+  }
+
+  function setUserBubble(bubble, text) {
+    bubble.textContent = text;
+  }
+
+  function setAssistantBubble(bubble, text) {
+    bubble.innerHTML = renderMarkdown(text);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function showTyping(bubble) {
+    bubble.innerHTML = '<div class="saud-typing"><span></span><span></span><span></span></div>';
+  }
+
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+  }
+  input.addEventListener('input', autoResize);
+
+  function currentContext() {
+    const s = (typeof state !== 'undefined' && state) ? state : (window.state || {});
+    return {
+      external: s.external || [],
+      news: s.news || [],
+      internal: s.internal || [],
+      stageProbs: s.stageProbs || [],
+      projects: s.projects || [],
+      prototypes: s.prototypes || [],
+      tasks: s.tasks || [],
+      milestones: s.milestones || [],
+      todos: s.todos || [],
+    };
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text || busy) return;
+    busy = true;
+    sendBtn.disabled = true;
+    input.value = '';
+    autoResize();
+
+    setUserBubble(addBubble('user'), text);
+    history.push({ role: 'user', content: text });
+
+    const reply = addBubble('assistant');
+    showTyping(reply);
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, context: currentContext() }),
+      });
+      const data = await res.json();
+      const replyText = (data && data.content && data.content[0] && data.content[0].text) || data.error || "Sorry, I couldn't get a response.";
+      setAssistantBubble(reply, replyText);
+      history.push({ role: 'assistant', content: replyText });
+    } catch (e) {
+      setAssistantBubble(reply, "Error reaching Saud: " + e.message);
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  sendBtn.onclick = send;
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -236,11 +236,7 @@
         <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
       </div>
       <div class="editbar">
-        <button class="editbtn secondary" id="helpBtn"><span data-bind="titles.btnHelp"></span></button>
-        <button class="editbtn secondary" id="importJsonBtn"><span data-bind="titles.btnImportJson"></span></button>
-        <input type="file" id="importJsonInput" accept="application/json" style="display:none;">
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
-        <button class="editbtn secondary" id="exportJsonBtn" onclick="exportJSON()"><span data-bind="titles.btnExportJson"></span></button>
         <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
         <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
         <button class="editbtn secondary" id="toggleSync"><span data-bind="titles.btnGithubSync"></span></button>
@@ -257,11 +253,6 @@
       <button onclick="dismissLocalDraft()" data-bind="titles.btnDismissDraft"></button>
       <button onclick="discardLocalDraft()" data-bind="titles.btnDiscardDraft"></button>
     </span>
-  </div>
-
-  <div class="sync-panel" id="helpPanel">
-    <b data-bind="titles.helpHeading"></b>
-    <div class="notes" style="white-space:pre-line; margin-top:10px; line-height:1.7;" data-bind="titles.helpBody"></div>
   </div>
 
   <div class="sync-panel" id="themePanel">
@@ -632,15 +623,14 @@ const DEFAULT_STATE = {
     kpiProtoShelfLabel: "On Shelf", kpiProtoShelfSub: "paused / parked",
     kpiProtoValueLabel: "Value (score)", kpiProtoValueSub: "placeholder unit",
 
-    btnHelp: "❓ Help", btnImportJson: "⬆ Import JSON", btnExportExcel: "⬇ Export Excel",
-    btnExportPptx: "⬇ Export PPTX", btnExportJson: "⬇ Export JSON", btnPrint: "🖨 Print",
+    btnExportExcel: "⬇ Export Excel",
+    btnExportPptx: "⬇ Export PPTX", btnPrint: "🖨 Print",
     btnTheme: "🎨 Theme", btnGithubSync: "⇄ GitHub sync", btnUndo: "↺ Undo",
     btnEdit: "✎ Edit", btnDoneEditing: "✓ Done editing", btnSaveToGithub: "Save to GitHub",
     btnConnectLoad: "Connect & Load", btnDismissDraft: "Dismiss", btnDiscardDraft: "Discard draft",
     btnResetTheme: "Reset to default",
 
     draftRestoredMsg: "📝 Restored a local draft saved earlier in this browser. This is separate from GitHub — connect GitHub sync above to save it permanently.",
-    helpHeading: "Tips & keyboard shortcuts",
     themeHeading: "Theme — change the dashboard's colors any time.",
     themeDesc: "Pick a preset (including a light \"Daylight\" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.",
     labelAccentColor: "Accent color", labelBackgroundColor: "Background color", labelTextColor: "Text color",
@@ -661,8 +651,6 @@ const DEFAULT_STATE = {
     chatFabIcon: "💬", chatHeaderIcon: "💬", chatCloseIcon: "✕", chatSendIcon: "➤",
     chatHeaderTitle: "Ask Saud", chatHeaderSub: "Grounded in this dashboard's live data",
     chatEmptyMsg: "Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
-
-    helpBody: "• Click “✎ Edit” to unlock every field on the page — titles, numbers, colors, table headers, status labels, all of it.\n• Ctrl/Cmd + S while editing saves straight to GitHub.\n• Use the ▲▼ arrows to reorder a row, the ⧉ icon to duplicate it, and ✕ twice (click to confirm) to delete it.\n• “↺ Undo” reverts the last structural change (add, remove, move, duplicate, color, or import).\n• Click any section title (outside edit mode) to collapse or expand it.\n• The KPI tiles at the top of each tab are computed live from that tab's tables — edit the rows, not the tiles.\n• “Export JSON” / “Import JSON” let you back up or restore the whole dashboard without GitHub.\n• Connect “GitHub sync” to make edits permanent with full commit history; otherwise changes only autosave to this browser.",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
@@ -1564,45 +1552,6 @@ document.addEventListener("keydown", e=>{
     e.preventDefault();
     saveToGitHub();
   }
-});
-
-/* ---------- help panel ---------- */
-document.getElementById("helpBtn").addEventListener("click", ()=>{
-  document.getElementById("helpPanel").classList.toggle("open");
-});
-
-/* ---------- export / import JSON ---------- */
-function exportJSON(){
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const fname = (state.titles && state.titles.h1 ? state.titles.h1 : "saud-dashboard").replace(/[^a-z0-9]+/gi,"-").toLowerCase() + ".json";
-  a.href = url; a.download = fname;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast("JSON exported");
-}
-document.getElementById("importJsonBtn").addEventListener("click", ()=>{
-  document.getElementById("importJsonInput").click();
-});
-document.getElementById("importJsonInput").addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    try{
-      const parsed = JSON.parse(reader.result);
-      pushHistory();
-      state = parsed;
-      dismissLocalDraft();
-      renderAll();
-      showToast("Imported " + file.name);
-    } catch(err){
-      showToast("Import failed — not valid JSON");
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = "";
 });
 
 /* ---------- local browser autosave / draft restore ---------- */

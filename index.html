@@ -55,6 +55,11 @@
   .autosave-indicator{font-size:10.5px; color:var(--muted); display:none; align-items:center; gap:4px;}
   .autosave-indicator.show{display:flex;}
 
+  /* read-only viewer build: hide every editing/sync control, no exceptions */
+  body.readonly #toggleEdit, body.readonly #undoBtn, body.readonly #saveBtn,
+  body.readonly #toggleSync, body.readonly #syncPanel, body.readonly #draftBanner,
+  body.readonly .autosave-indicator{ display:none !important; }
+
   .sync-panel{
     background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
     margin-bottom:24px; display:none; font-size:13px; color:var(--sand); line-height:1.6;
@@ -724,6 +729,14 @@ const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conferenc
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
 let gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
+
+/* ---------- read-only viewer mode ---------- */
+/* When window.__SAUD_READONLY__ is set to true (by the auto-generated view/index.html build),
+   this dashboard becomes a pure read-only snapshot: no local draft, no GitHub sync UI, no
+   editing possible anywhere, and — if window.__SAUD_DATA__ is present — it loads that
+   pre-baked live data instead of the placeholder DEFAULT_STATE. */
+const READONLY = window.__SAUD_READONLY__ === true;
+if(READONLY) document.body.classList.add("readonly");
 
 /* ---------- undo history ---------- */
 let history = [];
@@ -1515,6 +1528,7 @@ function applyEditMode(){
 }
 
 document.getElementById("toggleEdit").addEventListener("click", ()=>{
+  if(READONLY) return;
   editing = !editing;
   const span = document.querySelector("#toggleEdit span[data-bind]");
   const key = editing ? "btnDoneEditing" : "btnEdit";
@@ -1557,6 +1571,7 @@ document.addEventListener("keydown", e=>{
 /* ---------- local browser autosave / draft restore ---------- */
 const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
 function saveLocalDraft(){
+  if(READONLY) return;
   try{
     localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
     const ind = document.getElementById("autosaveIndicator");
@@ -1853,6 +1868,11 @@ async function exportPPTX(){
 
 /* ---------- boot ---------- */
 (function boot(){
+  if(READONLY){
+    if(window.__SAUD_DATA__) state = window.__SAUD_DATA__;
+    renderAll();
+    return;
+  }
   const draft = loadLocalDraft();
   if(draft){
     state = draft;
@@ -1860,7 +1880,7 @@ async function exportPPTX(){
   }
   renderAll();
 })();
-document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
+if(!READONLY) document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
 </script>
 
 <style>

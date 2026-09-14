@@ -127,6 +127,26 @@
     background:var(--night); border:1px solid var(--border); color:var(--cream); border-radius:8px;
     padding:7px 12px; font-size:12.5px; width:240px; margin-bottom:10px;
   }
+
+  .global-search-wrap{position:relative; margin-left:auto;}
+  .global-search-wrap .row-search{width:220px; margin-bottom:0;}
+  .global-search-results{
+    display:none; position:absolute; top:calc(100% + 6px); right:0; width:320px; max-height:360px;
+    overflow-y:auto; background:var(--night2); border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.4); z-index:60;
+  }
+  .global-search-results.show{display:block;}
+  .gsr-item{padding:9px 14px; border-bottom:1px solid var(--border); cursor:pointer;}
+  .gsr-item:last-child{border-bottom:none;}
+  .gsr-item:hover{background:rgba(255,255,255,.06);}
+  .gsr-sec{font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--copper); margin-bottom:2px;}
+  .gsr-title{font-size:13px; color:var(--cream);}
+  .gsr-sub{font-size:11px; color:var(--muted); margin-top:2px;}
+  .gsr-empty{padding:14px; font-size:12px; color:var(--muted); text-align:center;}
+  [data-bind].flash-highlight{ animation: flashHighlight 1.6s ease; }
+  @keyframes flashHighlight{
+    0%{ background:rgba(193,112,30,.35); } 100%{ background:transparent; }
+  }
   section.collapsed > *:not(.sechead){display:none;}
   .sechead h2{cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px;}
   .sechead h2::before{content:"▾"; font-size:9px; opacity:.55;}
@@ -166,6 +186,9 @@
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
   .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
   .subhead{font-size:12px; color:var(--muted); margin:-6px 0 12px; line-height:1.5;}
+
+  .chart-wrap{position:relative; min-height:60px;}
+  .chart-empty{text-align:center; color:var(--muted); font-size:12.5px; padding:30px 0;}
 
   .overview-nav{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
   .overview-nav .navcard{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; text-align:left; width:100%; font-family:inherit;}
@@ -214,7 +237,7 @@
 
   @media print{
     .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
-    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions{ display:none !important; }
+    thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap{ display:none !important; }
     .page{ display:block !important; }
     body{ background:#fff; color:#111; }
     .stat-tile, .notes, table, .prob-table{ background:#f4f4f4; border-color:#ccc; }
@@ -298,11 +321,22 @@
     <button class="tab-btn" data-page="marketing" onclick="switchPage('marketing')"><span data-bind="titles.tabMarketing"></span></button>
     <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')"><span data-bind="titles.tabTasks"></span></button>
     <button class="tab-btn" data-page="notes" onclick="switchPage('notes')"><span data-bind="titles.tabNotes"></span></button>
+    <div class="global-search-wrap">
+      <input type="text" id="globalSearch" class="row-search" placeholder="🔎 Search everything...">
+      <div class="global-search-results" id="globalSearchResults"></div>
+    </div>
   </div>
 
   <!-- ============================== OVERVIEW ============================== -->
   <div class="page active" id="page-overview">
     <div class="stat-row" id="statRow"></div>
+    <section>
+      <div class="sechead"><h2 data-bind="titles.sectionPipelineChart"></h2></div>
+      <div class="chart-wrap">
+        <canvas id="pipelineChart"></canvas>
+        <div class="chart-empty" id="pipelineChartEmpty" style="display:none;" data-bind="titles.pipelineChartEmpty"></div>
+      </div>
+    </section>
     <section>
       <div class="sechead"><h2 data-bind="titles.sectionOverviewNav"></h2></div>
       <div class="overview-nav" id="overviewNav"></div>
@@ -573,6 +607,10 @@ const DEFAULT_STATE = {
     sectionLegend: "Legend",
     sectionNextStep: "Next Step",
     sectionOverviewNav: "Sections",
+    sectionPipelineChart: "Pipeline by Stage",
+    pipelineChartEmpty: "No opportunities logged yet — add rows in Internal Performance to see this chart.",
+    globalSearchPlaceholder: "🔎 Search everything...",
+    globalSearchEmpty: "No matches",
 
     externalOwnerLine: "Owner: Firas · Etimad tender pipeline, tourism/exhibition filter.",
     internalOwnerLine: "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
@@ -835,6 +873,7 @@ function applyTheme(theme){
   root.setProperty("--night2", light ? darken(theme.bg, 0.05) : lighten(theme.bg, 0.06));
   root.setProperty("--border", light ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.08)");
   renderThemePanel();
+  renderPipelineChart();
 }
 
 function renderThemePanel(){
@@ -973,6 +1012,7 @@ function renderAll(){
   renderTitles();
   renderLastUpdated();
   renderStats();
+  renderPipelineChart();
   renderOverviewNav();
   renderExternal();
   renderNews();
@@ -1040,6 +1080,99 @@ function renderStats(){
       </div>`));
   });
 }
+
+/* ---------- Overview: pipeline-by-stage chart ---------- */
+function renderPipelineChart(){
+  const canvas = document.getElementById("pipelineChart");
+  const emptyEl = document.getElementById("pipelineChartEmpty");
+  if(!canvas) return;
+
+  const stages = (state.stageProbs||[]).map(p=>p.stage);
+  const counts = {}, values = {};
+  stages.forEach(s=>{ counts[s]=0; values[s]=0; });
+  (state.internal||[]).forEach(r=>{
+    const s = stages.includes(r.stage) ? r.stage : null;
+    if(!s) return;
+    counts[s] += 1;
+    values[s] += (+r.value || 0);
+  });
+  const data = stages.map(s=>({ stage:s, count:counts[s]||0, value:values[s]||0 })).filter(d=>d.count>0 || stages.length<=8);
+  const total = data.reduce((sum,d)=>sum+d.count,0);
+
+  const wrap = canvas.parentElement;
+  const cssWidth = wrap ? wrap.clientWidth : 0;
+
+  if(!total || !cssWidth){
+    canvas.style.display = "none";
+    if(emptyEl) emptyEl.style.display = total ? "none" : "block";
+    return;
+  }
+  canvas.style.display = "block";
+  if(emptyEl) emptyEl.style.display = "none";
+
+  const dpr = window.devicePixelRatio || 1;
+  const rowH = 32;
+  const cssHeight = data.length * rowH + 20;
+  canvas.style.width = cssWidth + "px";
+  canvas.style.height = cssHeight + "px";
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+  const styles = getComputedStyle(document.documentElement);
+  const cssVar = (name, fallback) => (styles.getPropertyValue(name) || "").trim() || fallback;
+  const palette = [
+    cssVar("--copper", "#C1701E"), cssVar("--series-blue", "#3987e5"), cssVar("--series-orange", "#d95926"),
+    cssVar("--series-aqua", "#199e70"), cssVar("--muted-bar", "#6b6456"), cssVar("--critical", "#d03b3b")
+  ];
+  const textColor = cssVar("--cream", "#FBF6EA");
+  const mutedColor = cssVar("--muted", "#A79A82");
+  const isRtl = document.documentElement.dir === "rtl";
+
+  const labelW = 118;
+  const barAreaW = Math.max(cssWidth - labelW - 20, 40);
+  const barH = 16;
+  const maxCount = Math.max(...data.map(d=>d.count), 1);
+
+  ctx.font = "12px system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif";
+  ctx.textBaseline = "middle";
+
+  data.forEach((d, i)=>{
+    const y = 10 + i * rowH;
+    ctx.fillStyle = mutedColor;
+    ctx.textAlign = "left";
+    ctx.fillText(d.stage, 0, y + barH/2, labelW - 8);
+
+    const barW = Math.max((d.count / maxCount) * barAreaW, d.count > 0 ? 3 : 0);
+    ctx.fillStyle = palette[i % palette.length];
+    const x0 = labelW;
+    const r = Math.min(4, barH/2);
+    if(barW > 0){
+      ctx.beginPath();
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x0 + barW - r, y);
+      ctx.arcTo(x0 + barW, y, x0 + barW, y + r, r);
+      ctx.lineTo(x0 + barW, y + barH - r);
+      ctx.arcTo(x0 + barW, y + barH, x0 + barW - r, y + barH, r);
+      ctx.lineTo(x0, y + barH);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "left";
+    const countLabel = d.count + (d.count===1 ? " opp" : " opps");
+    ctx.fillText(`${countLabel}  ·  ${d.value.toLocaleString()} SAR`, x0 + barW + 8, y + barH/2);
+  });
+}
+
+let pipelineChartResizeTimer = null;
+window.addEventListener("resize", ()=>{
+  clearTimeout(pipelineChartResizeTimer);
+  pipelineChartResizeTimer = setTimeout(renderPipelineChart, 150);
+});
 
 function renderOverviewNav(){
   const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
@@ -1496,7 +1629,95 @@ function renderNotes(){
 function switchPage(page){
   document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active", p.id === "page-"+page));
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.page === page));
+  if(page === "overview") setTimeout(renderPipelineChart, 0);
 }
+
+/* ---------- global search across all sections ---------- */
+const GLOBAL_SEARCH_SOURCES = [
+  { section:"external",   page:"external",  kind:"Tender",      fields:["name","agency","rn"],       label:r=>r.name,       sub:r=>r.agency },
+  { section:"internal",   page:"internal",  kind:"Opportunity", fields:["name","client","owner"],    label:r=>r.name,       sub:r=>r.client },
+  { section:"projects",   page:"projects",  kind:"Project",     fields:["name","status"],            label:r=>r.name,       sub:r=>r.status },
+  { section:"prototypes", page:"projects",  kind:"Prototype",   fields:["name","team"],              label:r=>r.name,       sub:r=>r.status },
+  { section:"marketing",  page:"marketing", kind:"Campaign",    fields:["initiative","channel"],     label:r=>r.initiative, sub:r=>r.status },
+  { section:"tasks",      page:"tasks",     kind:"Task",        fields:["task","owner","notes"],     label:r=>r.task,       sub:r=>r.owner },
+  { section:"milestones", page:"tasks",     kind:"Milestone",   fields:["milestone","owner","notes"],label:r=>r.milestone,  sub:r=>r.owner },
+  { section:"todos",      page:"tasks",     kind:"To-do",       fields:["item","owner","notes"],     label:r=>r.item,       sub:r=>r.owner }
+];
+
+function globalSearch(query){
+  const q = query.trim().toLowerCase();
+  if(!q) return [];
+  const results = [];
+  GLOBAL_SEARCH_SOURCES.forEach(src=>{
+    (state[src.section]||[]).forEach((r,i)=>{
+      const hay = src.fields.map(f=>String(r[f]||"")).join("   ").toLowerCase();
+      if(hay.includes(q)){
+        results.push({
+          section: src.section, page: src.page, index: i, kind: src.kind,
+          label: src.label(r) || "(untitled)", sub: src.sub(r) || ""
+        });
+      }
+    });
+  });
+  return results.slice(0, 30);
+}
+
+function goToSearchResult(section, page, index){
+  switchPage(page);
+  setTimeout(()=>{
+    const target = document.querySelector(`[data-bind^="${section}.${index}."]`);
+    if(!target) return;
+    const sec = target.closest("section");
+    if(sec) sec.classList.remove("collapsed");
+    const row = target.closest("tr") || target;
+    row.scrollIntoView({ behavior:"smooth", block:"center" });
+    row.querySelectorAll ? row.querySelectorAll("[data-bind]").forEach(c=>{
+      c.classList.remove("flash-highlight"); void c.offsetWidth; c.classList.add("flash-highlight");
+    }) : null;
+  }, 40);
+}
+
+function renderGlobalSearchResults(){
+  const input = document.getElementById("globalSearch");
+  const wrap = document.getElementById("globalSearchResults");
+  if(!input || !wrap) return;
+  const q = input.value;
+  if(!q.trim()){ wrap.classList.remove("show"); wrap.innerHTML = ""; return; }
+  const results = globalSearch(q);
+  const t = state.titles || {};
+  wrap.innerHTML = results.length
+    ? results.map(r=>`
+        <div class="gsr-item" data-gopage="${r.page}" data-gosection="${r.section}" data-goindex="${r.index}">
+          <div class="gsr-sec">${escapeHtml(r.kind)}</div>
+          <div class="gsr-title">${escapeHtml(r.label)}</div>
+          ${r.sub ? `<div class="gsr-sub">${escapeHtml(r.sub)}</div>` : ""}
+        </div>`).join("")
+    : `<div class="gsr-empty">${escapeHtml(t.globalSearchEmpty || "No matches")}</div>`;
+  wrap.querySelectorAll("[data-gopage]").forEach(item=>{
+    item.addEventListener("click", ()=>{
+      goToSearchResult(item.dataset.gosection, item.dataset.gopage, +item.dataset.goindex);
+      wrap.classList.remove("show");
+      input.value = "";
+    });
+  });
+  wrap.classList.add("show");
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const gs = document.getElementById("globalSearch");
+  if(gs){
+    gs.addEventListener("input", renderGlobalSearchResults);
+    gs.addEventListener("focus", ()=>{ if(gs.value.trim()) renderGlobalSearchResults(); });
+    gs.addEventListener("keydown", e=>{
+      if(e.key === "Escape"){ gs.value=""; document.getElementById("globalSearchResults").classList.remove("show"); gs.blur(); }
+    });
+  }
+  document.addEventListener("click", e=>{
+    const wrap = document.getElementById("globalSearchResults");
+    const box = document.querySelector(".global-search-wrap");
+    if(wrap && box && !box.contains(e.target)) wrap.classList.remove("show");
+  });
+});
 
 /* ---------- editing: generic contenteditable -> state binding ---------- */
 document.addEventListener("focusin", e=>{

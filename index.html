@@ -285,6 +285,7 @@
       <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
       <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
       <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
+      <button class="editbtn secondary" onclick="forgetGhConfig()">Disconnect</button>
     </div>
     <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
   </div>
@@ -640,7 +641,7 @@ const DEFAULT_STATE = {
     themeDesc: "Pick a preset (including a light \"Daylight\" mode), or set your own accent, background, and text colors. Saved with your data when GitHub sync is connected, so it stays your color scheme everywhere you open this.",
     labelAccentColor: "Accent color", labelBackgroundColor: "Background color", labelTextColor: "Text color",
     githubSyncHeading: "GitHub sync — makes edits permanent and gives you a full history of every change.",
-    githubSyncDesc: "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo (kept in this browser tab's memory only — never saved, never sent anywhere but GitHub's API). If the file doesn't exist yet, the first Save will create it.",
+    githubSyncDesc: "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo once — it's saved in this browser only (never sent anywhere but GitHub's API), so this browser auto-connects and auto-saves your edits from now on. Click \"Disconnect\" below to remove it from this browser.",
     syncNotConnectedMsg: "Not connected — this page shows its built-in starting content until you connect.",
 
     addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
@@ -1581,6 +1582,7 @@ function saveLocalDraft(){
       ind.classList.add("show");
     }
   } catch(e){ /* ignore quota/availability errors */ }
+  scheduleGithubAutosave();
 }
 function loadLocalDraft(){
   try{
@@ -1632,6 +1634,67 @@ function b64DecodeUnicode(b64){
 
 function ghApiUrl(){ return `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${gh.branch}`; }
 
+/* ---------- persisted GitHub connection (this browser only) ---------- */
+const GH_CONFIG_KEY = "saudDashboardGhConfig";
+function saveGhConfig(){
+  try{
+    localStorage.setItem(GH_CONFIG_KEY, JSON.stringify({
+      token: gh.token, owner: gh.owner, repo: gh.repo, path: gh.path, branch: gh.branch
+    }));
+  } catch(e){ /* ignore quota/availability errors */ }
+}
+function loadGhConfig(){
+  try{
+    const raw = localStorage.getItem(GH_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function forgetGhConfig(){
+  try{ localStorage.removeItem(GH_CONFIG_KEY); } catch(e){}
+  if(ghAutosaveTimer){ clearTimeout(ghAutosaveTimer); ghAutosaveTimer = null; }
+  gh = { connected:false, token:null, owner:null, repo:null, path:"saud-dashboard-data.json", branch:"main", sha:null };
+  const tokenEl = document.getElementById("ghToken");
+  const ownerEl = document.getElementById("ghOwner");
+  const repoEl = document.getElementById("ghRepo");
+  if(tokenEl) tokenEl.value = "";
+  if(ownerEl) ownerEl.value = "";
+  if(repoEl) repoEl.value = "";
+  const statusEl = document.getElementById("syncStatus");
+  if(statusEl){
+    statusEl.className = "sync-status";
+    statusEl.innerText = "Disconnected — token removed from this browser. Future edits only autosave locally until you connect again.";
+  }
+  showToast("GitHub sync disconnected");
+}
+async function tryAutoConnectGithub(){
+  const cfg = loadGhConfig();
+  if(!cfg || !cfg.token || !cfg.owner || !cfg.repo) return false;
+  const tokenEl = document.getElementById("ghToken");
+  const ownerEl = document.getElementById("ghOwner");
+  const repoEl = document.getElementById("ghRepo");
+  const pathEl = document.getElementById("ghPath");
+  const branchEl = document.getElementById("ghBranch");
+  if(tokenEl) tokenEl.value = cfg.token;
+  if(ownerEl) ownerEl.value = cfg.owner;
+  if(repoEl) repoEl.value = cfg.repo;
+  if(pathEl) pathEl.value = cfg.path || "saud-dashboard-data.json";
+  if(branchEl) branchEl.value = cfg.branch || "main";
+  await connectGitHub();
+  return gh.connected;
+}
+
+/* ---------- debounced auto-push: saves to GitHub a moment after you stop editing ---------- */
+let ghAutosaveTimer = null;
+const GH_AUTOSAVE_DELAY_MS = 2500;
+function scheduleGithubAutosave(){
+  if(!gh.connected) return;
+  if(ghAutosaveTimer) clearTimeout(ghAutosaveTimer);
+  ghAutosaveTimer = setTimeout(()=>{
+    ghAutosaveTimer = null;
+    saveToGitHub();
+  }, GH_AUTOSAVE_DELAY_MS);
+}
+
 async function connectGitHub(){
   gh.token  = document.getElementById("ghToken").value.trim();
   gh.owner  = document.getElementById("ghOwner").value.trim();
@@ -1652,6 +1715,7 @@ async function connectGitHub(){
     });
     if(resp.status === 404){
       gh.connected = true; gh.sha = null;
+      saveGhConfig();
       statusEl.className = "sync-status ok";
       statusEl.innerText = "Connected. No saved file yet at this path — click \"Edit\" then \"Save to GitHub\" to create it with the current content.";
       return;
@@ -1668,10 +1732,11 @@ async function connectGitHub(){
     const loaded = JSON.parse(content);
     state = loaded;
     gh.connected = true;
+    saveGhConfig();
     dismissLocalDraft();
     renderAll();
     statusEl.className = "sync-status ok";
-    statusEl.innerText = "Connected and loaded from GitHub. Every future save writes a new commit to this file.";
+    statusEl.innerText = "Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.";
   } catch(e){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Connection failed — " + e.message;
@@ -1879,8 +1944,10 @@ async function exportPPTX(){
     document.getElementById("draftBanner").classList.add("show");
   }
   renderAll();
+  tryAutoConnectGithub().then(function(ok){
+    if(!ok) document.getElementById("syncPanel").classList.add("open"); // no saved connection: prompt to connect
+  });
 })();
-if(!READONLY) document.getElementById("syncPanel").classList.add("open"); // public shell: prompt every visitor to connect
 </script>
 
 <style>

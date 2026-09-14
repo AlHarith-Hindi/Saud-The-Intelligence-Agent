@@ -1935,6 +1935,24 @@ async function connectGitHub(){
       headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json" }
     });
     if(resp.status === 404){
+      // A 404 here is ambiguous: it means either (a) the file genuinely doesn't exist yet
+      // at this path, or (b) the token is invalid/expired/revoked or lacks access to a
+      // private repo — GitHub returns 404 (not 401/403) for private repos in that case too.
+      // Disambiguate with a repo-level check before trusting "file doesn't exist yet",
+      // so a dead token never masquerades as a freshly-connected empty dashboard.
+      let repoCheckOk = false;
+      try{
+        const repoResp = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}`, {
+          headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json" }
+        });
+        repoCheckOk = repoResp.ok;
+      } catch(e){ repoCheckOk = false; }
+      if(!repoCheckOk){
+        gh.connected = false;
+        statusEl.className = "sync-status err";
+        statusEl.innerText = "Connection failed: your token can't reach " + gh.owner + "/" + gh.repo + ". It's likely expired, revoked, or missing repo access — generate a fresh token and try again. (If this repo genuinely has no data file yet, that's fine too, but verify the token first so edits don't get stuck only autosaving locally.)";
+        return;
+      }
       gh.connected = true; gh.sha = null;
       saveGhConfig();
       statusEl.className = "sync-status ok";

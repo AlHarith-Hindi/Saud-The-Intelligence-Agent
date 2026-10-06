@@ -541,6 +541,115 @@
   #presentDots .pd-exit{width:auto; height:auto; background:none; color:var(--muted); font-size:12px;}
   @media (prefers-reduced-motion: reduce){ section.rv:not(.in){opacity:1; transform:none;} #cursorGlow{display:none;} }
   @media print{ #scrollProg, #cursorGlow, #bgCanvas, #presentDots{display:none !important;} section.rv{opacity:1 !important; transform:none !important;} }
+  /* ================= v11: features + deeper immersion ================= */
+  /* ambient light blobs (parallax) */
+  .ambient{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .ambient i{position:absolute; border-radius:50%; filter:blur(80px); opacity:.18; animation:drift 26s ease-in-out infinite alternate;}
+  .ambient i:nth-child(1){width:520px; height:520px; left:8%; top:-120px; background:var(--copper); transform:translateY(calc(var(--py,0px) * -1));}
+  .ambient i:nth-child(2){width:420px; height:420px; right:-80px; top:35%; background:var(--accent2); animation-duration:32s; opacity:.12;}
+  .ambient i:nth-child(3){width:380px; height:380px; left:35%; bottom:-160px; background:#4c8dff; animation-duration:38s; opacity:.08;}
+  @keyframes drift{to{translate:60px 40px; scale:1.15;}}
+  /* animated conic border on hero + brief */
+  @property --ang{syntax:"<angle>"; initial-value:0deg; inherits:false;}
+  .hero, .brief.show{border:1px solid transparent !important;
+    background-origin:border-box; background-clip:padding-box, border-box;}
+  .hero{background-image:linear-gradient(120deg, color-mix(in srgb, var(--copper) 16%, var(--night2)) 0%, var(--night2) 55%), conic-gradient(from var(--ang), transparent 0 70%, var(--copper) 82%, var(--accent2) 90%, transparent 100%) !important; animation:spinBorder 7s linear infinite;}
+  .brief.show{background-image:linear-gradient(var(--night2), var(--night2)), conic-gradient(from var(--ang), transparent 0 65%, var(--copper) 85%, transparent 100%) !important; animation:spinBorder 5s linear infinite, pageIn .3s ease;}
+  @keyframes spinBorder{to{--ang:360deg;}}
+  .hijri{font-size:12px; color:var(--muted); padding:7px 12px; border:1px dashed var(--border); border-radius:10px;}
+  .present-btn{font-weight:700 !important;}
+  /* boot intro */
+  #bootIntro{position:fixed; inset:0; z-index:20000; background:var(--night); display:grid; place-items:center; transition:opacity .6s ease, visibility .6s;}
+  #bootIntro.done{opacity:0; visibility:hidden;}
+  .boot-core{display:flex; align-items:center; gap:22px;}
+  .boot-ring{width:64px; height:64px; border-radius:50%; border:2px solid var(--border); border-top-color:var(--copper); border-right-color:var(--accent2); animation:spin .8s linear infinite; box-shadow:0 0 30px var(--accent-soft);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .boot-lines{font-family:var(--mono); font-size:13px; color:var(--sand); min-width:280px; line-height:1.8; direction:ltr; text-align:left;}
+  .boot-lines div:first-child{color:var(--copper); font-weight:600; letter-spacing:.12em;}
+  .boot-lines div{animation:rise .25s ease backwards;}
+  /* timeline */
+  .tl-sec{padding-bottom:26px !important;}
+  .tl-track{position:relative; height:96px; margin:8px 6px 0; border-radius:12px;
+    background:linear-gradient(90deg, color-mix(in srgb, var(--critical) 10%, transparent) 0 10%, color-mix(in srgb, var(--warning) 8%, transparent) 10% 33%, transparent 33%);}
+  [dir="rtl"] .tl-track{background:linear-gradient(270deg, color-mix(in srgb, var(--critical) 10%, transparent) 0 10%, color-mix(in srgb, var(--warning) 8%, transparent) 10% 33%, transparent 33%);}
+  [dir="rtl"] .tl-track::after{background:linear-gradient(270deg, var(--copper), var(--muted-bar) 40%);}
+  .tl-track::after{content:""; position:absolute; left:0; right:0; top:50%; height:2px; background:linear-gradient(90deg, var(--copper), var(--muted-bar) 40%); border-radius:2px;}
+  .tl-tick{position:absolute; inset-inline-start:var(--x); top:0; bottom:0; border-inline-start:1px dashed var(--border);}
+  .tl-tick span{position:absolute; bottom:-20px; inset-inline-start:-18px; font-size:10.5px; color:var(--muted); font-family:var(--mono); white-space:nowrap;}
+  [dir="rtl"] .tl-tick span{font-family:inherit;}
+  .tl-now{position:absolute; inset-inline-start:0; top:4px; bottom:4px; width:2px; background:var(--copper); box-shadow:0 0 14px var(--copper); animation:pulseNow 2s ease-in-out infinite;}
+  .tl-now span{position:absolute; top:-2px; inset-inline-start:6px; white-space:nowrap; font-size:10px; font-weight:700; color:var(--copper); text-transform:uppercase; letter-spacing:.08em;}
+  @keyframes pulseNow{50%{opacity:.45;}}
+  .tl-dot{position:absolute; inset-inline-start:var(--x); top:calc(50% - 8px + (var(--row) - 1) * 22px); width:16px; height:16px; margin-inline-start:-8px; border-radius:50%; border:2px solid var(--night);
+    background:var(--c); box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent), 0 0 18px var(--c); cursor:pointer; z-index:2; padding:0; transition:transform .2s;}
+  .tl-dot:hover{transform:scale(1.4); z-index:5;}
+  .tl-tip{position:absolute; bottom:24px; left:50%; translate:-50% 0; min-width:200px; max-width:260px; padding:9px 11px; border-radius:10px; background:var(--night2); border:1px solid color-mix(in srgb, var(--c) 50%, var(--border));
+    color:var(--cream); font-size:12px; line-height:1.4; text-align:start; box-shadow:0 14px 34px rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:opacity .15s, translate .15s;}
+  .tl-tip b{display:block; font-size:10px; color:var(--c); text-transform:uppercase; letter-spacing:.06em;}
+  .tl-tip i{display:block; font-style:normal; color:var(--muted); font-size:11px; margin-top:3px;}
+  .tl-dot:hover .tl-tip{opacity:1; translate:-50% -4px;}
+  /* bell / notifications */
+  .bell-wrap{position:relative;}
+  #bellBtn{position:relative;}
+  #bellBtn .bell-n{position:absolute; top:-6px; inset-inline-end:-6px; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--critical); color:#fff; font-size:10.5px; font-weight:700; display:none; place-items:center; font-family:var(--mono);}
+  #bellBtn.has .bell-n{display:grid;}
+  #bellBtn.has{animation:ring 4s ease-in-out infinite;}
+  @keyframes ring{0%,90%,100%{rotate:0deg;} 92%{rotate:-12deg;} 94%{rotate:10deg;} 96%{rotate:-6deg;} 98%{rotate:4deg;}}
+  #bellPanel{position:absolute; top:calc(100% + 8px); inset-inline-end:0; width:min(380px, 90vw); max-height:60vh; overflow-y:auto; z-index:9800; display:none;
+    background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 30%, var(--border)); border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  #bellPanel.show{display:block; animation:rise .2s ease;}
+  .bp-head{display:flex; justify-content:space-between; padding:12px 14px; font-family:var(--font-display); font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--cream); border-bottom:1px solid var(--border);}
+  .bp-head span{font-family:var(--mono); color:var(--muted);}
+  .bp-item{display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; font-size:12.5px; color:var(--sand); border-inline-start:3px solid transparent;}
+  .bp-item:hover{background:var(--accent-soft); color:var(--cream);}
+  .bp-item.crit{border-inline-start-color:var(--critical);} .bp-item.warn{border-inline-start-color:var(--warning);} .bp-item.info{border-inline-start-color:var(--series-blue);}
+  .bp-item small{display:block; color:var(--muted); font-size:11px; margin-top:2px;}
+  .bp-ic{width:22px; text-align:center; flex-shrink:0;}
+  /* detail drawer */
+  .drawer{position:fixed; inset:0; z-index:100000; pointer-events:none;}
+  .dr-scrim{position:absolute; inset:0; background:rgba(0,0,0,.45); backdrop-filter:blur(3px); opacity:0; transition:opacity .25s;}
+  .dr-panel{position:absolute; top:0; bottom:0; inset-inline-end:0; width:min(440px, 94vw); background:color-mix(in srgb, var(--night2) 94%, transparent); backdrop-filter:blur(16px);
+    border-inline-start:1px solid color-mix(in srgb, var(--copper) 35%, var(--border)); box-shadow:-30px 0 80px rgba(0,0,0,.45); padding:26px 24px; overflow-y:auto;
+    transform:translateX(105%); transition:transform .35s cubic-bezier(.2,.8,.2,1);}
+  [dir="rtl"] .dr-panel{transform:translateX(-105%);}
+  .drawer.show{pointer-events:auto;} .drawer.show .dr-scrim{opacity:1;} .drawer.show .dr-panel{transform:none;}
+  .dr-close{position:absolute; top:16px; inset-inline-end:16px; background:none; border:1px solid var(--border); color:var(--muted); width:30px; height:30px; border-radius:8px; cursor:pointer;}
+  .dr-kind{font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--copper);}
+  .dr-body h3{margin:6px 40px 14px 0; font-family:var(--font-display); font-size:24px; line-height:1.2; color:var(--cream);}
+  [dir="rtl"] .dr-body h3{margin:6px 0 14px 40px;}
+  .dr-count .status-pill{font-size:14px; padding:6px 12px; background:color-mix(in srgb, var(--critical) 14%, transparent); color:var(--cream);}
+  .dr-rows{margin:18px 0;}
+  .dr-row{display:grid; grid-template-columns:120px 1fr; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px;}
+  .dr-row span{color:var(--muted);} .dr-row b{color:var(--cream); font-weight:500; white-space:pre-wrap;} .dr-row b.mono{font-family:var(--mono);}
+  .dr-actions{display:flex; gap:10px; flex-wrap:wrap;}
+  #externalBody tr, #internalBody tr, #projectsBody tr{cursor:pointer;}
+  body.editing-on #externalBody tr{cursor:auto;}
+  /* quick add */
+  #qaFab{position:fixed; bottom:88px; right:24px; width:48px; height:48px; border-radius:50%; z-index:9990; border:1px solid color-mix(in srgb, var(--copper) 50%, transparent);
+    background:var(--night2); color:var(--copper); font-size:24px; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.4), 0 0 0 0 var(--accent-soft); transition:transform .2s, background .2s; animation:fabPulse 3s ease-in-out infinite;}
+  [dir="rtl"] #qaFab{right:auto; left:24px;}
+  #qaFab:hover{background:var(--copper); color:#fff; transform:rotate(90deg);}
+  @keyframes fabPulse{50%{box-shadow:0 8px 24px rgba(0,0,0,.4), 0 0 0 10px transparent, 0 0 0 6px var(--accent-soft);}}
+  body.present #qaFab{display:none;}
+  .qa-modal{position:fixed; inset:0; z-index:100001; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); backdrop-filter:blur(6px);}
+  .qa-modal.show{display:flex; animation:pageIn .18s ease;}
+  .qa-box{width:min(460px, 92vw); background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 35%, var(--border)); border-radius:16px; padding:20px; box-shadow:0 30px 80px rgba(0,0,0,.55);}
+  .qa-box h4{margin:0 0 12px; font-family:var(--font-display); letter-spacing:.08em; text-transform:uppercase; color:var(--copper);}
+  .qa-types{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
+  .qa-types button{background:var(--night); border:1px solid var(--border); color:var(--sand); border-radius:999px; padding:6px 12px; font-size:12px; cursor:pointer; font-family:inherit;}
+  .qa-types button.on{background:var(--accent-soft); border-color:var(--copper); color:var(--cream);}
+  .qa-box input{width:100%; margin-bottom:10px; background:var(--night); border:1px solid var(--border); color:var(--cream); padding:10px 12px; border-radius:10px; font-size:13.5px; font-family:inherit; color-scheme:dark;}
+  .qa-box input:focus{outline:none; border-color:var(--copper);}
+  .qa-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .qa-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:4px;}
+  /* calm (motion off) */
+  body.calm *, body.calm *::before, body.calm *::after{animation:none !important; transition:none !important;}
+  body.calm #bgCanvas, body.calm #cursorGlow, body.calm .ambient{display:none !important;}
+  body.calm section.rv{opacity:1 !important; transform:none !important;}
+  /* present-mode page arrows */
+  #presentDots .pd-arrow{width:auto; height:auto; background:none; color:var(--sand); font-size:16px; padding:0 4px;}
+  @media (max-width:760px){ .tl-tip{min-width:150px;} #qaFab{bottom:84px;} .hijri{display:none;} }
+  @media print{ .ambient, #qaFab, #bootIntro, .drawer, .bell-wrap{display:none !important;} }
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -554,6 +663,8 @@
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
+<div class="ambient"><i></i><i></i><i></i></div>
+<div id="bootIntro"><div class="boot-core"><div class="boot-ring"></div><div class="boot-lines"></div></div></div>
 <div id="cursorGlow"></div><div id="scrollProg"></div>
 <div class="app">
 
@@ -596,8 +707,9 @@
         <div class="global-search-results" id="globalSearchResults"></div>
       </div>
       <div class="editbar">
-        <button class="editbtn secondary cmdk-btn" onclick="openCmdk()"><kbd>⌘K</kbd><span id="cmdkHint">Search</span></button>
-        <button class="editbtn secondary kb-hint" id="kbHint" onclick="showShortcuts()">?</button>
+        <span class="bell-wrap"><button class="editbtn secondary" id="bellBtn" onclick="toggleBell(event)">🔔<span class="bell-n"></span></button><div id="bellPanel"></div></span>
+        <button class="editbtn secondary cmdk-btn" onclick="openCmdk()">✦ <span id="cmdkHint">Command center</span></button>
+        <button class="editbtn secondary" id="motionBtn" onclick="toggleMotion()">◉ Motion on</button>
         <button class="editbtn secondary" id="presentBtn" onclick="togglePresent()">▶ <span id="presentLbl">Present</span></button>
         <button class="editbtn secondary" id="langToggle" onclick="toggleLang()">عربي</button>
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
@@ -651,16 +763,21 @@
 
 
   <div class="cmdk-overlay" id="cmdk"><div class="cmdk"><input id="cmdkInput" autocomplete="off"><div class="cmdk-list" id="cmdkList"></div><div class="cmdk-foot">↑↓ · Enter · Esc</div></div></div>
-  <div class="kb-help" id="kbHelp" onclick="if(event.target===this) this.classList.remove('show')"><div class="kb-body"></div></div>
+  <div class="drawer" id="drawer"><div class="dr-scrim" onclick="closeDrawer()"></div><aside class="dr-panel"><button class="dr-close" onclick="closeDrawer()">✕</button><div class="dr-body"></div></aside></div>
+  <div class="qa-modal" id="qaModal" onclick="if(event.target===this) closeQuickAdd()"><div class="qa-box"><h4>Quick add</h4><div class="qa-types"></div>
+    <input id="qaTitle" autocomplete="off"><div class="qa-row"><input id="qaDate" type="date"><input id="qaOwner" autocomplete="off"></div>
+    <div class="qa-actions"><button class="editbtn secondary" id="qaCancel" onclick="closeQuickAdd()">Cancel</button><button class="editbtn" id="qaSave" onclick="saveQuickAdd()">Add</button></div></div></div>
+  <button id="qaFab" onclick="openQuickAdd()">＋</button>
   <div id="presentDots"></div>
 
   <div class="page-head"><h2 class="page-title" id="pageTitle">Overview</h2></div>
 
   <!-- ============================== OVERVIEW ============================== -->
   <div class="page active" id="page-overview">
-    <div class="hero"><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
+    <div class="hero"><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="hijri" id="heroHijri"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="editbtn secondary present-btn" id="heroPresent" onclick="togglePresent()">▶ Present</button><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
     <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
+    <section class="tl-sec"><div class="sechead"><h2 id="tlTitle">Next 30 days — timeline</h2></div><div id="ovTimeline"></div></section>
     <div class="ov-grid">
       <section>
         <div class="sechead"><h2 data-bind="titles.ovUpcomingTitle"></h2></div>
@@ -1337,7 +1454,16 @@ const UI_AR = {
   "Generated":"أُنشئ", "Hide":"إخفاء", "Refresh brief":"تحديث الملخص", "Closed":"أُغلقت", "Command palette":"لوحة الأوامر",
   "Jump to a page":"الانتقال إلى صفحة", "Presentation mode":"وضع العرض", "Previous / next page (presentation)":"الصفحة السابقة / التالية (وضع العرض)",
   "Keyboard shortcuts":"اختصارات لوحة المفاتيح", "Close":"إغلاق", "Present":"عرض",
-  "Presentation mode — ← → to move, Esc to exit":"وضع العرض — استخدم ← → للتنقل وEsc للخروج", "Presentation mode off":"تم إيقاف وضع العرض"
+  "Presentation mode — use the arrows at the bottom to move":"وضع العرض — استخدم الأسهم في الأسفل للتنقل",
+  "Command center":"مركز الأوامر", "Notifications":"التنبيهات", "All clear":"لا توجد تنبيهات", "Due today":"مستحق اليوم", "Overdue":"متأخر",
+  "Critical gap":"فجوة حرجة", "No opportunities logged in the pipeline yet":"لا توجد فرص مسجلة في خط المبيعات بعد",
+  "Not synced — changes stay in this browser":"غير متزامن — التعديلات تبقى في هذا المتصفح فقط", "Quick add":"إضافة سريعة", "Title":"العنوان",
+  "Owner (optional)":"المسؤول (اختياري)", "Add":"إضافة", "Cancel":"إلغاء", "Motion on":"الحركة مفعّلة", "Motion off":"الحركة متوقفة",
+  "Ask Saud about this":"اسأل سعود عن هذا", "Open in table":"فتح في الجدول", "Finish editing first":"أنهِ التعديل أولًا",
+  "Next 30 days — timeline":"الخط الزمني — 30 يومًا القادمة", "Agency":"الجهة", "Category":"التصنيف", "Fit":"الملاءمة", "Deadline":"الموعد النهائي",
+  "Notes":"ملاحظات", "Client":"العميل", "Stage":"المرحلة", "Value (SAR)":"القيمة (ر.س)", "Submission date":"تاريخ التقديم", "Owner":"المسؤول",
+  "Next step":"الخطوة التالية", "Status":"الحالة", "Financially":"مالياً", "Operationally":"تشغيلياً", "Issues":"المشكلات", "Channel":"القناة",
+  "Target date":"التاريخ المستهدف", "Due":"الاستحقاق", "RN":"الرقم المرجعي", "Presentation mode off":"تم إيقاف وضع العرض"
 };
 /* display-only translation of status / category values (stored data stays in English) */
 const ENUM_AR = {
@@ -1760,7 +1886,9 @@ function cmdkCommands(){
     { label:t.btnExportExcel||"Export Excel", ic:"⬇", run:()=>{ switchPage("external"); exportExternalExcel(); } },
     { label:t.btnPrint||"Print", ic:"🖨", run:()=>window.print() },
     { label:L("Presentation mode"), ic:"▶", run:()=>togglePresent(true) },
-    { label:L("Keyboard shortcuts"), ic:"⌨", run:()=>showShortcuts() }
+    { label:L("Quick add"), ic:"＋", run:()=>openQuickAdd() },
+    { label:L("Notifications"), ic:"🔔", run:()=>toggleBell() },
+    { label:L("Motion on") + " / " + L("Motion off"), ic:"◉", run:()=>toggleMotion() }
   ].map(a=>Object.assign({ group:L("Actions") }, a));
   return pages.concat(actions);
 }
@@ -1777,6 +1905,8 @@ function renderCmdk(q){
     const found = globalSearch(q).slice(0,8).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) }));
     // also search the translated text the reader actually sees
     items = items.concat(found);
+    const raw = (document.getElementById("cmdkInput")||{}).value || q;
+    items.push({ group:L("Ask Saud"), label:(LANG==="ar" ? "اسأل سعود: " : "Ask Saud: ") + raw, ic:"💬", run:()=>askSaud(raw) });
   }
   __cmdkItems = items; __cmdkSel = 0;
   const list = document.getElementById("cmdkList");
@@ -1800,7 +1930,6 @@ function selectCmdk(i){
 function runCmdk(i){ const c = __cmdkItems[i]; closeCmdk(); if(c) setTimeout(c.run, 30); }
 document.addEventListener("keydown", e=>{
   const o = document.getElementById("cmdk");
-  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); o && o.classList.contains("show") ? closeCmdk() : openCmdk(); return; }
   if(!o || !o.classList.contains("show")) return;
   if(e.key === "Escape"){ closeCmdk(); }
   else if(e.key === "ArrowDown"){ e.preventDefault(); selectCmdk(__cmdkSel+1); }
@@ -1830,7 +1959,7 @@ function applySpotlight(root){
   size(); addEventListener("resize", size);
   addEventListener("mousemove", e=>{ mouse.x = e.clientX; mouse.y = e.clientY; });
   function frame(){
-    if(document.hidden){ requestAnimationFrame(frame); return; }
+    if(document.hidden || document.body.classList.contains("calm")){ requestAnimationFrame(frame); return; }
     const cs = getComputedStyle(document.documentElement);
     const acc = (cs.getPropertyValue("--copper")||"#F26522").trim();
     const light = relLuminance((state && state.theme && state.theme.bg) || "#0E0E11") > .5;
@@ -1858,7 +1987,7 @@ function applySpotlight(root){
 function renderV9(){
   renderHero(); tickClock(); renderUpcoming(); renderProgramRing(); renderActivity(); renderInternalBoard(); animateCounters(); applySpotlight();
   document.documentElement.style.setProperty("--grid-line", relLuminance((state.theme && state.theme.bg) || "#0E0E11") > .5 ? "rgba(0,0,0,.04)" : "rgba(255,255,255,.025)");
-  const kb = document.getElementById("cmdkHint"); if(kb) kb.textContent = L("Search");
+  const kb = document.getElementById("cmdkHint"); if(kb) kb.textContent = L("Command center");
 }
 
 /* ======================= v10: more immersive + interactive ======================= */
@@ -1894,6 +2023,7 @@ function applyTilt(root){
     if(el._tilt) return; el._tilt = true;
     el.addEventListener("mousemove", e=>{
       const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5, y = (e.clientY - r.top)/r.height - .5;
+      if(typeof MOTION !== "undefined" && !MOTION) return;
       const k = el.classList.contains("hero") ? 2.5 : el.classList.contains("agenda-item") ? 0 : 7;
       el.style.transform = `perspective(900px) rotateX(${(-y*k).toFixed(2)}deg) rotateY(${(x*k).toFixed(2)}deg) translateY(-2px)`;
     });
@@ -1972,42 +2102,25 @@ function togglePresent(force){
   const on = typeof force === "boolean" ? force : !document.body.classList.contains("present");
   document.body.classList.toggle("present", on);
   try{ if(on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); else if(!on && document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
-  renderPresentDots(); showToast(on ? L("Presentation mode — ← → to move, Esc to exit") : L("Presentation mode off"));
+  renderPresentDots(); showToast(on ? L("Presentation mode — use the arrows at the bottom to move") : L("Presentation mode off"));
   if(currentPage() === "overview") setTimeout(renderPipelineChart, 50);
 }
 function renderPresentDots(){
   const d = document.getElementById("presentDots"); if(!d) return;
   const t = T(); const cur = currentPage();
   const keys = { overview:"tabOverview", program:"tabProgram", external:"tabExternal", internal:"tabInternal", projects:"tabProjects", marketing:"tabMarketing", tasks:"tabTasks", notes:"tabNotes" };
-  d.innerHTML = PAGE_ORDER.map(p=>`<button class="${p===cur?"on":""}" title="${escapeHtml(t[keys[p]]||p)}" onclick="switchPage('${p}'); renderPresentDots();"></button>`).join("") +
-    `<span class="pd-label">${escapeHtml(t[keys[cur]]||cur)}</span><button class="pd-exit" onclick="togglePresent(false)">✕</button>`;
+  const go = n=>`switchPage('${PAGE_ORDER[(PAGE_ORDER.indexOf(cur)+n+PAGE_ORDER.length)%PAGE_ORDER.length]}'); renderPresentDots();`;
+  d.innerHTML = `<button class="pd-arrow" onclick="${go(-1)}">${LANG==="ar"?"›":"‹"}</button>` + PAGE_ORDER.map(p=>`<button class="${p===cur?"on":""}" title="${escapeHtml(t[keys[p]]||p)}" onclick="switchPage('${p}'); renderPresentDots();"></button>`).join("") +
+    `<button class="pd-arrow" onclick="${go(1)}">${LANG==="ar"?"‹":"›"}</button><span class="pd-label">${escapeHtml(t[keys[cur]]||cur)}</span><button class="pd-exit" onclick="togglePresent(false)">✕</button>`;
 }
 document.addEventListener("fullscreenchange", ()=>{ if(!document.fullscreenElement && document.body.classList.contains("present")) togglePresent(false); });
 
-/* keyboard shortcuts */
-function showShortcuts(){
-  const o = document.getElementById("kbHelp"); if(!o) return;
-  const rows = [["Ctrl / ⌘ K", L("Command palette")], ["1 – 8", L("Jump to a page")], ["B", L("Brief me")], ["L", L("Switch language")],
-    ["P", L("Presentation mode")], ["← →", L("Previous / next page (presentation)")], ["?", L("Keyboard shortcuts")], ["Esc", L("Close")]];
-  o.querySelector(".kb-body").innerHTML = `<h4>${escapeHtml(L("Keyboard shortcuts"))}</h4>` + rows.map(([k,v])=>`<div class="kb-row"><span>${escapeHtml(v)}</span><kbd>${escapeHtml(k)}</kbd></div>`).join("");
-  o.classList.add("show");
-}
+/* Esc closes overlays (no other keyboard shortcuts) */
 document.addEventListener("keydown", e=>{
-  const help = document.getElementById("kbHelp");
-  if(e.key === "Escape"){ if(help && help.classList.contains("show")){ help.classList.remove("show"); return; } if(document.body.classList.contains("present")){ togglePresent(false); return; } }
-  if(e.ctrlKey || e.metaKey || e.altKey) return;
-  const tgt = e.target; if(tgt && (tgt.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName))) return;
-  if(document.getElementById("cmdk")?.classList.contains("show")) return;
-  const k = e.key;
-  if(/^[1-8]$/.test(k)){ switchPage(PAGE_ORDER[+k-1]); renderPresentDots(); }
-  else if(k === "?"){ showShortcuts(); }
-  else if(k === "b" || k === "B"){ switchPage("overview"); briefMe(); }
-  else if(k === "l" || k === "L"){ toggleLang(); }
-  else if(k === "p" || k === "P"){ togglePresent(); }
-  else if(document.body.classList.contains("present") && (k === "ArrowRight" || k === "ArrowLeft")){
-    const dir = (k === "ArrowRight") !== (LANG === "ar") ? 1 : -1;
-    const i = PAGE_ORDER.indexOf(currentPage()); switchPage(PAGE_ORDER[(i + dir + PAGE_ORDER.length) % PAGE_ORDER.length]); renderPresentDots();
-  }
+  if(e.key !== "Escape") return;
+  if(document.getElementById("drawer")?.classList.contains("show")){ closeDrawer(); return; }
+  if(document.getElementById("qaModal")?.classList.contains("show")){ closeQuickAdd(); return; }
+  if(document.body.classList.contains("present")) togglePresent(false);
 });
 
 /* glue */
@@ -2015,8 +2128,185 @@ function renderV10(){
   const g = document.getElementById("heroGreet"); if(g) decodeText(g, greeting());
   renderBrief(false); tickCountdowns(); applyTilt(); applyReveal(); wireOverviewClicks(); renderPresentDots();
   const btn = document.getElementById("briefBtn"); if(btn && !btn.disabled) btn.innerHTML = "✨ " + escapeHtml(L(loadBrief() ? "Refresh brief" : "Brief me"));
-  const kh = document.getElementById("kbHint"); if(kh) kh.title = L("Keyboard shortcuts");
   const pl = document.getElementById("presentLbl"); if(pl) pl.textContent = L("Present");
+}
+
+/* ======================= v11: more features + deeper immersion ======================= */
+
+/* ---------- Ask Saud about anything (prefills + sends the chat) ---------- */
+function askSaud(q){
+  const fab = document.getElementById("saud-chat-fab"), panel = document.getElementById("saud-chat-panel");
+  const inp = document.getElementById("saud-chat-input"), send = document.getElementById("saud-chat-send");
+  if(!fab || !panel || !inp) return;
+  if(editing){ showToast(L("Finish editing first")); return; }
+  if(panel.style.display !== "flex") fab.click();
+  inp.value = q; inp.dispatchEvent(new Event("input"));
+  if(send) setTimeout(()=>send.click(), 150);
+}
+
+/* ---------- detail drawer: click any tender / opportunity / agenda item ---------- */
+const DRAWER_FIELDS = {
+  external:   [["rn","RN"],["agency","Agency"],["category","Category"],["fit","Fit"],["bidDeadline","Deadline"],["notes","Notes"]],
+  internal:   [["client","Client"],["stage","Stage"],["value","Value (SAR)"],["subDate","Submission date"],["owner","Owner"],["nextStep","Next step"]],
+  projects:   [["status","Status"],["deadline","Deadline"],["financially","Financially"],["operationally","Operationally"],["issues","Issues"]],
+  marketing:  [["channel","Channel"],["status","Status"],["targetDate","Target date"],["notes","Notes"]],
+  milestones: [["owner","Owner"],["status","Status"],["targetDate","Target date"],["notes","Notes"]],
+  todos:      [["owner","Owner"],["due","Due"],["notes","Notes"]]
+};
+const KIND_SECTION = { "Tender":"external", "Opportunity":"internal", "Project":"projects", "Campaign":"marketing", "Milestone":"milestones", "To-do":"todos" };
+const SECTION_PAGE = { external:"external", internal:"internal", projects:"projects", marketing:"marketing", milestones:"tasks", todos:"tasks" };
+function openDrawer(section, i){
+  const r = (state[section]||[])[i]; const d = document.getElementById("drawer"); if(!r || !d) return;
+  const title = rowLabel(r); const due = r.bidDeadline || r.subDate || r.deadline || r.targetDate || r.due || "";
+  const kind = Object.keys(KIND_SECTION).find(k=>KIND_SECTION[k] === section) || "";
+  const rows = (DRAWER_FIELDS[section]||[]).filter(([f])=>r[f] !== undefined && String(r[f]).trim() !== "" && String(r[f]).trim() !== "—")
+    .map(([f,lab])=>{ const v = f === "value" ? (+r[f]||0).toLocaleString() : (["stage","status","fit","category"].includes(f) ? disp(r[f]) : tx(String(r[f])));
+      return `<div class="dr-row"><span>${escapeHtml(L(lab))}</span><b class="${["rn","bidDeadline","deadline","due","subDate","targetDate"].includes(f)?"mono":""}">${escapeHtml(v)}</b></div>`; }).join("");
+  const target = dueTarget(due);
+  d.querySelector(".dr-body").innerHTML = `
+    <div class="dr-kind">${escapeHtml(L(kind))}</div>
+    <h3>${escapeHtml(tx(title))}</h3>
+    ${target ? `<div class="dr-count"><span class="status-pill" data-due="${escapeHtml(due)}">${escapeHtml(due)}</span></div>` : ""}
+    <div class="dr-rows">${rows || `<div class="ov-note">—</div>`}</div>
+    <div class="dr-actions">
+      <button class="btn-ai" id="drAsk">💬 ${escapeHtml(L("Ask Saud about this"))}</button>
+      <button class="editbtn secondary" id="drGo">↗ ${escapeHtml(L("Open in table"))}</button>
+    </div>`;
+  d.querySelector("#drAsk").onclick = ()=>{ closeDrawer(); askSaud((LANG==="ar" ? "حلّل هذا البند وقدّم توصية واضحة: " : "Analyze this item and give me a clear recommendation: ") + kind + " — " + title + (due ? " (" + due + ")" : "")); };
+  d.querySelector("#drGo").onclick = ()=>{ closeDrawer(); goToSearchResult(section, SECTION_PAGE[section], i); };
+  d.classList.add("show"); tickCountdowns();
+}
+function closeDrawer(){ const d = document.getElementById("drawer"); if(d) d.classList.remove("show"); }
+function findIndex(section, title){ return (state[section]||[]).findIndex(r=>rowLabel(r) === title); }
+document.addEventListener("click", e=>{
+  if(editing) return;
+  const ag = e.target.closest(".agenda-item[data-sec]");
+  if(ag){ e.preventDefault(); e.stopPropagation(); openDrawer(ag.dataset.sec, +ag.dataset.idx); return; }
+  const tl = e.target.closest(".tl-dot[data-sec]");
+  if(tl){ openDrawer(tl.dataset.sec, +tl.dataset.idx); return; }
+  const tr = e.target.closest("#externalBody tr, #internalBody tr, #projectsBody tr");
+  if(tr && !e.target.closest("button, a, input, select, .actions-cell")){
+    const cell = tr.querySelector("[data-bind]"); if(!cell) return;
+    const m = cell.dataset.bind.match(/^(\w+)\.(\d+)\./); if(m) openDrawer(m[1], +m[2]);
+  }
+  const kb = e.target.closest(".kb-card");
+  if(kb && !kb.classList.contains("dragging")) openDrawer("internal", +kb.dataset.idx);
+}, true);
+
+/* ---------- 30-day timeline strip ---------- */
+function renderTimeline(){
+  const el = document.getElementById("ovTimeline"); if(!el) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const items = upcomingItems(30);
+  const ticks = [0,7,14,21,28].map(n=>{ const d = new Date(today.getTime()+n*864e5);
+    return `<div class="tl-tick" style="--x:${n/30*100}%"><span>${escapeHtml(d.toLocaleDateString(dateLocale(), { day:"numeric", month:"short" }))}</span></div>`; }).join("");
+  const dots = items.map((x,k)=>{
+    const days = (x.d - today)/864e5; const sec = KIND_SECTION[x.kind]; const idx = findIndex(sec, x.title);
+    const col = days <= 3 ? "var(--critical)" : days <= 10 ? "var(--warning)" : "var(--good)";
+    return `<button class="tl-dot" style="--x:${Math.min(100, days/30*100)}%; --c:${col}; --row:${k%3}" data-sec="${sec}" data-idx="${idx}">
+      <span class="tl-tip"><b>${escapeHtml(L(x.kind))}</b>${escapeHtml(tx(x.title))}<i>${escapeHtml(x.d.toLocaleDateString(dateLocale(), { weekday:"short", day:"numeric", month:"short" }))}</i></span></button>`;
+  }).join("");
+  el.innerHTML = `<div class="tl-track">${ticks}<div class="tl-now"><span>${escapeHtml(L("Today"))}</span></div>${dots}</div>`;
+}
+
+/* ---------- notification centre ---------- */
+function alertsList(){
+  const out = []; const today = new Date(); today.setHours(0,0,0,0);
+  upcomingItems(7).forEach(x=>{ const d = Math.round((x.d - today)/864e5);
+    out.push({ ic:"⏰", sev: d <= 3 ? "crit" : "warn", text: `${L(x.kind)}: ${tx(x.title)}`, sub: d === 0 ? L("Due today") : (LANG==="ar" ? `خلال ${d} يوم` : `due in ${d}d`), sec:KIND_SECTION[x.kind], idx:findIndex(KIND_SECTION[x.kind], x.title) }); });
+  (state.todos||[]).forEach((t,i)=>{ const d = parseDeadline(t.due); if(!t.done && d && d < today) out.push({ ic:"⚠", sev:"crit", text: `${L("Overdue")}: ${tx(t.item)}`, sub: t.due, sec:"todos", idx:i }); });
+  (state.gaps||[]).filter(g=>g.sev === "critical").forEach(g=>out.push({ ic:"◆", sev:"warn", text: `${L("Critical gap")}: ${tx(g.text||"")}`.slice(0,140), sub:"", page:"program" }));
+  if(!(state.internal||[]).length) out.push({ ic:"ℹ", sev:"info", text: L("No opportunities logged in the pipeline yet"), sub:"", page:"internal" });
+  if(typeof gh !== "undefined" && !gh.connected) out.push({ ic:"⇄", sev:"warn", text: L("Not synced — changes stay in this browser"), sub:"", page:null });
+  return out;
+}
+function renderBell(){
+  const b = document.getElementById("bellBtn"); const p = document.getElementById("bellPanel"); if(!b || !p) return;
+  const list = alertsList(); const n = list.filter(a=>a.sev !== "info").length;
+  b.querySelector(".bell-n").textContent = n || ""; b.classList.toggle("has", !!n);
+  p.innerHTML = `<div class="bp-head">${escapeHtml(L("Notifications"))}<span>${list.length}</span></div>` + (list.length ? list.map((a,k)=>
+    `<div class="bp-item ${a.sev}" data-k="${k}"><span class="bp-ic">${a.ic}</span><div><div>${escapeHtml(a.text)}</div>${a.sub?`<small>${escapeHtml(a.sub)}</small>`:""}</div></div>`).join("")
+    : `<div class="ov-note" style="padding:14px">${escapeHtml(L("All clear"))}</div>`);
+  p.querySelectorAll(".bp-item").forEach(el=>el.onclick = ()=>{ const a = list[+el.dataset.k]; p.classList.remove("show");
+    if(a.sec && a.idx >= 0) openDrawer(a.sec, a.idx); else if(a.page) switchPage(a.page); else document.getElementById("syncPanel").classList.add("open"); });
+}
+function toggleBell(e){ if(e) e.stopPropagation(); const p = document.getElementById("bellPanel"); renderBell(); p.classList.toggle("show"); }
+document.addEventListener("click", e=>{ const p = document.getElementById("bellPanel"); if(p && p.classList.contains("show") && !e.target.closest("#bellPanel, #bellBtn")) p.classList.remove("show"); });
+
+/* ---------- quick add (floating +) ---------- */
+const QA_TYPES = {
+  todos:     { label:"To-do",       make:(t,d,o)=>({ done:false, item:t, owner:o, due:d, notes:"" }) },
+  external:  { label:"Tender",      make:(t,d,o)=>({ rn:"", name:t, agency:"", fit:"Unknown", category:"Other/Uncategorized", bidDeadline:d, notes:o?("Owner: "+o):"" }) },
+  internal:  { label:"Opportunity", make:(t,d,o)=>({ name:t, client:"", value:0, stage:"Not started", subDate:d, nextStep:"", owner:o }) },
+  milestones:{ label:"Milestone",   make:(t,d,o)=>({ milestone:t, owner:o, targetDate:d, status:"Not started", notes:"" }) },
+  projects:  { label:"Project",     make:(t,d,o)=>({ name:t, status:"Not started", financially:"", operationally:"", issues:"", deadline:d }) }
+};
+function openQuickAdd(){
+  if(READONLY){ return; }
+  const m = document.getElementById("qaModal"); if(!m) return;
+  m.querySelector(".qa-types").innerHTML = Object.entries(QA_TYPES).map(([k,v],i)=>`<button data-k="${k}" class="${i===0?"on":""}">${escapeHtml(L(v.label))}</button>`).join("");
+  m.querySelectorAll(".qa-types button").forEach(b=>b.onclick = ()=>{ m.querySelectorAll(".qa-types button").forEach(x=>x.classList.toggle("on", x===b)); });
+  m.querySelector("h4").textContent = L("Quick add");
+  m.querySelector("#qaTitle").placeholder = L("Title"); m.querySelector("#qaOwner").placeholder = L("Owner (optional)");
+  m.querySelector("#qaSave").textContent = L("Add"); m.querySelector("#qaCancel").textContent = L("Cancel");
+  m.querySelector("#qaTitle").value = ""; m.querySelector("#qaDate").value = ""; m.querySelector("#qaOwner").value = "";
+  m.classList.add("show"); setTimeout(()=>m.querySelector("#qaTitle").focus(), 30);
+}
+function closeQuickAdd(){ const m = document.getElementById("qaModal"); if(m) m.classList.remove("show"); }
+function saveQuickAdd(){
+  const m = document.getElementById("qaModal"); const k = m.querySelector(".qa-types button.on").dataset.k;
+  const t = m.querySelector("#qaTitle").value.trim(); if(!t){ m.querySelector("#qaTitle").focus(); return; }
+  const d = m.querySelector("#qaDate").value; const o = m.querySelector("#qaOwner").value.trim();
+  addRow(k, QA_TYPES[k].make(t, d, o)); closeQuickAdd(); renderAll();
+  const r = document.getElementById("qaFab").getBoundingClientRect(); burst(r.left + r.width/2, r.top);
+}
+
+/* ---------- motion switch (per viewer) ---------- */
+let MOTION = true; try{ MOTION = localStorage.getItem("saudMotion") !== "off"; }catch(e){}
+function applyMotion(){ document.body.classList.toggle("calm", !MOTION); const b = document.getElementById("motionBtn"); if(b) b.innerHTML = (MOTION ? "◉ " : "○ ") + escapeHtml(L(MOTION ? "Motion on" : "Motion off")); }
+function toggleMotion(){ MOTION = !MOTION; try{ localStorage.setItem("saudMotion", MOTION ? "on" : "off"); }catch(e){} applyMotion(); }
+
+/* ---------- magnetic buttons ---------- */
+document.addEventListener("mousemove", e=>{
+  if(REDUCED || !MOTION) return;
+  document.querySelectorAll(".btn-ai, #qaFab, #bellBtn, .hero .present-btn").forEach(b=>{
+    const r = b.getBoundingClientRect(); const cx = r.left + r.width/2, cy = r.top + r.height/2; const dx = e.clientX - cx, dy = e.clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    b.style.translate = dist < 90 ? `${(dx*.18).toFixed(1)}px ${(dy*.25).toFixed(1)}px` : "";
+  });
+}, { passive:true });
+
+/* ---------- parallax ambient blobs ---------- */
+addEventListener("scroll", ()=>{ if(!MOTION) return; document.documentElement.style.setProperty("--py", (scrollY * .15).toFixed(1) + "px"); }, { passive:true });
+
+/* ---------- boot intro (once per browser session) ---------- */
+(function bootIntro(){
+  const o = document.getElementById("bootIntro"); if(!o) return;
+  let seen = false; try{ seen = sessionStorage.getItem("saudBoot") === "1"; sessionStorage.setItem("saudBoot","1"); }catch(e){}
+  if(seen || REDUCED){ o.remove(); return; }
+  const lines = ["SAUD // INTELLIGENCE AGENT", "› linking data core …", "› syncing Etimad feed …", "› calibrating brief engine …", "› ONLINE"];
+  const box = o.querySelector(".boot-lines"); let i = 0;
+  const iv = setInterval(()=>{ if(i < lines.length){ const p = document.createElement("div"); p.textContent = lines[i++]; box.appendChild(p); } else { clearInterval(iv); o.classList.add("done"); setTimeout(()=>o.remove(), 650); } }, 170);
+  o.addEventListener("click", ()=>{ clearInterval(iv); o.classList.add("done"); setTimeout(()=>o.remove(), 400); });
+})();
+
+/* ---------- Hijri date next to the clock ---------- */
+function hijriDate(){
+  try{ return new Intl.DateTimeFormat(LANG==="ar" ? "ar-SA-u-ca-islamic-umalqura-nu-latn" : "en-u-ca-islamic-umalqura", { day:"numeric", month:"long", year:"numeric" }).format(new Date()); }catch(e){ return ""; }
+}
+
+/* ---------- glue ---------- */
+function renderV11(){
+  // agenda items open the detail drawer
+  const items = upcomingItems(30);
+  document.querySelectorAll("#ovDeadlines .agenda-item").forEach((el,k)=>{ const x = items[k]; if(!x) return; const sec = KIND_SECTION[x.kind];
+    el.dataset.sec = sec; el.dataset.idx = findIndex(sec, x.title); el.removeAttribute("onclick"); });
+  renderTimeline(); renderBell(); applyMotion();
+  const hj = document.getElementById("heroHijri"); if(hj) hj.textContent = hijriDate();
+  const pb = document.getElementById("heroPresent"); if(pb) pb.innerHTML = "▶ " + escapeHtml(L("Present"));
+  const tlh = document.getElementById("tlTitle"); if(tlh) tlh.textContent = L("Next 30 days — timeline");
+  const fab = document.getElementById("qaFab"); if(fab){ fab.title = L("Quick add"); fab.style.display = READONLY ? "none" : ""; }
+  const bb = document.getElementById("bellBtn"); if(bb) bb.title = L("Notifications");
 }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
@@ -2584,6 +2874,7 @@ function renderAll(){
   applyEditMode();
   renderV9();
   renderV10();
+  renderV11();
   saveLocalDraft();
   scheduleTranslate();
 }

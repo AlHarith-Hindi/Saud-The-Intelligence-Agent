@@ -185,6 +185,18 @@
 
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
   .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
+  .empty-row td{color:var(--muted); font-style:italic; text-align:center; padding:18px 10px;}
+  .phase-row{padding:10px 0; border-bottom:1px solid var(--border);}
+  .phase-top{display:flex; justify-content:space-between; gap:12px; font-size:13.5px; color:var(--cream);}
+  .phase-top .lbl{color:var(--muted); font-size:12px;}
+  .phase-bar{height:8px; border-radius:5px; background:var(--muted-bar); margin-top:7px; overflow:hidden;}
+  .phase-bar > div{height:100%; border-radius:5px;}
+  .gap-sev{display:inline-block; min-width:64px; text-align:center; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:700; text-transform:uppercase;}
+  .ext-detail td{background:rgba(255,255,255,.025); font-size:12.5px; line-height:1.6; color:var(--muted);}
+  .ext-detail b{color:var(--cream); font-weight:600;}
+  .ext-detail-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px 18px;}
+  .detail-toggle{background:none; border:1px solid var(--border); color:var(--muted); font-size:11px; border-radius:5px; padding:1px 7px; cursor:pointer; margin-top:6px;}
+  .detail-toggle:hover{color:var(--cream);}
   .subhead{font-size:12px; color:var(--muted); margin:-6px 0 12px; line-height:1.5;}
 
   .chart-wrap{position:relative; min-height:60px;}
@@ -315,6 +327,7 @@
 
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
+    <button class="tab-btn" data-page="program" onclick="switchPage('program')"><span data-bind="titles.tabProgram"></span></button>
     <button class="tab-btn" data-page="external" onclick="switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
     <button class="tab-btn" data-page="internal" onclick="switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
     <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
@@ -343,6 +356,51 @@
     </section>
   </div>
 
+  <!-- ============================== SAUD PROGRAM (restored from the previous dashboard) ============================== -->
+  <div class="page" id="page-program">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionPhases"></h2>
+        <button class="addbtn" onclick="addRow('phases', {name:'New phase', pct:0, label:'Not started', color:'muted'})"><span data-bind="titles.addBtnPhase"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.programOwnerLine"></div>
+      <div id="phasesList"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionCaps"></h2>
+        <button class="addbtn" onclick="addRow('capTeams', {team:'New team', role:'', num:'0', pct:0, color:'orange', caption:''})"><span data-bind="titles.addBtnCapTeam"></span></button>
+      </div>
+      <div class="kpi-row" id="capTeamsGrid"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMatrix"></h2>
+        <button class="addbtn" onclick="addRow('matrix', {cap:'New capability', owner:'', tier:'1', status:'Framework only'})"><span data-bind="titles.addBtnCapability"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th data-bind="titles.colCap"></th><th data-bind="titles.colOwner"></th><th data-bind="titles.colTier"></th><th data-bind="titles.colStatus"></th><th class="actions"></th></tr></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionGaps"></h2>
+        <button class="addbtn" onclick="addRow('gaps', {text:'New gap', sev:'warning'})"><span data-bind="titles.addBtnGap"></span></button>
+      </div>
+      <div id="gapsList"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionProgramSteps"></h2>
+        <button class="addbtn" onclick="addStringRow('programSteps', 'New next step')"><span data-bind="titles.addBtnProgramStep"></span></button>
+      </div>
+      <ol class="steps" id="programStepsList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+  </div>
+
   <!-- ============================== EXTERNAL ============================== -->
   <div class="page" id="page-external">
     <section>
@@ -367,6 +425,20 @@
         </table>
       </div>
       <div class="footer-note" data-bind="titles.externalFooterNote"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionExtExcluded"></h2>
+        <button class="addbtn" onclick="addRow('externalExcluded', {rn:'', name:'Excluded tender', agency:'', deadline:'', reason:''})"><span data-bind="titles.addBtnExcluded"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.extExcludedSub"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colExtRn"></th><th data-bind="titles.colExtName"></th><th data-bind="titles.colExtAgency"></th><th data-bind="titles.colExtDeadline"></th><th data-bind="titles.colExclReason"></th><th class="actions"></th></tr></thead>
+          <tbody id="externalExcludedBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <section>
@@ -763,7 +835,7 @@ const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Do
 const MARKETING_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
 const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
 
-const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Other/Uncategorized"];
+const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
@@ -947,6 +1019,202 @@ function migrateState(){
     delete state.phases; delete state.capTeams; delete state.matrix; delete state.gaps; delete state.steps; delete state.etimad; delete state.etimadExcluded; delete state.customSections;
     state._migratedV2 = true;
   }
+  migrateV3();
+}
+
+/* ---------- v3: restore the previous dashboard's work + clean placeholders ---------- */
+const V3_TITLE_DEFAULTS = {
+  tabProgram: "Saud Program",
+  sectionPhases: "Phase progress",
+  sectionCaps: "Capabilities implemented, by team",
+  sectionMatrix: "Capability & status matrix",
+  sectionGaps: "Known gaps",
+  sectionProgramSteps: "Program next steps",
+  programOwnerLine: "Owner: Al-Harith Hindi · Saud's build plan — phases, capabilities, gaps, and next steps carried over from the previous dashboard.",
+  colCap: "Capability", colOwner: "Owner", colTier: "Tier", colStatus: "Status",
+  addBtnPhase: "+ add phase", addBtnCapTeam: "+ add team", addBtnCapability: "+ add capability",
+  addBtnGap: "+ add gap", addBtnProgramStep: "+ add step",
+  sectionExtExcluded: "Excluded tenders",
+  extExcludedSub: "Listings screened out of the pipeline, with the reason — kept so nobody re-checks them.",
+  colExclReason: "Reason excluded", addBtnExcluded: "+ add excluded tender",
+  emptyRowMsg: "Nothing logged yet — click ✎ Edit, then “+ add” to log the first entry.",
+  emptySearchMsg: "No matches.",
+  programNavDesc: "Phases, capability matrix, known gaps, and next steps for Saud.",
+  programNavOwner: "Al-Harith"
+};
+const PLACEHOLDER_PREFIX = "Connect GitHub sync above";
+function isPlaceholderRow(r){
+  if(typeof r === "string") return r.indexOf(PLACEHOLDER_PREFIX) === 0;
+  if(!r || typeof r !== "object") return false;
+  return Object.values(r).some(v=>typeof v === "string" && v.indexOf(PLACEHOLDER_PREFIX) === 0);
+}
+function autoCategory(r){
+  const h = [r.name, r.agency, r.details, r.notes].filter(Boolean).join(" ").toLowerCase();
+  const has = words => words.some(w=>h.indexOf(w) !== -1);
+  if(has(["اليوم الوطني","يوم التأسيس","تأسيس الدولة","المناسبات الوطنية","national day","national occasions","founding"])) return "National Day";
+  if(has(["عمرة","العمرة","الحج","الحرمين","قرآن","القرآن","umrah","hajj","pilgrim","quran"])) return "Religious/Pilgrimage";
+  if(has(["سباقات","خيل","فروسية","equestrian","jockey","racing"])) return "Sports/Equestrian";
+  if(has(["تطوع","تبرع","volunteer","blood-donation","charitable"])) return "Volunteering/CSR";
+  if(has(["صحة","صحي","طبي","health","medical","hospital"])) return "Health";
+  if(has(["مؤتمر","معرض","ملتقى","منتدى","conference","exhibition","forum","pavilion"])) return "Conference/Exhibition";
+  if(has(["تراث","ثقاف","مكتبات","heritage","culture","library","libraries","visitor center"])) return "Culture/Heritage";
+  if(has(["فعاليات","فعالية","احتفال","تنظيم","event","activation","awareness"])) return "Event Management";
+  return "Other/Uncategorized";
+}
+function migrateV3(){
+  Object.keys(V3_TITLE_DEFAULTS).forEach(k=>{ if(typeof state.titles[k] !== "string") state.titles[k] = V3_TITLE_DEFAULTS[k]; });
+  ["phases","capTeams","matrix","gaps","programSteps","externalExcluded"].forEach(k=>{ if(!Array.isArray(state[k])) state[k] = []; });
+
+  // never show "Connect GitHub sync above…" placeholder rows as if they were real entries
+  Object.keys(state).forEach(k=>{ if(Array.isArray(state[k])) state[k] = state[k].filter(r=>!isPlaceholderRow(r)); });
+
+  if(state._migratedV3) return;
+  const L = state.legacyV1 || {};
+  const copy = x => JSON.parse(JSON.stringify(x));
+  if(!state.phases.length && Array.isArray(L.phases)) state.phases = copy(L.phases);
+  if(!state.capTeams.length && Array.isArray(L.capTeams)) state.capTeams = copy(L.capTeams);
+  if(!state.matrix.length && Array.isArray(L.matrix)) state.matrix = copy(L.matrix).map(m=>({cap:m.cap||"", owner:m.owner||"", tier:m.tier||"", status:m.status||""}));
+  if(!state.gaps.length && Array.isArray(L.gaps)) state.gaps = copy(L.gaps);
+  if(!state.programSteps.length && Array.isArray(L.steps)) state.programSteps = copy(L.steps).map(String);
+  if(!state.externalExcluded.length && Array.isArray(L.etimadExcluded)) state.externalExcluded = copy(L.etimadExcluded).map(e=>({rn:e.rn||"", name:e.name||"", agency:e.agency||"", deadline:e.deadline||"", reason:e.reason||""}));
+
+  // put back the full tender detail the old Etimad view had (type, dates, fee, place, partners…)
+  const byRn = {};
+  (L.etimad||[]).forEach(e=>{ if(e && e.rn) byRn[e.rn] = e; });
+  (state.external||[]).forEach(r=>{
+    const e = byRn[r.rn];
+    if(e) ["type","inqStart","inqDeadline","award","projStart","method","place","details","price","partners"].forEach(f=>{ if(e[f] && !r[f]) r[f] = e[f]; });
+    if(!r.category || r.category === "Other/Uncategorized") r.category = autoCategory(r);
+  });
+
+  // Ownership table: fill in the owners already named elsewhere on the dashboard
+  const OWNERS = [
+    { match:/external|internal/i, owner:"Firas Abuzinada", basis:"Head of Business Development" },
+    { match:/project/i, owner:"Sameer Gulam", basis:"Head of Operations" },
+    { match:/prototype/i, owner:"Mohammed Alsanie", basis:"Head of Creative" }
+  ];
+  (state.raci||[]).forEach(r=>{
+    if(r.owner && r.owner !== "—") return;
+    const o = OWNERS.find(o=>o.match.test(r.section||""));
+    if(o){ r.owner = o.owner; if(!r.basis || r.basis === "—") r.basis = o.basis; }
+  });
+  if((state.raci||[]).length && !state.raci.some(r=>/marketing/i.test(r.section||""))){
+    state.raci.push({ section:"Marketing", owner:"Faisal Almadani", basis:"Head of Marketing" });
+  }
+  state._migratedV3 = true;
+}
+
+/* ---------- Saud Program tab renderers ---------- */
+const PHASE_COLOR = { good:"var(--good)", warning:"var(--warning)", muted:"var(--muted)", danger:"#d9534f" };
+const CAP_COLOR = { orange:"#f0a06f", blue:"#3987e5", aqua:"#5fd3a8" };
+const GAP_COLOR = { critical:"#e5534b", warning:"#d99a1a", info:"#3987e5" };
+function renderPhases(){
+  const wrap = document.getElementById("phasesList"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.phases.forEach((p,i)=>{
+    const pct = Math.max(0, Math.min(100, parseFloat(p.pct)||0));
+    const col = PHASE_COLOR[p.color] || "var(--copper)";
+    wrap.appendChild(el(`
+      <div class="phase-row">
+        <div class="phase-top">
+          <div style="flex:1;"><span data-bind="phases.${i}.name">${escapeHtml(p.name)}</span>
+            <div class="lbl" data-bind="phases.${i}.label">${escapeHtml(p.label)}</div></div>
+          <div style="white-space:nowrap; font-weight:700; color:${col};"><span data-bind="phases.${i}.pct">${escapeHtml(String(p.pct))}</span>%</div>
+          <span class="edit-only">${reorderBtns('phases', i, state.phases.length)}
+            <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('phases',${i}))">✕</button></span>
+        </div>
+        <div class="phase-bar"><div style="width:${pct}%; background:${col};"></div></div>
+      </div>`));
+  });
+  if(!state.phases.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.phases = renderPhases;
+function renderCapTeams(){
+  const wrap = document.getElementById("capTeamsGrid"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.capTeams.forEach((c,i)=>{
+    const col = CAP_COLOR[c.color] || "var(--copper)";
+    wrap.appendChild(el(`
+      <div class="stat-tile">
+        <div class="label" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
+        <div class="value" style="color:${col};"><span data-bind="capTeams.${i}.num">${escapeHtml(String(c.num))}</span> <span style="font-size:12px; color:var(--muted); font-weight:400;">capabilities</span></div>
+        <div class="sub" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
+        <div class="sub" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
+        <div class="edit-only" style="margin-top:6px;">${reorderBtns('capTeams', i, state.capTeams.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
+      </div>`));
+  });
+  if(!state.capTeams.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.capTeams = renderCapTeams;
+function renderMatrix(){
+  const body = document.getElementById("matrixBody"); if(!body) return;
+  body.innerHTML = "";
+  state.matrix.forEach((m,i)=>{
+    const tierCol = String(m.tier) === "1" ? "#5fd3a8" : "#f0a06f";
+    const stCol = /live|piloted|done|proven/i.test(m.status||"") ? "#0ca30c" : "#f0a06f";
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="matrix.${i}.cap">${escapeHtml(m.cap)}</td>
+        <td data-bind="matrix.${i}.owner">${escapeHtml(m.owner)}</td>
+        <td><span class="status-pill" style="background:${tierCol}22; color:${tierCol};">Tier <span data-bind="matrix.${i}.tier">${escapeHtml(String(m.tier))}</span></span></td>
+        <td><span class="status-pill" style="background:${stCol}22; color:${stCol};" data-bind="matrix.${i}.status">${escapeHtml(m.status)}</span></td>
+        <td class="actions-cell edit-only">${reorderBtns('matrix', i, state.matrix.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('matrix',${i}))">✕</button></td>
+      </tr>`));
+  });
+}
+RENDER_FN.matrix = renderMatrix;
+function renderGaps(){
+  const wrap = document.getElementById("gapsList"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.gaps.forEach((g,i)=>{
+    const col = GAP_COLOR[g.sev] || GAP_COLOR.warning;
+    wrap.appendChild(el(`
+      <div style="display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <span class="gap-sev" style="background:${col}22; color:${col};" data-bind="gaps.${i}.sev">${escapeHtml(g.sev)}</span>
+        <div data-bind="gaps.${i}.text" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(g.text)}</div>
+        <span class="edit-only">${reorderBtns('gaps', i, state.gaps.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button></span>
+      </div>`));
+  });
+  if(!state.gaps.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.gaps = renderGaps;
+RENDER_FN.programSteps = ()=>renderStringList('programSteps','programStepsList');
+function renderExternalExcluded(){
+  const body = document.getElementById("externalExcludedBody"); if(!body) return;
+  body.innerHTML = "";
+  state.externalExcluded.forEach((r,i)=>{
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="externalExcluded.${i}.rn">${escapeHtml(r.rn)}</td>
+        <td data-bind="externalExcluded.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="externalExcluded.${i}.agency">${escapeHtml(r.agency)}</td>
+        <td data-bind="externalExcluded.${i}.deadline">${escapeHtml(r.deadline)}</td>
+        <td data-bind="externalExcluded.${i}.reason">${escapeHtml(r.reason)}</td>
+        <td class="actions-cell edit-only">${reorderBtns('externalExcluded', i, state.externalExcluded.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('externalExcluded',${i}))">✕</button></td>
+      </tr>`));
+  });
+}
+RENDER_FN.externalExcluded = renderExternalExcluded;
+function renderProgram(){ renderPhases(); renderCapTeams(); renderMatrix(); renderGaps(); renderStringList('programSteps','programStepsList'); }
+
+/* empty tables get a clear "nothing logged yet" row instead of a fake placeholder entry */
+function fillEmptyStates(){
+  const t = (state && state.titles) || {};
+  document.querySelectorAll("tbody[id]").forEach(tb=>{
+    if(tb.querySelector("tr:not(.empty-row)")){ tb.querySelectorAll(".empty-row").forEach(r=>r.remove()); return; }
+    tb.querySelectorAll(".empty-row").forEach(r=>r.remove());
+    const table = tb.closest("table");
+    const cols = table ? Math.max(1, table.querySelectorAll("thead th").length) : 1;
+    let searching = false; try{ searching = tb.id === "externalBody" && !!String(externalFilter||"").trim(); }catch(_){}
+    const msg = searching ? (t.emptySearchMsg || "No matches.") : (t.emptyRowMsg || "Nothing logged yet.");
+    const tr = document.createElement("tr"); tr.className = "empty-row";
+    const td = document.createElement("td"); td.colSpan = cols; td.textContent = msg;
+    tr.appendChild(td); tb.appendChild(tr);
+  });
 }
 
 /* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
@@ -1014,7 +1282,9 @@ function renderAll(){
   renderStats();
   renderPipelineChart();
   renderOverviewNav();
+  renderProgram();
   renderExternal();
+  renderExternalExcluded();
   renderNews();
   renderInternal();
   renderProbTable();
@@ -1178,6 +1448,7 @@ function renderOverviewNav(){
   const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
   const t = state.titles;
   const nav = [
+    { page:"program", tKey:"tabProgram", dKey:"programNavDesc", oKey:"programNavOwner" },
     { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
     { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
     { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
@@ -1236,13 +1507,21 @@ function renderExternal(){
           <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
         <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
-        <td data-bind="external.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td><div data-bind="external.${i}.notes">${escapeHtml(r.notes)}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">Details ▾</button>`:""}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('external', i, list.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
         </td>
       </tr>`);
     body.appendChild(tr);
+    if(r.details||r.price||r.place||r.partners||r.award){
+      const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(v)}</div>` : "";
+      const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
+        <div class="ext-detail-grid">${f("Type", r.type)}${f("Inquiries", [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f("Expected award", r.award)}${f("Project start", r.projStart)}${f("Submission", r.method)}${f("Place", r.place)}${f("Document fee", r.price)}${f("Partners", r.partners)}</div>
+        ${r.details ? `<div style="margin-top:8px;"><b>Scope:</b> ${escapeHtml(r.details)}</div>` : ""}
+      </td></tr>`);
+      body.appendChild(d);
+    }
   });
   body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
     pushHistory();
@@ -1256,6 +1535,13 @@ function renderExternal(){
   }));
 }
 RENDER_FN.external = renderExternal;
+function toggleExtDetail(i){
+  const d = document.getElementById("extDetail"+i); if(!d) return;
+  const open = d.style.display === "none";
+  d.style.display = open ? "" : "none";
+  const btn = d.previousElementSibling && d.previousElementSibling.querySelector(".detail-toggle");
+  if(btn) btn.textContent = open ? "Details ▴" : "Details ▾";
+}
 document.addEventListener("DOMContentLoaded", ()=>{
   const s = document.getElementById("externalSearch");
   if(s) s.addEventListener("input", e=>{ externalFilter = e.target.value; renderExternal(); applyEditMode(); });
@@ -1634,6 +1920,8 @@ function switchPage(page){
 
 /* ---------- global search across all sections ---------- */
 const GLOBAL_SEARCH_SOURCES = [
+  { section:"matrix",     page:"program",   kind:"Capability",  fields:["cap","owner","status"],     label:r=>r.cap,        sub:r=>r.owner },
+  { section:"externalExcluded", page:"external", kind:"Excluded tender", fields:["name","agency","rn"], label:r=>r.name, sub:r=>r.reason },
   { section:"external",   page:"external",  kind:"Tender",      fields:["name","agency","rn"],       label:r=>r.name,       sub:r=>r.agency },
   { section:"internal",   page:"internal",  kind:"Opportunity", fields:["name","client","owner"],    label:r=>r.name,       sub:r=>r.client },
   { section:"projects",   page:"projects",  kind:"Project",     fields:["name","status"],            label:r=>r.name,       sub:r=>r.status },
@@ -1741,6 +2029,7 @@ document.addEventListener("focusout", e=>{
 });
 
 function applyEditMode(){
+  fillEmptyStates();
   document.querySelectorAll("[data-bind]").forEach(el=>el.setAttribute("contenteditable", editing ? "true" : "false"));
   document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
   document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");

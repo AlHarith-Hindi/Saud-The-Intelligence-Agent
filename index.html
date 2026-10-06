@@ -957,7 +957,7 @@ const DEFAULT_STATE = {
   raci: [
     { section:"External / Internal Performance", owner:"Firas Abuzinada — Head of Business Development", basis:"Owns tender pipeline sourcing and RFP submissions" },
     { section:"Projects in Operations", owner:"Sameer Gulam — Head of Operations", basis:"Owns live project execution and status tracking" },
-    { section:"Prototypes Tracker", owner:"Mohammed Alsanie — Head of Creative", basis:"Owns prototype development and creative scoring" },
+    { section:"Prototypes Tracker", owner:"Mohammed Alsanea — Head of Creative", basis:"Owns prototype development and creative scoring" },
     { section:"Marketing", owner:"Faisal Almadani — Head of Marketing", basis:"Owns campaigns, brand, and external communications" }
   ],
   team: [
@@ -965,7 +965,7 @@ const DEFAULT_STATE = {
       responsibilities:"• Sources and qualifies new tender opportunities (Etimad + direct outreach)\n• Owns proposal development and RFP submissions\n• Tracks win probability and pipeline value" },
     { name:"Sameer Gulam", title:"Head of Operations", reports:"Reports to: Trad Nazer",
       responsibilities:"• Oversees live project execution and delivery\n• Manages operational status, issues, and deadlines\n• Coordinates cross-team resourcing" },
-    { name:"Mohammed Alsanie", title:"Head of Creative", reports:"Reports to: Trad Nazer",
+    { name:"Mohammed Alsanea", title:"Head of Creative", reports:"Reports to: Trad Nazer",
       responsibilities:"• Leads prototype development and creative direction\n• Owns creative scoring and concept development\n• Reviews creative output before client delivery" },
     { name:"Faisal Almadani", title:"Head of Marketing", reports:"Reports to: Trad Nazer",
       responsibilities:"• Owns campaign planning and brand strategy\n• Manages external communications and marketing channels\n• Tracks marketing initiative status and outcomes" }
@@ -1210,7 +1210,7 @@ function collectTranslatable(){
   return [...out];
 }
 const TR_PROMPT = {
-  ar: "Translate each value into Arabic (Modern Standard Arabic, concise professional business tone, for a Saudi experience-design company called Midwam). Write people's names in Arabic script (Firas → فراس, Sameer → سمير, Mohammed → محمد, Faisal → فيصل, Trad Nazer → طراد ناظر, Al-Harith Hindi → الحارث هندي). Midwam → مدوام, Saud → سعود, Etimad → اعتماد, RFP → طلب عروض. Keep digits as Western digits (0-9), keep dates and codes, SAR → ر.س.",
+  ar: "Translate each value into Arabic (Modern Standard Arabic, concise professional business tone, for a Saudi experience-design company called Midwam). Write people's names in Arabic script (Firas → فراس, Firas Abuzinada → فراس أبو زناده, Sameer → سمير, Mohammed → محمد, Mohammed Alsanea / Alsanie → محمد الصنيع, Faisal → فيصل, Trad Nazer → طراد ناظر, Al-Harith Hindi → الحارث هندي). Midwam → مدوام, Saud → سعود, Etimad → اعتماد, RFP → طلب عروض. Keep digits as Western digits (0-9), keep dates and codes, SAR → ر.س.",
   en: "Translate each value into English (concise professional business tone). Use the official English names of Saudi government entities when known. Keep digits, dates and codes unchanged."
 };
 let __trBusy = false, __trTimer = null; const __trFailed = new Set();
@@ -1555,7 +1555,7 @@ function migrateV3(){
   const OWNERS = [
     { match:/external|internal/i, owner:"Firas Abuzinada", basis:"Head of Business Development" },
     { match:/project/i, owner:"Sameer Gulam", basis:"Head of Operations" },
-    { match:/prototype/i, owner:"Mohammed Alsanie", basis:"Head of Creative" }
+    { match:/prototype/i, owner:"Mohammed Alsanea", basis:"Head of Creative" }
   ];
   (state.raci||[]).forEach(r=>{
     if(r.owner && r.owner !== "—") return;

@@ -9,7 +9,7 @@
 <title>Saud — Business Tracking Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
      Design tokens. Colors are driven by state.theme via applyTheme()
@@ -344,6 +344,30 @@
     section{padding:16px;}
   }
 
+  /* ---------- Arabic / RTL ---------- */
+  [dir="rtl"]{ --font-display:"IBM Plex Sans Arabic","Rajdhani",system-ui,sans-serif; --font-body:"IBM Plex Sans Arabic","Inter",system-ui,sans-serif; }
+  [dir="rtl"] .sidebar{border-right:none; border-left:1px solid var(--border);}
+  [dir="rtl"] .tab-btn, [dir="rtl"] thead th, [dir="rtl"] .prob-table th, [dir="rtl"] .overview-nav .navcard{text-align:right;}
+  [dir="rtl"] .tab-btn.active::before{left:auto; right:-14px; border-radius:3px 0 0 3px;}
+  [dir="rtl"] .global-search-results{right:auto; left:0;}
+  [dir="rtl"] .toast-container{right:auto; left:22px;}
+  [dir="rtl"] .toast{border-left:1px solid var(--border); border-right:3px solid var(--copper);}
+  [dir="rtl"] .ov-bar-val{text-align:left;}
+  [dir="rtl"] .topbar h1, [dir="rtl"] section h2, [dir="rtl"] .page-title, [dir="rtl"] .stat-tile .label, [dir="rtl"] .brand,
+  [dir="rtl"] .nav-label, [dir="rtl"] thead th, [dir="rtl"] .overview-nav .navcard .t, [dir="rtl"] .teamcard-label,
+  [dir="rtl"] .gap-sev, [dir="rtl"] .prob-table th, [dir="rtl"] .gsr-sec, [dir="rtl"] .status-pill{letter-spacing:0; text-transform:none;}
+  [dir="rtl"] .topbar h1{font-size:30px;}
+  [dir="rtl"] section h2{font-size:17px;}
+  [dir="rtl"] .stat-tile .value, [dir="rtl"] .ov-big, [dir="rtl"] .ov-bar-val, [dir="rtl"] .phase-top > div:nth-child(2){font-family:"Rajdhani","Inter",system-ui,sans-serif;}
+  .sb-logo-text{font-family:"Rajdhani","Inter",system-ui,sans-serif;}
+  [dir="rtl"] .ov-big small{font-family:var(--font-body); font-size:15px;}
+  #langToggle{font-family:"IBM Plex Sans Arabic","Inter",system-ui,sans-serif; font-weight:600;}
+  @media (max-width:900px){ [dir="rtl"] .sidebar{border-left:none;} }
+  /* mixed Arabic/English data: let each block pick its own direction so English punctuation stays put */
+  [dir="rtl"] td, [dir="rtl"] [data-bind]:not([data-bind^="titles."]), [dir="rtl"] .ov-list-item .t, [dir="rtl"] .ov-list-item .s{unicode-bidi:plaintext; text-align:right;}
+  [dir="rtl"] #saud-chat-fab{right:auto; left:20px;}
+  [dir="rtl"] #saud-chat-panel{right:auto; left:20px;}
+
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -363,7 +387,7 @@
       <div class="sb-logo" id="brandLogo"><span class="sb-logo-mark"></span><span class="sb-logo-text">MIDWAM</span></div>
       <div class="brand" id="brandEl" data-bind="titles.brand"></div>
     </div>
-    <div class="nav-label">Workspace</div>
+    <div class="nav-label" id="navLabel">Workspace</div>
     <nav class="tabs-nav" id="tabsNav">
       <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-bind="titles.tabOverview"></span></button>
       <button class="tab-btn" data-page="program" onclick="switchPage('program')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg><span data-bind="titles.tabProgram"></span></button>
@@ -396,6 +420,7 @@
         <div class="global-search-results" id="globalSearchResults"></div>
       </div>
       <div class="editbar">
+        <button class="editbtn secondary" id="langToggle" onclick="toggleLang()">عربي</button>
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
         <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
         <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
@@ -958,6 +983,184 @@ const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Do
 const MARKETING_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
 const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
 
+/* ---------- bilingual UI (English / Arabic) ---------- */
+/* Language is a per-viewer preference (saved in this browser only), so one
+   person reading in Arabic never flips the dashboard for anyone else. Labels
+   edited while in Arabic mode are stored separately in state.titlesAr. */
+const TITLES_AR = {
+  brand: "سعود · الوكيل الذكي",
+  h1: "لوحة متابعة مدوام",
+  subtitle: "وكيل الذكاء الإبداعي — أين نقف، وما الذي ثبت، وما الخطوة التالية.",
+  ownerLine: "المالك: الحارث هندي",
+  sectionExternal: "اعتماد — المنافسات المطروحة",
+  sectionNews: "الأخبار — متابعة التغطية",
+  sectionInternal: "الأداء الداخلي — طلبات العروض والفرص",
+  sectionProbTable: "احتمالية الفوز حسب المرحلة",
+  sectionProjects: "المشاريع قيد التنفيذ",
+  sectionPrototypes: "متابعة النماذج الأولية",
+  sectionMarketing: "التسويق — الحملات والمبادرات",
+  sectionTasks: "المهام الدورية",
+  sectionMilestones: "الخطوات التالية (المراحل) — الشهر القادم",
+  sectionTodos: "قائمة المهام",
+  sectionRaci: "الملكية والمسؤولية",
+  sectionTeam: "الفريق",
+  sectionSources: "مصادر البيانات",
+  sectionMethodology: "المنهجية",
+  sectionLegend: "دليل الرموز",
+  sectionNextStep: "الخطوة التالية",
+  sectionOverviewNav: "الأقسام",
+  sectionPipelineChart: "الفرص حسب المرحلة",
+  pipelineChartEmpty: "لا توجد فرص مسجلة بعد — أضف صفوفًا في الأداء الداخلي لعرض هذا الرسم.",
+  globalSearchPlaceholder: "🔎 ابحث في كل شيء...",
+  globalSearchEmpty: "لا توجد نتائج",
+  externalOwnerLine: "المسؤول: فراس · منافسات اعتماد، مع التركيز على السياحة والمعارض.",
+  internalOwnerLine: "المسؤول: فراس · أرقام القيمة والمرحلة توضيحية حتى تُستبدل بفرص حقيقية.",
+  projectsOwnerLine: "المسؤول: سمير · متابعة الحالة المالية والتشغيلية للمشاريع القائمة.",
+  prototypesOwnerLine: "المسؤول: محمد · «القيمة» درجة مؤقتة — تُعاد صياغتها عند اعتماد طريقة تقييم فعلية.",
+  marketingOwnerLine: "المسؤول: فيصل المدني · مدير التسويق — الحملات والهوية والتواصل الخارجي لمبادرات سعود.",
+  externalFooterNote: "التصنيف يُحدَّد لكل صف، ويُقترح تلقائيًا من كلمات عنوان المنافسة العربي — يمكنك تعديله في وضع التحرير.",
+  internalFooterNote: "القيمة المرجّحة = القيمة × احتمالية الفوز لمرحلة الفرصة، من جدول الاحتمالات أدناه.",
+  probNote: "احتمالات مؤقتة — تُستبدل بأرقام فعلية عند توفر عدد كافٍ من الفرص المغلقة لحساب نسبة الفوز.",
+  legendPlaceholder: "التظليل الكهرماني — بيانات مؤقتة أو مثال، ما زالت تحتاج قيمة حقيقية.",
+  legendStatusPills: "شارات الحالة ملوّنة حسب معناها (الأخضر = منجز، الكهرماني = قيد التنفيذ، الأحمر = متوقف/خاسر) — بنفس الأسلوب في كل الصفحات.",
+  legendKpiNote: "مؤشرات الأداء أعلى كل صفحة تُحسب تلقائيًا من صفوف الجدول — عدّل الصفوف لا المؤشرات.",
+  navExternalTitle: "اعتماد", navExternalDesc: "منافسات اعتماد ومتابعة أخبار القطاع والإعلام.", navExternalOwner: "فراس",
+  navInternalTitle: "الأداء الداخلي", navInternalDesc: "طلبات العروض — ما قُدِّم، القيمة، المرحلة، الخطوة التالية.", navInternalOwner: "فراس",
+  navProjectsTitle: "المشاريع والنماذج الأولية", navProjectsDesc: "المشاريع القائمة ومتابعة النماذج الأولية.", navProjectsOwner: "سمير / محمد",
+  navMarketingTitle: "التسويق", navMarketingDesc: "متابعة الحملات والهوية والتواصل الخارجي.", navMarketingOwner: "فيصل",
+  navTasksTitle: "المهام والخطوات التالية", navTasksDesc: "المهام الدورية، مراحل الشهر القادم، قائمة المهام.", navTasksOwner: "الجميع",
+  navNotesTitle: "ملاحظات ودليل", navNotesDesc: "الملكية، مصادر البيانات، المنهجية.", navNotesOwner: "—",
+  colExtRn: "الرقم المرجعي", colExtName: "اسم المنافسة", colExtAgency: "الجهة", colExtFit: "الملاءمة", colExtCategory: "التصنيف", colExtDeadline: "آخر موعد للعروض", colExtNotes: "ملاحظات",
+  colNewsDate: "التاريخ", colNewsSource: "المصدر", colNewsHeadline: "العنوان", colNewsRelevance: "الأهمية لمدوام", colNewsLink: "الرابط", colNewsNotes: "ملاحظات",
+  colIntName: "الفرصة", colIntClient: "العميل / الجهة", colIntValue: "القيمة (ر.س)", colIntStage: "المرحلة", colIntSubDate: "تاريخ التقديم", colIntNext: "الخطوة التالية", colIntOwner: "المسؤول", colIntWeighted: "القيمة المرجّحة (ر.س)",
+  colProbStage: "المرحلة", colProbWin: "احتمالية الفوز",
+  colProjName: "المشروع", colProjStatus: "الحالة", colProjFin: "مالياً", colProjOps: "تشغيلياً", colProjIssues: "المشكلات", colProjDeadline: "الموعد النهائي",
+  colProtoName: "النموذج الأولي", colProtoStatus: "الحالة", colProtoTeam: "الفريق", colProtoNotes: "ملاحظات", colProtoValue: "القيمة (درجة)",
+  colMktInitiative: "المبادرة / الحملة", colMktChannel: "القناة", colMktStatus: "الحالة", colMktTarget: "التاريخ المستهدف", colMktNotes: "ملاحظات",
+  colTaskTask: "المهمة", colTaskOwner: "المسؤول", colTaskStatus: "الحالة", colTaskCadence: "التكرار", colTaskNotes: "ملاحظات",
+  colMsMilestone: "المرحلة", colMsOwner: "المسؤول", colMsTarget: "التاريخ المستهدف", colMsStatus: "الحالة", colMsNotes: "ملاحظات",
+  colTodoDone: "تم", colTodoItem: "البند", colTodoOwner: "المسؤول", colTodoDue: "الاستحقاق", colTodoNotes: "ملاحظات",
+  colRaciSection: "القسم", colRaciOwner: "المسؤول الرئيسي", colRaciBasis: "الصفة",
+  tabOverview: "نظرة عامة", tabExternal: "اعتماد", tabInternal: "الأداء الداخلي",
+  tabProjects: "المشاريع والنماذج", tabMarketing: "التسويق", tabTasks: "مراحل المشاريع والمهام", tabNotes: "ملاحظات ودليل",
+  kpiRfpLabel: "العروض المقدّمة", kpiRfpSub: "من الأداء الداخلي",
+  kpiOppValueLabel: "قيمة الفرص", kpiOppValueSub: "إجمالي الفرص، غير مرجّح",
+  kpiProjectsLabel: "المشاريع المتابَعة", kpiProjectsSub: "تشمل المغلقة",
+  kpiPrototypesLabel: "النماذج الأولية", kpiPrototypesSub: "قيد التطوير + المؤجلة",
+  kpiOpenTasksLabel: "المهام المفتوحة", kpiOpenTasksSub: "لم تُنجز بعد",
+  kpiExtOpenLabel: "المنافسات المتابَعة", kpiExtOpenSub: "القائمة الحالية",
+  kpiExtMissingLabel: "دون تقييم ملاءمة", kpiExtMissingSub: "تحتاج استكمال",
+  kpiExtTopCatLabel: "التصنيف الأكبر",
+  kpiIntLoggedLabel: "الفرص المسجّلة", kpiIntLoggedSub: "كل المراحل",
+  kpiIntSubmittedLabel: "المقدّمة", kpiIntSubmittedSub: "المرحلة = مقدّم",
+  kpiIntPipelineLabel: "قيمة الفرص (ر.س)", kpiIntPipelineSub: "المجموع، غير مرجّح",
+  kpiIntWeightedLabel: "القيمة المرجّحة (ر.س)", kpiIntWeightedSub: "حسب احتمالية الفوز",
+  kpiProtoProgressLabel: "قيد التطوير", kpiProtoProgressSub: "في الورشة",
+  kpiProtoShelfLabel: "مؤجلة", kpiProtoShelfSub: "متوقفة مؤقتًا",
+  kpiProtoValueLabel: "القيمة (درجة)", kpiProtoValueSub: "وحدة مؤقتة",
+  btnExportExcel: "⬇ تصدير Excel", btnExportPptx: "⬇ تصدير PPTX", btnPrint: "🖨 طباعة",
+  btnTheme: "🎨 المظهر", btnGithubSync: "⇄ مزامنة GitHub", btnUndo: "↺ تراجع",
+  btnEdit: "✎ تحرير", btnDoneEditing: "✓ إنهاء التحرير", btnSaveToGithub: "حفظ في GitHub",
+  btnConnectLoad: "اتصال وتحميل", btnDismissDraft: "إخفاء", btnDiscardDraft: "حذف المسودة",
+  btnResetTheme: "استعادة الافتراضي",
+  draftRestoredMsg: "📝 تمت استعادة مسودة محلية محفوظة في هذا المتصفح. هي منفصلة عن GitHub — فعّل المزامنة لحفظها بشكل دائم.",
+  themeHeading: "المظهر — غيّر ألوان اللوحة في أي وقت.",
+  themeDesc: "اختر نمطًا جاهزًا (منها نمط فاتح)، أو حدّد لون التمييز والخلفية والنص بنفسك. يُحفظ مع بياناتك عند تفعيل مزامنة GitHub.",
+  labelAccentColor: "لون التمييز", labelBackgroundColor: "لون الخلفية", labelTextColor: "لون النص",
+  githubSyncHeading: "مزامنة GitHub — تجعل التعديلات دائمة وتحفظ سجلًا كاملًا لكل تغيير.",
+  githubSyncDesc: "تحفظ هذه اللوحة بياناتها في ملف JSON داخل مستودع GitHub خاص تملكه. الصق رمز وصول للمستودع مرة واحدة — يُحفظ في هذا المتصفح فقط ولا يُرسل إلا إلى GitHub، فتتصل اللوحة وتحفظ تعديلاتك تلقائيًا. اضغط «Disconnect» لإزالته من هذا المتصفح.",
+  syncNotConnectedMsg: "غير متصل — تعرض الصفحة محتواها الافتراضي حتى يتم الاتصال.",
+  addBtnTender: "+ إضافة منافسة", addBtnNewsItem: "+ إضافة خبر", addBtnOpportunity: "+ إضافة فرصة",
+  addBtnProject: "+ إضافة مشروع", addBtnPrototype: "+ إضافة نموذج", addBtnMarketing: "+ إضافة حملة", addBtnTask: "+ إضافة مهمة",
+  addBtnMilestone: "+ إضافة مرحلة", addBtnTodo: "+ إضافة بند", addBtnRaciRow: "+ إضافة صف",
+  addBtnSource: "+ إضافة مصدر", addBtnMethodNote: "+ إضافة ملاحظة", addBtnTeam: "+ إضافة عضو",
+  labelTeamReports: "يتبع:", labelTeamResponsibilities: "المسؤوليات الرئيسية:",
+  labelLastUpdated: "آخر تحديث:", btnSetToday: "اليوم",
+  iconMoveUpTip: "تحريك لأعلى", iconMoveDownTip: "تحريك لأسفل", iconDuplicateTip: "تكرار",
+  tipChatOpen: "اسأل سعود", tipChatClose: "إغلاق", tipChatSend: "إرسال",
+  chatHeaderTitle: "اسأل سعود", chatHeaderSub: "يعتمد على بيانات اللوحة المباشرة",
+  chatEmptyMsg: "اسأل عن المنافسات، قيمة الفرص، المشاريع، النماذج، أو المهام — أي شيء في هذه اللوحة.",
+  footerNote: "اضغط «تحرير» لتعديل أي شيء في الصفحة — العناوين والنصوص والأرقام والترتيب والصفوف — ثم «حفظ في GitHub». استخدم ▲▼ لإعادة الترتيب، و⧉ للتكرار، و✕ (مرتين) للحذف.",
+  tabProgram: "برنامج سعود",
+  sectionPhases: "تقدّم المراحل",
+  sectionCaps: "القدرات المنجزة حسب الفريق",
+  sectionMatrix: "مصفوفة القدرات والحالة",
+  sectionGaps: "الفجوات المعروفة",
+  sectionProgramSteps: "الخطوات التالية للبرنامج",
+  programOwnerLine: "المسؤول: الحارث هندي · خطة بناء سعود — المراحل والقدرات والفجوات والخطوات التالية من اللوحة السابقة.",
+  colCap: "القدرة", colOwner: "المسؤول", colTier: "المستوى", colStatus: "الحالة",
+  addBtnPhase: "+ إضافة مرحلة", addBtnCapTeam: "+ إضافة فريق", addBtnCapability: "+ إضافة قدرة",
+  addBtnGap: "+ إضافة فجوة", addBtnProgramStep: "+ إضافة خطوة",
+  sectionExtExcluded: "المنافسات المستبعدة",
+  extExcludedSub: "منافسات تم استبعادها مع السبب — محفوظة حتى لا يُعاد فحصها.",
+  colExclReason: "سبب الاستبعاد", addBtnExcluded: "+ إضافة منافسة مستبعدة",
+  emptyRowMsg: "لا يوجد شيء بعد — اضغط «✎ تحرير» ثم «+ إضافة» لتسجيل أول بند.",
+  emptySearchMsg: "لا توجد نتائج.",
+  programNavDesc: "المراحل، مصفوفة القدرات، الفجوات المعروفة، والخطوات التالية لسعود.",
+  programNavOwner: "الحارث",
+  ovCatTitle: "اعتماد حسب التصنيف",
+  ovDeadlinesTitle: "مواعيد تقديم العروض",
+  ovProgramTitle: "برنامج سعود"
+};
+
+/* fixed UI phrases that live in code rather than in titles */
+const UI_AR = {
+  "Workspace":"مساحة العمل", "SAR":"ر.س", "tender":"منافسة", "tenders":"منافسات",
+  "capabilities":"قدرات", "Tier":"المستوى", "Details ▾":"التفاصيل ▾", "Details ▴":"التفاصيل ▴",
+  "Type":"النوع", "Inquiries":"الاستفسارات", "Expected award":"الترسية المتوقعة", "Project start":"بداية المشروع",
+  "Submission":"طريقة التقديم", "Place":"المكان", "Document fee":"قيمة الوثائق", "Partners":"الشركاء", "Scope":"النطاق",
+  "open":"مفتوحة", "Today":"اليوم", "d":" يوم",
+  "No bid deadlines logged yet.":"لا توجد مواعيد عروض مسجلة بعد.",
+  "Capabilities defined":"القدرات المحددة", "Live / piloted":"مفعّلة / مجرّبة", "Critical gaps":"فجوات حرجة",
+  "opp":"فرصة", "opps":"فرص",
+  "Added":"تمت الإضافة", "Removed":"تم الحذف", "Duplicated":"تم التكرار", "Undone":"تم التراجع",
+  "Date updated":"تم تحديث التاريخ", "Saved to GitHub":"تم الحفظ في GitHub", "Saved locally":"محفوظ محليًا",
+  "Excel exported":"تم تصدير Excel", "Draft discarded":"تم حذف المسودة", "GitHub sync disconnected":"تم قطع مزامنة GitHub",
+  "🔎 Search tenders, projects, tasks...":"🔎 ابحث في المنافسات والمشاريع والمهام...",
+  "🔎 Search competition name, agency, or RN...":"🔎 ابحث باسم المنافسة أو الجهة أو الرقم...",
+  "Ask about tenders, pipeline, projects…":"اسأل عن المنافسات والفرص والمشاريع…",
+  "Phase":"المرحلة"
+};
+/* display-only translation of status / category values (stored data stays in English) */
+const ENUM_AR = {
+  "Strong":"قوية", "Medium":"متوسطة", "Low-Medium":"متوسطة-منخفضة", "Low":"منخفضة", "Unknown":"غير محددة",
+  "National Day":"اليوم الوطني", "Sports/Equestrian":"رياضة/فروسية", "Health":"صحة", "Conference/Exhibition":"مؤتمرات/معارض",
+  "Religious/Pilgrimage":"ديني/حج وعمرة", "Volunteering/CSR":"تطوع/مسؤولية اجتماعية", "Culture/Heritage":"ثقافة/تراث",
+  "Event Management":"إدارة فعاليات", "Other/Uncategorized":"أخرى/غير مصنفة",
+  "Not started":"لم يبدأ", "Drafting":"قيد الإعداد", "Submitted":"مقدّم", "Shortlisted":"في القائمة المختصرة", "Awarded":"تمت الترسية", "Lost":"لم يُرسَ",
+  "In progress":"قيد التنفيذ", "On hold":"معلّق", "Closed":"مغلق", "Done":"منجز", "Blocked":"متوقف", "At risk":"معرّض للخطر",
+  "In the Makers":"قيد التطوير", "On shelf":"مؤجل",
+  "Framework only":"إطار فقط", "Live":"مفعّل", "Piloted":"مجرّب",
+  "critical":"حرجة", "warning":"تحذير", "info":"معلومة"
+};
+
+let LANG = "en";
+try{ LANG = localStorage.getItem("saudDashboardLang") === "ar" ? "ar" : "en"; }catch(e){}
+function T(){
+  const base = (state && state.titles) || {};
+  if(LANG !== "ar") return base;
+  return Object.assign({}, base, TITLES_AR, (state && state.titlesAr) || {});
+}
+function L(s){ return LANG === "ar" && Object.prototype.hasOwnProperty.call(UI_AR, s) ? UI_AR[s] : s; }
+function disp(v){ return LANG === "ar" && Object.prototype.hasOwnProperty.call(ENUM_AR, v) ? ENUM_AR[v] : v; }
+function dateLocale(){ return LANG === "ar" ? "ar-u-ca-gregory-nu-latn" : undefined; }
+function applyLangChrome(){
+  const html = document.documentElement;
+  html.lang = LANG; html.dir = LANG === "ar" ? "rtl" : "ltr";
+  const btn = document.getElementById("langToggle"); if(btn) btn.textContent = LANG === "ar" ? "English" : "عربي";
+  const nl = document.getElementById("navLabel"); if(nl) nl.textContent = L("Workspace");
+  const gs = document.getElementById("globalSearch"); if(gs) gs.placeholder = L("🔎 Search tenders, projects, tasks...");
+  const es = document.getElementById("externalSearch"); if(es) es.placeholder = L("🔎 Search competition name, agency, or RN...");
+  const ci = document.getElementById("saud-chat-input"); if(ci) ci.placeholder = L("Ask about tenders, pipeline, projects…");
+}
+function toggleLang(){
+  LANG = LANG === "ar" ? "en" : "ar";
+  try{ localStorage.setItem("saudDashboardLang", LANG); }catch(e){}
+  applyLangChrome();
+  window.__skipSave = true;
+  try{ renderAll(); if(typeof renderTitles === "function") renderTitles(); } finally { window.__skipSave = false; }
+}
+
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -999,7 +1202,7 @@ function showToast(msg){
   if(!c) return;
   const t = document.createElement("div");
   t.className = "toast";
-  t.textContent = msg;
+  t.textContent = L(msg);
   c.appendChild(t);
   requestAnimationFrame(()=>t.classList.add("show"));
   setTimeout(()=>{
@@ -1272,7 +1475,7 @@ function renderPhases(){
         <div class="phase-bar"><div style="width:${pct}%; background:${col};"></div></div>
       </div>`));
   });
-  if(!state.phases.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+  if(!state.phases.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(T().emptyRowMsg)}</div>`));
 }
 RENDER_FN.phases = renderPhases;
 function renderCapTeams(){
@@ -1283,14 +1486,14 @@ function renderCapTeams(){
     wrap.appendChild(el(`
       <div class="stat-tile">
         <div class="label" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
-        <div class="value" style="color:${col};"><span data-bind="capTeams.${i}.num">${escapeHtml(String(c.num))}</span> <span style="font-size:12px; color:var(--muted); font-weight:400;">capabilities</span></div>
+        <div class="value" style="color:${col};"><span data-bind="capTeams.${i}.num">${escapeHtml(String(c.num))}</span> <span style="font-size:12px; color:var(--muted); font-weight:400;">${L("capabilities")}</span></div>
         <div class="sub" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
         <div class="sub" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
         <div class="edit-only" style="margin-top:6px;">${reorderBtns('capTeams', i, state.capTeams.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
       </div>`));
   });
-  if(!state.capTeams.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+  if(!state.capTeams.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(T().emptyRowMsg)}</div>`));
 }
 RENDER_FN.capTeams = renderCapTeams;
 function renderMatrix(){
@@ -1303,8 +1506,8 @@ function renderMatrix(){
       <tr>
         <td data-bind="matrix.${i}.cap">${escapeHtml(m.cap)}</td>
         <td data-bind="matrix.${i}.owner">${escapeHtml(m.owner)}</td>
-        <td><span class="status-pill" style="background:${tierCol}22; color:${tierCol};">Tier <span data-bind="matrix.${i}.tier">${escapeHtml(String(m.tier))}</span></span></td>
-        <td><span class="status-pill" style="background:${stCol}22; color:${stCol};" data-bind="matrix.${i}.status">${escapeHtml(m.status)}</span></td>
+        <td><span class="status-pill" style="background:${tierCol}22; color:${tierCol};">${L("Tier")} <span data-bind="matrix.${i}.tier">${escapeHtml(String(m.tier))}</span></span></td>
+        <td><span class="status-pill" style="background:${stCol}22; color:${stCol};" data-bind="matrix.${i}.status">${escapeHtml(editing ? m.status : disp(m.status))}</span></td>
         <td class="actions-cell edit-only">${reorderBtns('matrix', i, state.matrix.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('matrix',${i}))">✕</button></td>
       </tr>`));
@@ -1318,13 +1521,13 @@ function renderGaps(){
     const col = GAP_COLOR[g.sev] || GAP_COLOR.warning;
     wrap.appendChild(el(`
       <div style="display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
-        <span class="gap-sev" style="background:${col}22; color:${col};" data-bind="gaps.${i}.sev">${escapeHtml(g.sev)}</span>
+        <span class="gap-sev" style="background:${col}22; color:${col};" data-bind="gaps.${i}.sev">${escapeHtml(editing ? g.sev : disp(g.sev))}</span>
         <div data-bind="gaps.${i}.text" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(g.text)}</div>
         <span class="edit-only">${reorderBtns('gaps', i, state.gaps.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button></span>
       </div>`));
   });
-  if(!state.gaps.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+  if(!state.gaps.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(T().emptyRowMsg)}</div>`));
 }
 RENDER_FN.gaps = renderGaps;
 RENDER_FN.programSteps = ()=>renderStringList('programSteps','programStepsList');
@@ -1363,28 +1566,28 @@ function renderOverviewExtras(){
   const max = cats.length ? cats[0][1] : 1;
   catEl.innerHTML = cats.length ? cats.slice(0,7).map(([c,n])=>`
     <div class="ov-bar-row">
-      <div class="ov-bar-label">${escapeHtml(c)}</div><div class="ov-bar-val">${n}</div>
+      <div class="ov-bar-label">${escapeHtml(disp(c))}</div><div class="ov-bar-val">${n}</div>
       <div class="ov-bar-track"><div class="ov-bar-fill" style="width:${Math.max(4, n/max*100)}%"></div></div>
-    </div>`).join("") : `<div class="ov-note">${escapeHtml(state.titles.emptyRowMsg||"")}</div>`;
+    </div>`).join("") : `<div class="ov-note">${escapeHtml(T().emptyRowMsg||"")}</div>`;
 
   // deadlines
   const today = new Date(); today.setHours(0,0,0,0);
   const dated = ext.map(r=>({ r, d:parseDeadline(r.bidDeadline) })).filter(x=>x.d);
   const upcoming = dated.filter(x=>x.d >= today).sort((a,b)=>a.d-b.d);
-  const fmt = d => d.toLocaleDateString(undefined, { day:"numeric", month:"short", year:"numeric" });
+  const fmt = d => d.toLocaleDateString(dateLocale(), { day:"numeric", month:"short", year:"numeric" });
   if(upcoming.length){
     dlEl.innerHTML = upcoming.slice(0,5).map(x=>{
       const days = Math.round((x.d - today)/86400000);
       const col = days <= 3 ? "var(--critical)" : days <= 10 ? "var(--warning)" : "var(--good)";
       return `<div class="ov-list-item"><div><div class="t">${escapeHtml(x.r.name)}</div><div class="s">${escapeHtml(x.r.agency||"")} · ${fmt(x.d)}</div></div>
-        <span class="status-pill" style="background:${col}22; color:${col};">${days===0?"Today":days+"d"}</span></div>`;
+        <span class="status-pill" style="background:${col}22; color:${col};">${days===0?L("Today"):days+L("d")}</span></div>`;
     }).join("");
   } else if(dated.length){
     const latest = dated.sort((a,b)=>b.d-a.d)[0].d;
-    dlEl.innerHTML = `<div class="ov-ring-row"><div class="ov-big">0 <small>open</small></div></div>
-      <div class="ov-note">All ${dated.length} tracked tenders have passed their bid deadline (latest was ${fmt(latest)}). Time to pull a fresh Etimad list.</div>`;
+    dlEl.innerHTML = `<div class="ov-ring-row"><div class="ov-big">0 <small>${L("open")}</small></div></div>
+      <div class="ov-note">${LANG==="ar" ? `جميع المنافسات المتابَعة (${dated.length}) تجاوزت موعد تقديم العروض (آخرها ${fmt(latest)}). حان وقت تحديث قائمة اعتماد.` : `All ${dated.length} tracked tenders have passed their bid deadline (latest was ${fmt(latest)}). Time to pull a fresh Etimad list.`}</div>`;
   } else {
-    dlEl.innerHTML = `<div class="ov-note">No bid deadlines logged yet.</div>`;
+    dlEl.innerHTML = `<div class="ov-note">${L("No bid deadlines logged yet.")}</div>`;
   }
 
   // program
@@ -1395,12 +1598,12 @@ function renderOverviewExtras(){
   const live = (state.matrix||[]).filter(m=>/live|piloted|done|proven/i.test(m.status||"")).length;
   const crit = (state.gaps||[]).filter(g=>g.sev==="critical").length;
   prEl.innerHTML = phases.length ? `
-    <div class="ov-ring-row"><div class="ov-big">${avg}<small>%</small></div><div class="ov-note">average progress across ${phases.length} phases · ${done} complete</div></div>
+    <div class="ov-ring-row"><div class="ov-big">${avg}<small>%</small></div><div class="ov-note">${LANG==="ar" ? `متوسط التقدم عبر ${phases.length} مراحل · ${done} مكتملة` : `average progress across ${phases.length} phases · ${done} complete`}</div></div>
     <div class="ov-bar-track" style="margin-bottom:14px;"><div class="ov-bar-fill" style="width:${avg}%"></div></div>
-    <div class="ov-list-item"><div class="t">Capabilities defined</div><div class="ov-bar-val">${caps}</div></div>
-    <div class="ov-list-item"><div class="t">Live / piloted</div><div class="ov-bar-val">${live}</div></div>
-    <div class="ov-list-item"><div class="t">Critical gaps</div><div class="ov-bar-val" style="color:${crit?"var(--critical)":"inherit"}">${crit}</div></div>`
-    : `<div class="ov-note">${escapeHtml(state.titles.emptyRowMsg||"")}</div>`;
+    <div class="ov-list-item"><div class="t">${L("Capabilities defined")}</div><div class="ov-bar-val">${caps}</div></div>
+    <div class="ov-list-item"><div class="t">${L("Live / piloted")}</div><div class="ov-bar-val">${live}</div></div>
+    <div class="ov-list-item"><div class="t">${L("Critical gaps")}</div><div class="ov-bar-val" style="color:${crit?"var(--critical)":"inherit"}">${crit}</div></div>`
+    : `<div class="ov-note">${escapeHtml(T().emptyRowMsg||"")}</div>`;
 }
 function renderBrandLogo(){
   const el = document.getElementById("brandLogo"); if(!el) return;
@@ -1412,7 +1615,7 @@ function renderProgram(){ renderPhases(); renderCapTeams(); renderMatrix(); rend
 
 /* empty tables get a clear "nothing logged yet" row instead of a fake placeholder entry */
 function fillEmptyStates(){
-  const t = (state && state.titles) || {};
+  const t = T();
   document.querySelectorAll("tbody[id]").forEach(tb=>{
     if(tb.querySelector("tr:not(.empty-row)")){ tb.querySelectorAll(".empty-row").forEach(r=>r.remove()); return; }
     tb.querySelectorAll(".empty-row").forEach(r=>r.remove());
@@ -1428,7 +1631,7 @@ function fillEmptyStates(){
 
 /* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
 function reorderBtns(section, i, len){
-  const t = state.titles;
+  const t = T();
   const upTip = escapeHtml(t.iconMoveUpTip || "Move up");
   const downTip = escapeHtml(t.iconMoveDownTip || "Move down");
   const dupTip = escapeHtml(t.iconDuplicateTip || "Duplicate");
@@ -1519,7 +1722,7 @@ function renderLastUpdated(){
 }
 
 function renderTitles(){
-  const t = state.titles;
+  const t = T();
   document.querySelectorAll('[data-bind^="titles."]').forEach(el=>{
     const key = el.dataset.bind.slice(7);
     if(typeof t[key] === "string") el.innerText = t[key];
@@ -1546,10 +1749,10 @@ function renderStats(){
   const projectsTracked = state.projects.length;
   const prototypesTracked = state.prototypes.length;
   const openTasks = state.tasks.filter(t=>t.status!=="Done").length + state.todos.filter(t=>!t.done).length;
-  const t = state.titles;
+  const t = T();
   const tiles = [
     { labelKey:"kpiRfpLabel", subKey:"kpiRfpSub", value:String(submitted) },
-    { labelKey:"kpiOppValueLabel", subKey:"kpiOppValueSub", value:oppValue.toLocaleString()+" SAR" },
+    { labelKey:"kpiOppValueLabel", subKey:"kpiOppValueSub", value:oppValue.toLocaleString()+" "+L("SAR") },
     { labelKey:"kpiProjectsLabel", subKey:"kpiProjectsSub", value:String(projectsTracked) },
     { labelKey:"kpiPrototypesLabel", subKey:"kpiPrototypesSub", value:String(prototypesTracked) },
     { labelKey:"kpiOpenTasksLabel", subKey:"kpiOpenTasksSub", value:String(openTasks) }
@@ -1626,7 +1829,7 @@ function renderPipelineChart(){
     const y = 10 + i * rowH;
     ctx.fillStyle = mutedColor;
     ctx.textAlign = "left";
-    ctx.fillText(d.stage, 0, y + barH/2, labelW - 8);
+    ctx.fillText(disp(d.stage), 0, y + barH/2, labelW - 8);
 
     const barW = Math.max((d.count / maxCount) * barAreaW, d.count > 0 ? 3 : 0);
     ctx.fillStyle = palette[i % palette.length];
@@ -1646,8 +1849,8 @@ function renderPipelineChart(){
 
     ctx.fillStyle = textColor;
     ctx.textAlign = "left";
-    const countLabel = d.count + (d.count===1 ? " opp" : " opps");
-    ctx.fillText(`${countLabel}  ·  ${d.value.toLocaleString()} SAR`, x0 + barW + 8, y + barH/2);
+    const countLabel = d.count + " " + L(d.count===1 ? "opp" : "opps");
+    ctx.fillText(`${countLabel}  ·  ${d.value.toLocaleString()} ${L("SAR")}`, x0 + barW + 8, y + barH/2);
   });
 }
 
@@ -1659,7 +1862,7 @@ window.addEventListener("resize", ()=>{
 
 function renderOverviewNav(){
   const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
-  const t = state.titles;
+  const t = T();
   const nav = [
     { page:"program", tKey:"tabProgram", dKey:"programNavDesc", oKey:"programNavOwner" },
     { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
@@ -1689,11 +1892,11 @@ function renderExternal(){
   let topCat = "—", topCount = 0;
   Object.keys(catCounts).forEach(c=>{ if(catCounts[c]>topCount){ topCount=catCounts[c]; topCat=c; } });
   {
-    const t = state.titles;
+    const t = T();
     [
       { labelKey:"kpiExtOpenLabel", value:String(list.length), subKey:"kpiExtOpenSub" },
       { labelKey:"kpiExtMissingLabel", value:String(missing), subKey:"kpiExtMissingSub" },
-      { labelKey:"kpiExtTopCatLabel", value:topCat, sub:topCount+" tender"+(topCount===1?"":"s") }
+      { labelKey:"kpiExtTopCatLabel", value:disp(topCat), sub:topCount+" "+L(topCount===1?"tender":"tenders") }
     ].forEach(s=>kpiWrap.appendChild(el(`<div class="stat-tile"><div class="label" data-bind="titles.${s.labelKey}">${escapeHtml(t[s.labelKey]||"")}</div><div class="value" style="font-size:18px;">${escapeHtml(s.value)}</div><div class="sub"${s.subKey?` data-bind="titles.${s.subKey}"`:""}>${escapeHtml(s.subKey ? (t[s.subKey]||"") : s.sub)}</div></div>`)));
   }
 
@@ -1712,15 +1915,15 @@ function renderExternal(){
         <td data-bind="external.${i}.name">${escapeHtml(r.name)}</td>
         <td data-bind="external.${i}.agency">${escapeHtml(r.agency)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(r.fit)}</span>
+          <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(disp(r.fit))}</span>
           <input class="status-select edit-only" list="fitOptionsList" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};" value="${escapeHtml(r.fit)}">
         </td>
         <td>
-          <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(r.category)}</span>
+          <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(disp(r.category))}</span>
           <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
         <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
-        <td><div data-bind="external.${i}.notes">${escapeHtml(r.notes)}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">Details ▾</button>`:""}</td>
+        <td><div data-bind="external.${i}.notes">${escapeHtml(r.notes)}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">${L("Details ▾")}</button>`:""}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('external', i, list.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
@@ -1730,8 +1933,8 @@ function renderExternal(){
     if(r.details||r.price||r.place||r.partners||r.award){
       const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(v)}</div>` : "";
       const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
-        <div class="ext-detail-grid">${f("Type", r.type)}${f("Inquiries", [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f("Expected award", r.award)}${f("Project start", r.projStart)}${f("Submission", r.method)}${f("Place", r.place)}${f("Document fee", r.price)}${f("Partners", r.partners)}</div>
-        ${r.details ? `<div style="margin-top:8px;"><b>Scope:</b> ${escapeHtml(r.details)}</div>` : ""}
+        <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}${f(L("Partners"), r.partners)}</div>
+        ${r.details ? `<div style="margin-top:8px;"><b>${L("Scope")}:</b> ${escapeHtml(r.details)}</div>` : ""}
       </td></tr>`);
       body.appendChild(d);
     }
@@ -1753,7 +1956,7 @@ function toggleExtDetail(i){
   const open = d.style.display === "none";
   d.style.display = open ? "" : "none";
   const btn = d.previousElementSibling && d.previousElementSibling.querySelector(".detail-toggle");
-  if(btn) btn.textContent = open ? "Details ▴" : "Details ▾";
+  if(btn) btn.textContent = open ? L("Details ▴") : L("Details ▾");
 }
 document.addEventListener("DOMContentLoaded", ()=>{
   const s = document.getElementById("externalSearch");
@@ -1786,7 +1989,7 @@ function renderInternal(){
   const total = list.reduce((s,r)=>s+(+r.value||0),0);
   const weighted = list.reduce((s,r)=>s+(+r.value||0)*probForStage(r.stage),0);
   {
-    const t = state.titles;
+    const t = T();
     [
       { labelKey:"kpiIntLoggedLabel", subKey:"kpiIntLoggedSub", value:String(list.length) },
       { labelKey:"kpiIntSubmittedLabel", subKey:"kpiIntSubmittedSub", value:String(submitted) },
@@ -1807,7 +2010,7 @@ function renderInternal(){
         <td data-bind="internal.${i}.client">${escapeHtml(r.client)}</td>
         <td data-bind="internal.${i}.value">${escapeHtml(r.value)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(r.stage)}</span>
+          <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(disp(r.stage))}</span>
           <input class="status-select edit-only" list="stageOptionsList" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};" value="${escapeHtml(r.stage)}">
         </td>
         <td data-bind="internal.${i}.subDate">${escapeHtml(r.subDate)}</td>
@@ -1836,7 +2039,7 @@ RENDER_FN.internal = renderInternal;
 
 function renderProbTable(){
   const t = document.getElementById("probTable"); if(!t) return;
-  t.innerHTML = `<thead><tr><th data-bind="titles.colProbStage">${escapeHtml(state.titles.colProbStage||"")}</th><th data-bind="titles.colProbWin">${escapeHtml(state.titles.colProbWin||"")}</th></tr></thead>`;
+  t.innerHTML = `<thead><tr><th data-bind="titles.colProbStage">${escapeHtml(T().colProbStage||"")}</th><th data-bind="titles.colProbWin">${escapeHtml(T().colProbWin||"")}</th></tr></thead>`;
   const tbody = document.createElement("tbody");
   state.stageProbs.forEach((p,i)=>{
     const tr = document.createElement("tr");
@@ -1865,7 +2068,7 @@ function renderProjects(){
       <tr>
         <td data-bind="projects.${i}.name">${escapeHtml(r.name)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="projStatusOptionsList" data-projstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="projects.${i}.financially">${escapeHtml(r.financially)}</td>
@@ -1894,7 +2097,7 @@ function renderPrototypes(){
   const onShelf = list.filter(r=>r.status==="On shelf").length;
   const valSum = list.reduce((s,r)=>s+(+r.value||0),0);
   {
-    const t = state.titles;
+    const t = T();
     [
       { labelKey:"kpiProtoProgressLabel", subKey:"kpiProtoProgressSub", value:String(inMakers) },
       { labelKey:"kpiProtoShelfLabel", subKey:"kpiProtoShelfSub", value:String(onShelf) },
@@ -1911,7 +2114,7 @@ function renderPrototypes(){
       <tr>
         <td data-bind="prototypes.${i}.name">${escapeHtml(r.name)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="protoStatusOptionsList" data-protostatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="prototypes.${i}.team">${escapeHtml(r.team)}</td>
@@ -1948,7 +2151,7 @@ function renderMarketing(){
         <td data-bind="marketing.${i}.initiative">${escapeHtml(r.initiative)}</td>
         <td data-bind="marketing.${i}.channel">${escapeHtml(r.channel)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="marketingStatusOptionsList" data-marketingstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="marketing.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
@@ -1981,7 +2184,7 @@ function renderTasks(){
         <td data-bind="tasks.${i}.task">${escapeHtml(r.task)}</td>
         <td data-bind="tasks.${i}.owner">${escapeHtml(r.owner)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="taskStatusOptionsList" data-taskstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="tasks.${i}.cadence">${escapeHtml(r.cadence)}</td>
@@ -2014,7 +2217,7 @@ function renderMilestones(){
         <td data-bind="milestones.${i}.owner">${escapeHtml(r.owner)}</td>
         <td data-bind="milestones.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
         <td>
-          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(r.status)}</span>
+          <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="mstatusOptionsList" data-mstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
         <td data-bind="milestones.${i}.notes">${escapeHtml(r.notes)}</td>
@@ -2081,7 +2284,7 @@ RENDER_FN.raci = renderRaci;
 function renderTeam(){
   const grid = document.getElementById("teamGrid"); if(!grid) return;
   grid.innerHTML = "";
-  const t = state.titles;
+  const t = T();
   state.team.forEach((r,i)=>{
     grid.appendChild(el(`
       <div class="teamcard">
@@ -2189,7 +2392,7 @@ function renderGlobalSearchResults(){
   const q = input.value;
   if(!q.trim()){ wrap.classList.remove("show"); wrap.innerHTML = ""; return; }
   const results = globalSearch(q);
-  const t = state.titles || {};
+  const t = T();
   wrap.innerHTML = results.length
     ? results.map(r=>`
         <div class="gsr-item" data-gopage="${r.page}" data-gosection="${r.section}" data-goindex="${r.index}">
@@ -2237,6 +2440,12 @@ document.addEventListener("focusout", e=>{
   if(!t.dataset || !t.dataset.bind) return;
   t._historySnapped = false;
   const path = t.dataset.bind.split(".");
+  if(path[0] === "titles" && LANG === "ar"){
+    state.titlesAr = state.titlesAr || {};
+    state.titlesAr[path[1]] = t.innerText.trim();
+    saveLocalDraft();
+    return;
+  }
   let obj = state;
   for(let i=0;i<path.length-1;i++) obj = obj[path[i]];
   obj[path[path.length-1]] = t.innerText.trim();
@@ -2261,7 +2470,8 @@ document.getElementById("toggleEdit").addEventListener("click", ()=>{
   const span = document.querySelector("#toggleEdit span[data-bind]");
   const key = editing ? "btnDoneEditing" : "btnEdit";
   span.dataset.bind = "titles." + key;
-  span.textContent = state.titles[key];
+  span.textContent = T()[key];
+  if(LANG === "ar"){ renderGaps(); renderMatrix(); }
   applyEditMode();
 });
 document.getElementById("undoBtn").addEventListener("click", undo);
@@ -2299,13 +2509,13 @@ document.addEventListener("keydown", e=>{
 /* ---------- local browser autosave / draft restore ---------- */
 const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
 function saveLocalDraft(){
-  if(READONLY) return;
+  if(READONLY || window.__skipSave) return;
   try{
     localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
     const ind = document.getElementById("autosaveIndicator");
     const timeEl = document.getElementById("autosaveTime");
     if(ind && timeEl){
-      timeEl.innerText = "Saved locally " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      timeEl.innerText = L("Saved locally") + " " + new Date().toLocaleTimeString(LANG==="ar" ? "ar-u-nu-latn" : [], {hour:"2-digit", minute:"2-digit"});
       ind.classList.add("show");
     }
   } catch(e){ /* ignore quota/availability errors */ }
@@ -2678,6 +2888,7 @@ async function exportPPTX(){
 
 /* ---------- boot ---------- */
 (function boot(){
+  applyLangChrome();
   if(READONLY){
     if(window.__SAUD_DATA__) state = window.__SAUD_DATA__;
     renderAll();
@@ -2836,6 +3047,7 @@ async function exportPPTX(){
   // sync during boot() (which ran before this markup was parsed) would
   // never reach these spans.
   if (typeof renderTitles === "function") { try { renderTitles(); } catch (e) {} }
+  if (typeof applyLangChrome === "function") { try { applyLangChrome(); } catch (e) {} }
 
   const fab = document.getElementById('saud-chat-fab');
   const panel = document.getElementById('saud-chat-panel');

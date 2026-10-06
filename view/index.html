@@ -185,6 +185,18 @@
 
   .notes{background:var(--night2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-height:70px; font-size:13.5px; color:var(--sand); line-height:1.6;}
   .footer-note{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6; background:none; border:none; font-family:inherit; width:100%;}
+  .empty-row td{color:var(--muted); font-style:italic; text-align:center; padding:18px 10px;}
+  .phase-row{padding:10px 0; border-bottom:1px solid var(--border);}
+  .phase-top{display:flex; justify-content:space-between; gap:12px; font-size:13.5px; color:var(--cream);}
+  .phase-top .lbl{color:var(--muted); font-size:12px;}
+  .phase-bar{height:8px; border-radius:5px; background:var(--muted-bar); margin-top:7px; overflow:hidden;}
+  .phase-bar > div{height:100%; border-radius:5px;}
+  .gap-sev{display:inline-block; min-width:64px; text-align:center; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:700; text-transform:uppercase;}
+  .ext-detail td{background:rgba(255,255,255,.025); font-size:12.5px; line-height:1.6; color:var(--muted);}
+  .ext-detail b{color:var(--cream); font-weight:600;}
+  .ext-detail-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:6px 18px;}
+  .detail-toggle{background:none; border:1px solid var(--border); color:var(--muted); font-size:11px; border-radius:5px; padding:1px 7px; cursor:pointer; margin-top:6px;}
+  .detail-toggle:hover{color:var(--cream);}
   .subhead{font-size:12px; color:var(--muted); margin:-6px 0 12px; line-height:1.5;}
 
   .chart-wrap{position:relative; min-height:60px;}
@@ -495,7 +507,23 @@
     "sectionPipelineChart": "Pipeline by Stage",
     "pipelineChartEmpty": "No opportunities logged yet — add rows in Internal Performance to see this chart.",
     "globalSearchPlaceholder": "🔎 Search everything...",
-    "globalSearchEmpty": "No matches"
+    "globalSearchEmpty": "No matches",
+    "tabProgram": "Saud Program",
+    "sectionProgramSteps": "Program next steps",
+    "programOwnerLine": "Owner: Al-Harith Hindi · Saud's build plan — phases, capabilities, gaps, and next steps carried over from the previous dashboard.",
+    "addBtnPhase": "+ add phase",
+    "addBtnCapTeam": "+ add team",
+    "addBtnCapability": "+ add capability",
+    "addBtnGap": "+ add gap",
+    "addBtnProgramStep": "+ add step",
+    "sectionExtExcluded": "Excluded tenders",
+    "extExcludedSub": "Listings screened out of the pipeline, with the reason — kept so nobody re-checks them.",
+    "colExclReason": "Reason excluded",
+    "addBtnExcluded": "+ add excluded tender",
+    "emptyRowMsg": "Nothing logged yet — click ✎ Edit, then “+ add” to log the first entry.",
+    "emptySearchMsg": "No matches.",
+    "programNavDesc": "Phases, capability matrix, known gaps, and next steps for Saud.",
+    "programNavOwner": "Al-Harith"
   },
   "autoColorPhases": true,
   "external": [
@@ -504,239 +532,460 @@
       "name": "تفعيل خطة الاحتفال بمرور 300 عام على تأسيس الدولة السعودية",
       "agency": "الهيئة السعودية للمواصفات والمقاييس والجودة",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-09-08 (time TBC)",
-      "notes": "National milestone celebration activation, year-round — squarely Event Management + Concept Design; large general competition (not a small direct-purchase job). — Request full RFP document via Etimad; confirm scope covers all SASO premises vs. HQ only; assess year-round activation logistics before bidding."
+      "notes": "National milestone celebration activation, year-round — squarely Event Management + Concept Design; large general competition (not a small direct-purchase job). — Request full RFP document via Etimad; confirm scope covers all SASO premises vs. HQ only; assess year-round activation logistics before bidding.",
+      "type": "منافسة عامة",
+      "inqStart": "2026-08-23",
+      "inqDeadline": "2026-08-29",
+      "award": "2026-09-20 (est., per detail page)",
+      "projStart": "2026-09-21 (est., per detail page)",
+      "method": "Single combined technical & financial file",
+      "place": "Within the Kingdom (multiple SASO premises)",
+      "details": "Year-round activation of the 300-year Saudi founding-anniversary celebration across SASO premises, per requirements from the Ministry of HR & Social Development.",
+      "price": "1,500 SAR",
+      "partners": "Possible AV/fabrication subcontractor for multi-site rollout."
     },
     {
       "rn": "260839005068",
       "name": "اتفاقية اطارية لتنظيم وتشغيل الفعاليات في نادي سباقات الخيل",
       "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Sports/Equestrian",
       "bidDeadline": "2026-09-03 09:59",
-      "notes": "Multi-year framework agreement for full event organization/operation at a major sports venue — directly matches Event Management + Immersive Spaces pillars and the Sports target sector; recurring-revenue potential. — High-priority bid — request full framework terms, confirm duration/call-off structure, and prepare a portfolio-led proposal citing Midwam's sports/entertainment work."
+      "notes": "Multi-year framework agreement for full event organization/operation at a major sports venue — directly matches Event Management + Immersive Spaces pillars and the Sports target sector; recurring-revenue potential. — High-priority bid — request full framework terms, confirm duration/call-off structure, and prepare a portfolio-led proposal citing Midwam's sports/entertainment work.",
+      "type": "منافسة اتفاقية إطارية",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-28",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Framework agreement to organize and operate events at the Jockey Club that fall outside the racing-season calendar.",
+      "price": "1,000 SAR",
+      "partners": "Hospitality/catering subcontractor for large crowd events."
     },
     {
       "rn": "260839005227",
       "name": "الاتفاقية الاطارية لتنفيذ فعاليات ومبادرات التواصل لمركز الملك عبدالعزيز للخيل العربية الأصيلة",
       "agency": "مركز الملك عبدالعزيز للخيل العربية الأصيلة",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Sports/Equestrian",
       "bidDeadline": "2026-09-18 09:59",
-      "notes": "Multi-supplier framework agreement for ongoing event execution, including external exhibition participations — strong match for Event Management, Booth Design & Exhibition, and Concept Design pillars; recurring call-off work. — High-priority bid — being one of several framework suppliers lowers the bar to entry; prepare a strong portfolio-based technical file."
+      "notes": "Multi-supplier framework agreement for ongoing event execution, including external exhibition participations — strong match for Event Management, Booth Design & Exhibition, and Concept Design pillars; recurring call-off work. — High-priority bid — being one of several framework suppliers lowers the bar to entry; prepare a strong portfolio-based technical file.",
+      "type": "منافسة اتفاقية إطارية",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-09-02",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Two separate files (technical & financial)",
+      "place": "Not specified on public listing",
+      "details": "Framework agreement with a panel of specialized suppliers to organize/execute internal and external communication events and initiatives supporting the Center's staff and visitors, including external participations, for the agreement's full term.",
+      "price": "1,000 SAR",
+      "partners": "Equestrian-sector specialist may strengthen technical narrative."
     },
     {
       "rn": "260839004514",
       "name": "تنفيذ جولة كبار الشخصيات بمقر هيئة تطوير محافظة جدة",
       "agency": "هيئة تطوير محافظة جدة",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Culture/Heritage",
       "bidDeadline": "2026-08-29 09:59",
-      "notes": "Visitor-center design showcasing strategy/projects for a VIP audience — a near-exact match for Midwam's Immersive Spaces and Concept Design pillars (comparable to the Masar and RCU experience-center portfolio work). — High-priority bid — lean directly on the Masar / Umm Al-Qura and RCU (Kidana) portfolio pieces as proof points; tight timeline so start technical file early."
+      "notes": "Visitor-center design showcasing strategy/projects for a VIP audience — a near-exact match for Midwam's Immersive Spaces and Concept Design pillars (comparable to the Masar and RCU experience-center portfolio work). — High-priority bid — lean directly on the Masar / Umm Al-Qura and RCU (Kidana) portfolio pieces as proof points; tight timeline so start technical file early.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-20",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Fit-out of a visitor center at the Jeddah Development Authority's HQ to showcase the Authority's strategy, flagship projects and development initiatives, timed to coincide with a VIP tour attended by senior officials.",
+      "price": "550 SAR",
+      "partners": "None likely needed — well within core capability."
     },
     {
       "rn": "260839003549",
       "name": "تنظيم وتشغيل فعاليات موسم سباقات الرياض 2026-2027م",
       "agency": "نادي سباقات الخيل (Saudi Equestrian / Jockey Club)",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Sports/Equestrian",
       "bidDeadline": "2026-08-30 09:59",
-      "notes": "Flagship, multi-month national sporting/social event — top-tier match for Event Management, Sports target sector, and Immersive Spaces at scale. — High-priority bid — this is likely the single highest-profile opportunity in the set; assemble a strong consortium proposal citing sports/entertainment portfolio work."
+      "notes": "Flagship, multi-month national sporting/social event — top-tier match for Event Management, Sports target sector, and Immersive Spaces at scale. — High-priority bid — this is likely the single highest-profile opportunity in the set; assemble a strong consortium proposal citing sports/entertainment portfolio work.",
+      "type": "منافسة اتفاقية إطارية",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Organization and operation of the Riyadh Racing Season 2026-2027, one of Saudi Arabia's flagship sporting/social events, held over several months at the King Abdulaziz Racetrack, Riyadh, from October 2026 to April 2027.",
+      "price": "1,500 SAR",
+      "partners": "Large-scale AV/production and hospitality subcontractors will be needed given the multi-month scale."
     },
     {
       "rn": "260839003554",
       "name": "مشاركة هيئة الصحة العامة (وقاية) في مؤتمر ومعرض الصحة العالمي 2026",
       "agency": "هيئة الصحة العامة (وقاية)",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Health",
       "bidDeadline": "2026-08-30 10:00",
-      "notes": "A direct exhibition-booth design and delivery brief — exactly the Booth Design & Exhibition pillar, and a health-sector exhibition Midwam already has experience-center precedent for (Ithra, Masar). — High-priority bid — reuse Ithra/Masar interactive-exhibit case studies directly in the technical proposal."
+      "notes": "A direct exhibition-booth design and delivery brief — exactly the Booth Design & Exhibition pillar, and a health-sector exhibition Midwam already has experience-center precedent for (Ithra, Masar). — High-priority bid — reuse Ithra/Masar interactive-exhibit case studies directly in the technical proposal.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Two separate files (technical & financial)",
+      "place": "Not specified on public listing",
+      "details": "Design and delivery of the Public Health Authority (Waqaya)'s participation/booth at the Global Health Exhibition 2026, to promote its programs and raise public-health awareness among visitors.",
+      "price": "700 SAR",
+      "partners": "None likely needed."
     },
     {
       "rn": "260839002543",
       "name": "مشروع تصميم وتنفيذ وتشغيل جناح المدينة الطبية الجامعية في ملتقى الصحة العالمي 2026م",
       "agency": "جامعة الملك سعود - المدينة الطبية الجامعية",
       "fit": "Strong",
-      "category": "Other/Uncategorized",
+      "category": "Health",
       "bidDeadline": "2026-08-25 09:59",
-      "notes": "Design + build + operate a full exhibition pavilion — the single closest match to Midwam's exact service line (Booth Design & Exhibition, Concept Design, Immersive Spaces) in the entire list. — Top priority, but bid deadline (2026-08-25) is very close — mobilize immediately; lean on Ithra/Masar/RCU pavilion-grade portfolio work."
+      "notes": "Design + build + operate a full exhibition pavilion — the single closest match to Midwam's exact service line (Booth Design & Exhibition, Concept Design, Immersive Spaces) in the entire list. — Top priority, but bid deadline (2026-08-25) is very close — mobilize immediately; lean on Ithra/Masar/RCU pavilion-grade portfolio work.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-19 (already passed at time of review)",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Design, execution, and operation of King Saud University Medical City's pavilion at the Global Health Exhibition 2026.",
+      "price": "1,000 SAR",
+      "partners": "None likely needed."
     },
     {
       "rn": "260839005192",
       "name": "المناسبات الوطنية والأعياد الدينية لعام 1448هـ",
       "agency": "رئاسة هيئة الأركان العامة - إدارة المشتريات (وزارة الدفاع)",
       "fit": "Medium",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-09-04 09:59",
-      "notes": "Larger general competition (military), recurring national-occasions program fits Event Management — but defense-sector contracts often carry security-clearance/vendor-vetting requirements Midwam should check first. — Confirm vendor eligibility/clearance requirements before investing in a proposal."
+      "notes": "Larger general competition (military), recurring national-occasions program fits Event Management — but defense-sector contracts often carry security-clearance/vendor-vetting requirements Midwam should check first. — Confirm vendor eligibility/clearance requirements before investing in a proposal.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-29",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National occasions and religious holidays program for 1448H, Ministry of Defense / General Staff.",
+      "price": "700 SAR",
+      "partners": "Possible security-cleared local logistics partner."
     },
     {
       "rn": "260839002012",
       "name": "تقديم وتنفيذ برنامج مسابقة وزارة الرياضة للقرآن الكريم والحديث الشريف — النسخة 18",
       "agency": "وزارة الرياضة",
       "fit": "Low-Medium",
-      "category": "Other/Uncategorized",
+      "category": "Religious/Pilgrimage",
       "bidDeadline": "2026-09-04 09:59",
-      "notes": "A national competition program is closer to event operations/broadcast logistics than experience design — feasible but not a core strength. — Only pursue if Midwam wants to diversify into competition-program management."
+      "notes": "A national competition program is closer to event operations/broadcast logistics than experience design — feasible but not a core strength. — Only pursue if Midwam wants to diversify into competition-program management.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-29",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Two separate files (technical & financial)",
+      "place": "Not specified on public listing",
+      "details": "Delivery and execution of the Ministry of Sport's 18th Quran & Hadith competition program (local & central).",
+      "price": "1,000 SAR",
+      "partners": "Broadcast/production partner likely needed."
     },
     {
       "rn": "260839000010",
       "name": "الإحتفاء باليوم العالمي للتطوع لمستفيدي الصندوق 2027-2028م",
       "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
       "fit": "Low-Medium",
-      "category": "Other/Uncategorized",
+      "category": "Volunteering/CSR",
       "bidDeadline": "2026-10-08 09:59",
-      "notes": "Small-scale charity commemoration event; longer runway (into 2028) but modest production scope. — Low priority; consider only if pipeline is thin."
+      "notes": "Small-scale charity commemoration event; longer runway (into 2028) but modest production scope. — Low priority; consider only if pipeline is thin.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-09-07",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "World Volunteer Day observance for beneficiaries of the Martyrs' Fund, spanning 2027-2028.",
+      "price": "700 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839005402",
       "name": "إقامة فعالية الملتقى السنوي مع الرئيس التنفيذي لتجمع جدة الصحي الثاني",
       "agency": "تجمع جدة الصحي الثاني",
       "fit": "Medium",
-      "category": "Other/Uncategorized",
+      "category": "Health",
       "bidDeadline": "2026-09-02 09:59",
-      "notes": "Corporate town-hall event — fits Event Management but is a modest, single-day internal forum rather than a flagship experience project. — Viable if Midwam wants a foothold with Jeddah Health Cluster; moderate priority."
+      "notes": "Corporate town-hall event — fits Event Management but is a modest, single-day internal forum rather than a flagship experience project. — Viable if Midwam wants a foothold with Jeddah Health Cluster; moderate priority.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Annual town-hall forum opening a direct communication channel between the CEO and health-cluster staff.",
+      "price": "500 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839004100",
       "name": "إقامة احتفال اليوم الوطني 96",
       "agency": "بلدية محافظة القريات",
       "fit": "Low-Medium",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-30 09:50",
-      "notes": "Larger municipal National Day event (2,000 SAR doc fee, general competition, not direct-purchase) — bigger than the other municipal listings but still a standard civic celebration. — Consider only if geographically convenient; not a flagship opportunity."
+      "notes": "Larger municipal National Day event (2,000 SAR doc fee, general competition, not direct-purchase) — bigger than the other municipal listings but still a standard civic celebration. — Consider only if geographically convenient; not a flagship opportunity.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-23",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Two separate files (technical & financial)",
+      "place": "Not specified on public listing",
+      "details": "National Day 96 celebration for a municipality.",
+      "price": "2,000 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839002742",
       "name": "منافسة تنفيذ وتغطية الجوانب الإعلامية للمؤتمرات وفعاليات جامعة شقراء",
       "agency": "جامعة شقراء",
       "fit": "Medium",
-      "category": "Other/Uncategorized",
+      "category": "Conference/Exhibition",
       "bidDeadline": "2026-08-26 09:59",
-      "notes": "Media/content coverage work fits the Content Development pillar, but is production/coverage-led rather than design-led — a secondary rather than flagship fit. Note: the inquiry window has already closed, so only direct bid submission remains possible. — Viable but time-sensitive — confirm inquiry deadline has genuinely passed before allocating bid-writing resources."
+      "notes": "Media/content coverage work fits the Content Development pillar, but is production/coverage-led rather than design-led — a secondary rather than flagship fit. Note: the inquiry window has already closed, so only direct bid submission remains possible. — Viable but time-sensitive — confirm inquiry deadline has genuinely passed before allocating bid-writing resources.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-17 (already passed at time of review)",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Media execution and coverage of the university's conferences and events.",
+      "price": "1,000 SAR",
+      "partners": "Videography/production crew if not already staffed for this scale."
     },
     {
       "rn": "260839000243",
       "name": "برنامج ضيوف خادم الحرمين الشريفين للعمرة والزيارة",
       "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد",
       "fit": "Medium",
-      "category": "Other/Uncategorized",
+      "category": "Religious/Pilgrimage",
       "bidDeadline": "2026-09-06 09:00",
-      "notes": "High-prestige national hospitality program, but core scope (guest logistics, travel, accommodation, religious-program hospitality) sits mostly outside Midwam's experience-design core and closer to full-service hospitality/DMC operations. — Pursue only in partnership with a hospitality/logistics operator; Midwam alone is unlikely to be competitive as prime contractor."
+      "notes": "High-prestige national hospitality program, but core scope (guest logistics, travel, accommodation, religious-program hospitality) sits mostly outside Midwam's experience-design core and closer to full-service hospitality/DMC operations. — Pursue only in partnership with a hospitality/logistics operator; Midwam alone is unlikely to be competitive as prime contractor.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-20 (already passed at time of review)",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Two separate files (technical & financial)",
+      "place": "Not specified on public listing",
+      "details": "Execution of the Ministry's Custodian of the Two Holy Mosques' Guests program for Umrah and visitation.",
+      "price": "1,000 SAR",
+      "partners": "A hospitality/DMC operator partner would very likely be required to lead logistics, with Midwam contributing experience-design touches."
     },
     {
       "rn": "260839002458",
       "name": "تجهيز إحتفال اليوم الوطني لعام 1448ه لبلدية محافظة عيون الجواء",
       "agency": "بلدية محافظة عيون الجواء",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-27 09:59",
-      "notes": "Small direct-purchase (200 SAR doc fee); typical scope is basic decor/staging for a small municipality — below Midwam's design-led positioning and likely too low-margin. — Skip unless Midwam wants a foothold with this municipality; otherwise not worth bid preparation cost."
+      "notes": "Small direct-purchase (200 SAR doc fee); typical scope is basic decor/staging for a small municipality — below Midwam's design-led positioning and likely too low-margin. — Skip unless Midwam wants a foothold with this municipality; otherwise not worth bid preparation cost.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-25",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National Day celebration setup for a small-town municipality.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839006553",
       "name": "فعالية اليوم الوطني لعام 2026م بمجمع الملك عبدالله الطبي بجدة",
       "agency": "تجمع جدة الصحي الثاني - مجمع الملك عبدالله الطبي بجدة",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-26 09:59",
-      "notes": "Small direct-purchase, hospital internal event — minimal design scope. — Skip — low value, tight 2-day turnaround."
+      "notes": "Small direct-purchase, hospital internal event — minimal design scope. — Skip — low value, tight 2-day turnaround.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-24",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National Day event for a hospital complex in Jeddah.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839006597",
       "name": "تأمين وتجهيز وتنفيذ إقامة احتفالات اليوم الوطني 96 لبلدية محافظة البدائع",
       "agency": "بلدية محافظة البدائع",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-28 09:59",
-      "notes": "Small direct-purchase municipal decor job. — Skip."
+      "notes": "Small direct-purchase municipal decor job. — Skip.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-23",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National Day celebration setup for a small municipality.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839006580",
       "name": "إقامة فعالية اليوم الوطني السعودي 96 لعام 2026م لمجمع إرادة والصحة النفسية بجدة",
       "agency": "تجمع جدة الصحي الثاني - الموارد الذاتية",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-26 09:59",
-      "notes": "Small direct-purchase internal hospital event. — Skip."
+      "notes": "Small direct-purchase internal hospital event. — Skip.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National Day event for a mental-health complex in Jeddah.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839006052",
       "name": "طلبات اليوم الوطني لعام 2026",
       "agency": "مدينة الملك عبدالله الطبية بالعاصمة المقدسة",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-29 09:59",
-      "notes": "Supply-only request for materials, not design/production services. — Skip — this is a supplies tender, not experience design."
+      "notes": "Supply-only request for materials, not design/production services. — Skip — this is a supplies tender, not experience design.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-24",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Supply of National Day celebration requirements/materials for a medical city.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839006266",
       "name": "التوعية الفكرية والإدارية",
       "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع تبوك",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "Conference/Exhibition",
       "bidDeadline": "2026-08-25 09:59",
-      "notes": "Title suggests a training/awareness program rather than an event or exhibition — likely mis-tagged under the Exhibitions activity code; scope doesn't match Midwam's services. — Skip — verify scope before bidding; likely not a design/production fit."
+      "notes": "Title suggests a training/awareness program rather than an event or exhibition — likely mis-tagged under the Exhibitions activity code; scope doesn't match Midwam's services. — Skip — verify scope before bidding; likely not a design/production fit.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "\"Intellectual and administrative awareness\" services — appears to be an internal training/awareness program, not an event or exhibition.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839005798",
       "name": "تجهيزات بمناسبة اليوم الوطني لفرع وزارة الشؤون الإسلامية بمنطقة جازان",
       "agency": "وزارة الشـؤون الاسلامية والدعوة والارشاد - فرع جازان",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-24 09:59",
-      "notes": "Small direct-purchase decor job. — Skip."
+      "notes": "Small direct-purchase decor job. — Skip.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-22",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "National Day preparations for a regional ministry branch.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839005217",
       "name": "استئجار معدات وتجهيزات لحفل اليوم الوطني 96",
       "agency": "كلية الملك خالد العـسكرية",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "National Day",
       "bidDeadline": "2026-08-29 09:59",
-      "notes": "Equipment-rental scope, not design services; military venue adds vetting overhead. — Skip."
+      "notes": "Equipment-rental scope, not design services; military venue adds vetting overhead. — Skip.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-27",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Rental of equipment and setup for a National Day ceremony at a military college.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839004866",
       "name": "تظليل زجاج مركز الرقمنة لمجمع الملك عبد العزيز للمكتبات الوقفية",
       "agency": "مجمع الملك عبدالعزيز للمكتبات الوقفية",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "Conference/Exhibition",
       "bidDeadline": "2026-08-24 09:59",
-      "notes": "Pure facilities/glazing works, not an event or experience-design scope — appears mis-tagged under the Exhibitions activity code. — Skip — outside Midwam's services entirely."
+      "notes": "Pure facilities/glazing works, not an event or experience-design scope — appears mis-tagged under the Exhibitions activity code. — Skip — outside Midwam's services entirely.",
+      "type": "شراء مباشر",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-08-20",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Glass tinting/shading for a digitization center's windows.",
+      "price": "200 SAR",
+      "partners": "N/A"
     },
     {
       "rn": "260839000066",
       "name": "حملة صندوق الشهداء للتبرع بالدم لمستفيدي الصندوق 2027-2028م",
       "agency": "صندوق الشهداء والمصابين والأسرى والمفقودين",
       "fit": "Low",
-      "category": "Other/Uncategorized",
+      "category": "Volunteering/CSR",
       "bidDeadline": "2026-10-17 09:59",
-      "notes": "Medical/charity campaign logistics, not experience design. — Skip unless diversifying into CSR-campaign management."
+      "notes": "Medical/charity campaign logistics, not experience design. — Skip unless diversifying into CSR-campaign management.",
+      "type": "منافسة عامة",
+      "inqStart": "Not published — confirm after purchasing tender documents",
+      "inqDeadline": "2026-09-05",
+      "award": "Not published — confirm after purchasing tender documents",
+      "projStart": "Not published — confirm after purchasing tender documents",
+      "method": "Single combined technical & financial file",
+      "place": "Not specified on public listing",
+      "details": "Blood-donation campaign run as a charitable activity benefiting the Fund's beneficiaries, 2027-2028.",
+      "price": "700 SAR",
+      "partners": "Medical logistics partner would be required regardless."
     }
   ],
-  "news": [
-    {
-      "date": "—",
-      "source": "—",
-      "headline": "Connect GitHub sync above to load the real news tracker",
-      "relevance": "—",
-      "link": "—",
-      "notes": "—"
-    }
-  ],
-  "internal": [
-    {
-      "name": "Connect GitHub sync above to load the real opportunity pipeline",
-      "client": "—",
-      "value": 0,
-      "stage": "Not started",
-      "subDate": "—",
-      "nextStep": "—",
-      "owner": "—"
-    }
-  ],
+  "news": [],
+  "internal": [],
   "stageProbs": [
     {
       "stage": "Not started",
@@ -763,72 +1012,34 @@
       "prob": 0
     }
   ],
-  "projects": [
-    {
-      "name": "Connect GitHub sync above to load the real projects list",
-      "status": "In progress",
-      "financially": "—",
-      "operationally": "—",
-      "issues": "—",
-      "deadline": "—"
-    }
-  ],
-  "prototypes": [
-    {
-      "name": "Connect GitHub sync above to load the real prototypes list",
-      "status": "On shelf",
-      "team": "—",
-      "notes": "—",
-      "value": "0"
-    }
-  ],
-  "tasks": [
-    {
-      "task": "Connect GitHub sync above to load the real recurring tasks list",
-      "owner": "—",
-      "status": "Not started",
-      "cadence": "—",
-      "notes": "—"
-    }
-  ],
-  "milestones": [
-    {
-      "milestone": "Connect GitHub sync above to load the real milestones list",
-      "owner": "—",
-      "targetDate": "—",
-      "status": "Not started",
-      "notes": "—"
-    }
-  ],
-  "todos": [
-    {
-      "done": false,
-      "item": "Connect GitHub sync above to load the real to-do list",
-      "owner": "—",
-      "due": "—",
-      "notes": "—"
-    }
-  ],
+  "projects": [],
+  "prototypes": [],
+  "tasks": [],
+  "milestones": [],
+  "todos": [],
   "raci": [
     {
       "section": "External / Internal Performance",
-      "owner": "—",
-      "basis": "—"
+      "owner": "Firas Abuzinada",
+      "basis": "Head of Business Development"
     },
     {
       "section": "Projects in Operations",
-      "owner": "—",
-      "basis": "—"
+      "owner": "Sameer Gulam",
+      "basis": "Head of Operations"
     },
     {
       "section": "Prototypes Tracker",
-      "owner": "—",
-      "basis": "—"
+      "owner": "Mohammed Alsanie",
+      "basis": "Head of Creative"
+    },
+    {
+      "section": "Marketing",
+      "owner": "Faisal Almadani",
+      "basis": "Head of Marketing"
     }
   ],
-  "sources": [
-    "Connect GitHub sync above to load the real data-source citations."
-  ],
+  "sources": [],
   "methodology": [
     "Weighted Value = Value × win probability for the opportunity's current stage — see the probability table on the Internal Performance tab."
   ],
@@ -1510,15 +1721,7 @@
     "customSections": []
   },
   "_migratedV2": true,
-  "marketing": [
-    {
-      "initiative": "Connect GitHub sync above to load the real marketing initiatives list",
-      "channel": "—",
-      "status": "Not started",
-      "targetDate": "—",
-      "notes": "—"
-    }
-  ],
+  "marketing": [],
   "team": [
     {
       "name": "Firas Abuzinada",
@@ -1544,7 +1747,200 @@
       "reports": "Reports to: Trad Nazer",
       "responsibilities": "• Owns campaign planning and brand strategy\n• Manages external communications and marketing channels\n• Tracks marketing initiative status and outcomes"
     }
-  ]
+  ],
+  "phases": [
+    {
+      "name": "Phase 1 — Understand the Project",
+      "pct": 100,
+      "label": "Closed (Ghar Thawr test case)",
+      "color": "good"
+    },
+    {
+      "name": "Phase 2 — Define Saud's Capabilities",
+      "pct": 74,
+      "label": "Approved — piloting not started",
+      "color": "warning"
+    },
+    {
+      "name": "Interim — Delivery path (Claude Project)",
+      "pct": 100,
+      "label": "Live under Harith's account",
+      "color": "good"
+    },
+    {
+      "name": "Phase 3 — Build as Midwam's AI Employee",
+      "pct": 0,
+      "label": "Not started (deliberately deferred)",
+      "color": "muted"
+    },
+    {
+      "name": "Phase 4 — Saud's own website",
+      "pct": 0,
+      "label": "Not started, not yet decided",
+      "color": "muted"
+    }
+  ],
+  "capTeams": [
+    {
+      "team": "Firas — Business Development",
+      "role": "Client relationship & creative direction",
+      "num": "4",
+      "pct": 100,
+      "color": "orange",
+      "caption": "Framework locked (2 Tier 1, 2 Tier 2) — 0 piloted on real work yet"
+    },
+    {
+      "team": "Mohammed — Technical",
+      "role": "Technology/platform choice & coding only",
+      "num": "3",
+      "pct": 100,
+      "color": "blue",
+      "caption": "Framework locked (2 Tier 1, 1 Tier 2) — 0 piloted on real work yet"
+    },
+    {
+      "team": "Sameer — Operations",
+      "role": "Operations, vendors & cost",
+      "num": "2",
+      "pct": 100,
+      "color": "aqua",
+      "caption": "Framework locked (1 Tier 1, 1 Tier 2) — 0 piloted on real work yet"
+    }
+  ],
+  "matrix": [
+    {
+      "cap": "Competitor / market benchmarking",
+      "owner": "Firas",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Draft RFP evaluation doc",
+      "owner": "Firas",
+      "tier": "2",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Draft proposal narrative sections",
+      "owner": "Firas",
+      "tier": "2",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Tone / portfolio consistency check",
+      "owner": "Firas",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Capability / vendor feasibility check",
+      "owner": "Mohammed",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Draft technical-section input",
+      "owner": "Mohammed",
+      "tier": "2",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Feasibility / timeline risk flagging",
+      "owner": "Mohammed",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Deliverable-readiness checklist",
+      "owner": "Sameer",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Draft risk / timeline section",
+      "owner": "Sameer",
+      "tier": "2",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Independent / \"blind\" creative reads",
+      "owner": "Cross-cutting",
+      "tier": "1",
+      "status": "Framework only"
+    },
+    {
+      "cap": "Self-critique pass on every analysis",
+      "owner": "Cross-cutting",
+      "tier": "1",
+      "status": "Live in console"
+    },
+    {
+      "cap": "Knowledge-base staleness flagging",
+      "owner": "Cross-cutting",
+      "tier": "1",
+      "status": "Framework only"
+    }
+  ],
+  "gaps": [
+    {
+      "text": "Framework is approved but untested on real business work — the actual pilot (Masterplan Step 3) hasn't happened yet.",
+      "sev": "critical"
+    },
+    {
+      "text": "Job descriptions (scope of responsibility) for Firas's, Mohammed's, and Sameer's teams not yet provided by each head.",
+      "sev": "warning"
+    },
+    {
+      "text": "No vendor pricing or commercial terms on file yet.",
+      "sev": "warning"
+    },
+    {
+      "text": "No visibility into past proposal win/loss history to sharpen benchmarking.",
+      "sev": "warning"
+    },
+    {
+      "text": "Two parallel systems exist (Claude Project + standalone Live Console) — Step 5 hasn't decided which one survives.",
+      "sev": "warning"
+    }
+  ],
+  "programSteps": [
+    "Use Saud yourself on real or near-real questions before anyone else touches it — deliberately try crossing lanes to test whether the role boundaries actually hold.",
+    "Pilot 2-3 Tier 1/2 capabilities on the first real RFP, lead, or proposal that comes in — this is the missing proof point everything else depends on.",
+    "Bring in Firas, Mohammed, and Sameer individually, each in their own lane, and ask honestly whether Saud helped or got in the way.",
+    "Decide whether the standalone Live Console gets retired, kept as a lightweight tool, or becomes the seed of a real backend app.",
+    "Only after the pilot and head trials show real signal, revisit Phase 3 (giving Saud real system access) with a proper scoping conversation.",
+    "Only after Phase 3 is proven, revisit Phase 4 — a standalone Saud website."
+  ],
+  "externalExcluded": [
+    {
+      "rn": "2000002225",
+      "name": "تنظيم فعاليات الإعاقة لعام 2026م",
+      "agency": "DISABILITY CARE AUTHORITY",
+      "deadline": "2026-07-13 12:00",
+      "reason": "Bid deadline already passed despite showing under the Active filter; legacy-system listing with no working visitor detail page."
+    },
+    {
+      "rn": "2000002085",
+      "name": "تنظيم اللقاءات وورش العمل",
+      "agency": "AL-AHSA DEVELOPMENT AUTHORITY",
+      "deadline": "2026-06-28 13:00",
+      "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+    },
+    {
+      "rn": "2000001422",
+      "name": "تأمين مواد الضيافة للهيئة لعام 2026م",
+      "agency": "DISABILITY CARE AUTHORITY",
+      "deadline": "2026-07-29 13:00",
+      "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+    },
+    {
+      "rn": "2000001632",
+      "name": "تفعيل قطاع الاستثمار وتطوير الشراكات",
+      "agency": "AL-AHSA DEVELOPMENT AUTHORITY",
+      "deadline": "2026-06-03 14:00",
+      "reason": "Bid deadline already passed; legacy-system listing, no working visitor detail page."
+    }
+  ],
+  "_migratedV3": true
 };
 </script>
 
@@ -1617,6 +2013,7 @@
 
   <div class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><span data-bind="titles.tabOverview"></span></button>
+    <button class="tab-btn" data-page="program" onclick="switchPage('program')"><span data-bind="titles.tabProgram"></span></button>
     <button class="tab-btn" data-page="external" onclick="switchPage('external')"><span data-bind="titles.tabExternal"></span></button>
     <button class="tab-btn" data-page="internal" onclick="switchPage('internal')"><span data-bind="titles.tabInternal"></span></button>
     <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><span data-bind="titles.tabProjects"></span></button>
@@ -1645,6 +2042,51 @@
     </section>
   </div>
 
+  <!-- ============================== SAUD PROGRAM (restored from the previous dashboard) ============================== -->
+  <div class="page" id="page-program">
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionPhases"></h2>
+        <button class="addbtn" onclick="addRow('phases', {name:'New phase', pct:0, label:'Not started', color:'muted'})"><span data-bind="titles.addBtnPhase"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.programOwnerLine"></div>
+      <div id="phasesList"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionCaps"></h2>
+        <button class="addbtn" onclick="addRow('capTeams', {team:'New team', role:'', num:'0', pct:0, color:'orange', caption:''})"><span data-bind="titles.addBtnCapTeam"></span></button>
+      </div>
+      <div class="kpi-row" id="capTeamsGrid"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionMatrix"></h2>
+        <button class="addbtn" onclick="addRow('matrix', {cap:'New capability', owner:'', tier:'1', status:'Framework only'})"><span data-bind="titles.addBtnCapability"></span></button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th data-bind="titles.colCap"></th><th data-bind="titles.colOwner"></th><th data-bind="titles.colTier"></th><th data-bind="titles.colStatus"></th><th class="actions"></th></tr></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionGaps"></h2>
+        <button class="addbtn" onclick="addRow('gaps', {text:'New gap', sev:'warning'})"><span data-bind="titles.addBtnGap"></span></button>
+      </div>
+      <div id="gapsList"></div>
+    </section>
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionProgramSteps"></h2>
+        <button class="addbtn" onclick="addStringRow('programSteps', 'New next step')"><span data-bind="titles.addBtnProgramStep"></span></button>
+      </div>
+      <ol class="steps" id="programStepsList" style="list-style:none; margin:0; padding:0;"></ol>
+    </section>
+  </div>
+
   <!-- ============================== EXTERNAL ============================== -->
   <div class="page" id="page-external">
     <section>
@@ -1669,6 +2111,20 @@
         </table>
       </div>
       <div class="footer-note" data-bind="titles.externalFooterNote"></div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <h2 data-bind="titles.sectionExtExcluded"></h2>
+        <button class="addbtn" onclick="addRow('externalExcluded', {rn:'', name:'Excluded tender', agency:'', deadline:'', reason:''})"><span data-bind="titles.addBtnExcluded"></span></button>
+      </div>
+      <div class="subhead" data-bind="titles.extExcludedSub"></div>
+      <div class="table-scroll">
+        <table class="wide-table">
+          <thead><tr><th data-bind="titles.colExtRn"></th><th data-bind="titles.colExtName"></th><th data-bind="titles.colExtAgency"></th><th data-bind="titles.colExtDeadline"></th><th data-bind="titles.colExclReason"></th><th class="actions"></th></tr></thead>
+          <tbody id="externalExcludedBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <section>
@@ -2065,7 +2521,7 @@ const TASK_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Do
 const MARKETING_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
 const MILESTONE_STATUS_COLOR = { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", "At risk":"#d03b3b" };
 
-const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Other/Uncategorized"];
+const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
 let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let editing = false;
@@ -2249,6 +2705,202 @@ function migrateState(){
     delete state.phases; delete state.capTeams; delete state.matrix; delete state.gaps; delete state.steps; delete state.etimad; delete state.etimadExcluded; delete state.customSections;
     state._migratedV2 = true;
   }
+  migrateV3();
+}
+
+/* ---------- v3: restore the previous dashboard's work + clean placeholders ---------- */
+const V3_TITLE_DEFAULTS = {
+  tabProgram: "Saud Program",
+  sectionPhases: "Phase progress",
+  sectionCaps: "Capabilities implemented, by team",
+  sectionMatrix: "Capability & status matrix",
+  sectionGaps: "Known gaps",
+  sectionProgramSteps: "Program next steps",
+  programOwnerLine: "Owner: Al-Harith Hindi · Saud's build plan — phases, capabilities, gaps, and next steps carried over from the previous dashboard.",
+  colCap: "Capability", colOwner: "Owner", colTier: "Tier", colStatus: "Status",
+  addBtnPhase: "+ add phase", addBtnCapTeam: "+ add team", addBtnCapability: "+ add capability",
+  addBtnGap: "+ add gap", addBtnProgramStep: "+ add step",
+  sectionExtExcluded: "Excluded tenders",
+  extExcludedSub: "Listings screened out of the pipeline, with the reason — kept so nobody re-checks them.",
+  colExclReason: "Reason excluded", addBtnExcluded: "+ add excluded tender",
+  emptyRowMsg: "Nothing logged yet — click ✎ Edit, then “+ add” to log the first entry.",
+  emptySearchMsg: "No matches.",
+  programNavDesc: "Phases, capability matrix, known gaps, and next steps for Saud.",
+  programNavOwner: "Al-Harith"
+};
+const PLACEHOLDER_PREFIX = "Connect GitHub sync above";
+function isPlaceholderRow(r){
+  if(typeof r === "string") return r.indexOf(PLACEHOLDER_PREFIX) === 0;
+  if(!r || typeof r !== "object") return false;
+  return Object.values(r).some(v=>typeof v === "string" && v.indexOf(PLACEHOLDER_PREFIX) === 0);
+}
+function autoCategory(r){
+  const h = [r.name, r.agency, r.details, r.notes].filter(Boolean).join(" ").toLowerCase();
+  const has = words => words.some(w=>h.indexOf(w) !== -1);
+  if(has(["اليوم الوطني","يوم التأسيس","تأسيس الدولة","المناسبات الوطنية","national day","national occasions","founding"])) return "National Day";
+  if(has(["عمرة","العمرة","الحج","الحرمين","قرآن","القرآن","umrah","hajj","pilgrim","quran"])) return "Religious/Pilgrimage";
+  if(has(["سباقات","خيل","فروسية","equestrian","jockey","racing"])) return "Sports/Equestrian";
+  if(has(["تطوع","تبرع","volunteer","blood-donation","charitable"])) return "Volunteering/CSR";
+  if(has(["صحة","صحي","طبي","health","medical","hospital"])) return "Health";
+  if(has(["مؤتمر","معرض","ملتقى","منتدى","conference","exhibition","forum","pavilion"])) return "Conference/Exhibition";
+  if(has(["تراث","ثقاف","مكتبات","heritage","culture","library","libraries","visitor center"])) return "Culture/Heritage";
+  if(has(["فعاليات","فعالية","احتفال","تنظيم","event","activation","awareness"])) return "Event Management";
+  return "Other/Uncategorized";
+}
+function migrateV3(){
+  Object.keys(V3_TITLE_DEFAULTS).forEach(k=>{ if(typeof state.titles[k] !== "string") state.titles[k] = V3_TITLE_DEFAULTS[k]; });
+  ["phases","capTeams","matrix","gaps","programSteps","externalExcluded"].forEach(k=>{ if(!Array.isArray(state[k])) state[k] = []; });
+
+  // never show "Connect GitHub sync above…" placeholder rows as if they were real entries
+  Object.keys(state).forEach(k=>{ if(Array.isArray(state[k])) state[k] = state[k].filter(r=>!isPlaceholderRow(r)); });
+
+  if(state._migratedV3) return;
+  const L = state.legacyV1 || {};
+  const copy = x => JSON.parse(JSON.stringify(x));
+  if(!state.phases.length && Array.isArray(L.phases)) state.phases = copy(L.phases);
+  if(!state.capTeams.length && Array.isArray(L.capTeams)) state.capTeams = copy(L.capTeams);
+  if(!state.matrix.length && Array.isArray(L.matrix)) state.matrix = copy(L.matrix).map(m=>({cap:m.cap||"", owner:m.owner||"", tier:m.tier||"", status:m.status||""}));
+  if(!state.gaps.length && Array.isArray(L.gaps)) state.gaps = copy(L.gaps);
+  if(!state.programSteps.length && Array.isArray(L.steps)) state.programSteps = copy(L.steps).map(String);
+  if(!state.externalExcluded.length && Array.isArray(L.etimadExcluded)) state.externalExcluded = copy(L.etimadExcluded).map(e=>({rn:e.rn||"", name:e.name||"", agency:e.agency||"", deadline:e.deadline||"", reason:e.reason||""}));
+
+  // put back the full tender detail the old Etimad view had (type, dates, fee, place, partners…)
+  const byRn = {};
+  (L.etimad||[]).forEach(e=>{ if(e && e.rn) byRn[e.rn] = e; });
+  (state.external||[]).forEach(r=>{
+    const e = byRn[r.rn];
+    if(e) ["type","inqStart","inqDeadline","award","projStart","method","place","details","price","partners"].forEach(f=>{ if(e[f] && !r[f]) r[f] = e[f]; });
+    if(!r.category || r.category === "Other/Uncategorized") r.category = autoCategory(r);
+  });
+
+  // Ownership table: fill in the owners already named elsewhere on the dashboard
+  const OWNERS = [
+    { match:/external|internal/i, owner:"Firas Abuzinada", basis:"Head of Business Development" },
+    { match:/project/i, owner:"Sameer Gulam", basis:"Head of Operations" },
+    { match:/prototype/i, owner:"Mohammed Alsanie", basis:"Head of Creative" }
+  ];
+  (state.raci||[]).forEach(r=>{
+    if(r.owner && r.owner !== "—") return;
+    const o = OWNERS.find(o=>o.match.test(r.section||""));
+    if(o){ r.owner = o.owner; if(!r.basis || r.basis === "—") r.basis = o.basis; }
+  });
+  if((state.raci||[]).length && !state.raci.some(r=>/marketing/i.test(r.section||""))){
+    state.raci.push({ section:"Marketing", owner:"Faisal Almadani", basis:"Head of Marketing" });
+  }
+  state._migratedV3 = true;
+}
+
+/* ---------- Saud Program tab renderers ---------- */
+const PHASE_COLOR = { good:"var(--good)", warning:"var(--warning)", muted:"var(--muted)", danger:"#d9534f" };
+const CAP_COLOR = { orange:"#f0a06f", blue:"#3987e5", aqua:"#5fd3a8" };
+const GAP_COLOR = { critical:"#e5534b", warning:"#d99a1a", info:"#3987e5" };
+function renderPhases(){
+  const wrap = document.getElementById("phasesList"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.phases.forEach((p,i)=>{
+    const pct = Math.max(0, Math.min(100, parseFloat(p.pct)||0));
+    const col = PHASE_COLOR[p.color] || "var(--copper)";
+    wrap.appendChild(el(`
+      <div class="phase-row">
+        <div class="phase-top">
+          <div style="flex:1;"><span data-bind="phases.${i}.name">${escapeHtml(p.name)}</span>
+            <div class="lbl" data-bind="phases.${i}.label">${escapeHtml(p.label)}</div></div>
+          <div style="white-space:nowrap; font-weight:700; color:${col};"><span data-bind="phases.${i}.pct">${escapeHtml(String(p.pct))}</span>%</div>
+          <span class="edit-only">${reorderBtns('phases', i, state.phases.length)}
+            <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('phases',${i}))">✕</button></span>
+        </div>
+        <div class="phase-bar"><div style="width:${pct}%; background:${col};"></div></div>
+      </div>`));
+  });
+  if(!state.phases.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.phases = renderPhases;
+function renderCapTeams(){
+  const wrap = document.getElementById("capTeamsGrid"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.capTeams.forEach((c,i)=>{
+    const col = CAP_COLOR[c.color] || "var(--copper)";
+    wrap.appendChild(el(`
+      <div class="stat-tile">
+        <div class="label" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
+        <div class="value" style="color:${col};"><span data-bind="capTeams.${i}.num">${escapeHtml(String(c.num))}</span> <span style="font-size:12px; color:var(--muted); font-weight:400;">capabilities</span></div>
+        <div class="sub" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
+        <div class="sub" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
+        <div class="edit-only" style="margin-top:6px;">${reorderBtns('capTeams', i, state.capTeams.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
+      </div>`));
+  });
+  if(!state.capTeams.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.capTeams = renderCapTeams;
+function renderMatrix(){
+  const body = document.getElementById("matrixBody"); if(!body) return;
+  body.innerHTML = "";
+  state.matrix.forEach((m,i)=>{
+    const tierCol = String(m.tier) === "1" ? "#5fd3a8" : "#f0a06f";
+    const stCol = /live|piloted|done|proven/i.test(m.status||"") ? "#0ca30c" : "#f0a06f";
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="matrix.${i}.cap">${escapeHtml(m.cap)}</td>
+        <td data-bind="matrix.${i}.owner">${escapeHtml(m.owner)}</td>
+        <td><span class="status-pill" style="background:${tierCol}22; color:${tierCol};">Tier <span data-bind="matrix.${i}.tier">${escapeHtml(String(m.tier))}</span></span></td>
+        <td><span class="status-pill" style="background:${stCol}22; color:${stCol};" data-bind="matrix.${i}.status">${escapeHtml(m.status)}</span></td>
+        <td class="actions-cell edit-only">${reorderBtns('matrix', i, state.matrix.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('matrix',${i}))">✕</button></td>
+      </tr>`));
+  });
+}
+RENDER_FN.matrix = renderMatrix;
+function renderGaps(){
+  const wrap = document.getElementById("gapsList"); if(!wrap) return;
+  wrap.innerHTML = "";
+  state.gaps.forEach((g,i)=>{
+    const col = GAP_COLOR[g.sev] || GAP_COLOR.warning;
+    wrap.appendChild(el(`
+      <div style="display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
+        <span class="gap-sev" style="background:${col}22; color:${col};" data-bind="gaps.${i}.sev">${escapeHtml(g.sev)}</span>
+        <div data-bind="gaps.${i}.text" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(g.text)}</div>
+        <span class="edit-only">${reorderBtns('gaps', i, state.gaps.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button></span>
+      </div>`));
+  });
+  if(!state.gaps.length) wrap.appendChild(el(`<div class="chart-empty">${escapeHtml(state.titles.emptyRowMsg)}</div>`));
+}
+RENDER_FN.gaps = renderGaps;
+RENDER_FN.programSteps = ()=>renderStringList('programSteps','programStepsList');
+function renderExternalExcluded(){
+  const body = document.getElementById("externalExcludedBody"); if(!body) return;
+  body.innerHTML = "";
+  state.externalExcluded.forEach((r,i)=>{
+    body.appendChild(elTR(`
+      <tr>
+        <td data-bind="externalExcluded.${i}.rn">${escapeHtml(r.rn)}</td>
+        <td data-bind="externalExcluded.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="externalExcluded.${i}.agency">${escapeHtml(r.agency)}</td>
+        <td data-bind="externalExcluded.${i}.deadline">${escapeHtml(r.deadline)}</td>
+        <td data-bind="externalExcluded.${i}.reason">${escapeHtml(r.reason)}</td>
+        <td class="actions-cell edit-only">${reorderBtns('externalExcluded', i, state.externalExcluded.length)}
+          <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('externalExcluded',${i}))">✕</button></td>
+      </tr>`));
+  });
+}
+RENDER_FN.externalExcluded = renderExternalExcluded;
+function renderProgram(){ renderPhases(); renderCapTeams(); renderMatrix(); renderGaps(); renderStringList('programSteps','programStepsList'); }
+
+/* empty tables get a clear "nothing logged yet" row instead of a fake placeholder entry */
+function fillEmptyStates(){
+  const t = (state && state.titles) || {};
+  document.querySelectorAll("tbody[id]").forEach(tb=>{
+    if(tb.querySelector("tr:not(.empty-row)")){ tb.querySelectorAll(".empty-row").forEach(r=>r.remove()); return; }
+    tb.querySelectorAll(".empty-row").forEach(r=>r.remove());
+    const table = tb.closest("table");
+    const cols = table ? Math.max(1, table.querySelectorAll("thead th").length) : 1;
+    let searching = false; try{ searching = tb.id === "externalBody" && !!String(externalFilter||"").trim(); }catch(_){}
+    const msg = searching ? (t.emptySearchMsg || "No matches.") : (t.emptyRowMsg || "Nothing logged yet.");
+    const tr = document.createElement("tr"); tr.className = "empty-row";
+    const td = document.createElement("td"); td.colSpan = cols; td.textContent = msg;
+    tr.appendChild(td); tb.appendChild(tr);
+  });
 }
 
 /* ---------- generic reorder / duplicate / add / remove (works for any state[section] array) ---------- */
@@ -2316,7 +2968,9 @@ function renderAll(){
   renderStats();
   renderPipelineChart();
   renderOverviewNav();
+  renderProgram();
   renderExternal();
+  renderExternalExcluded();
   renderNews();
   renderInternal();
   renderProbTable();
@@ -2480,6 +3134,7 @@ function renderOverviewNav(){
   const wrap = document.getElementById("overviewNav"); wrap.innerHTML = "";
   const t = state.titles;
   const nav = [
+    { page:"program", tKey:"tabProgram", dKey:"programNavDesc", oKey:"programNavOwner" },
     { page:"external", tKey:"navExternalTitle", dKey:"navExternalDesc", oKey:"navExternalOwner" },
     { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
     { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
@@ -2538,13 +3193,21 @@ function renderExternal(){
           <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
         <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
-        <td data-bind="external.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td><div data-bind="external.${i}.notes">${escapeHtml(r.notes)}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">Details ▾</button>`:""}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('external', i, list.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
         </td>
       </tr>`);
     body.appendChild(tr);
+    if(r.details||r.price||r.place||r.partners||r.award){
+      const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(v)}</div>` : "";
+      const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
+        <div class="ext-detail-grid">${f("Type", r.type)}${f("Inquiries", [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f("Expected award", r.award)}${f("Project start", r.projStart)}${f("Submission", r.method)}${f("Place", r.place)}${f("Document fee", r.price)}${f("Partners", r.partners)}</div>
+        ${r.details ? `<div style="margin-top:8px;"><b>Scope:</b> ${escapeHtml(r.details)}</div>` : ""}
+      </td></tr>`);
+      body.appendChild(d);
+    }
   });
   body.querySelectorAll("[data-fitselect]").forEach(s=>s.addEventListener("change", e=>{
     pushHistory();
@@ -2558,6 +3221,13 @@ function renderExternal(){
   }));
 }
 RENDER_FN.external = renderExternal;
+function toggleExtDetail(i){
+  const d = document.getElementById("extDetail"+i); if(!d) return;
+  const open = d.style.display === "none";
+  d.style.display = open ? "" : "none";
+  const btn = d.previousElementSibling && d.previousElementSibling.querySelector(".detail-toggle");
+  if(btn) btn.textContent = open ? "Details ▴" : "Details ▾";
+}
 document.addEventListener("DOMContentLoaded", ()=>{
   const s = document.getElementById("externalSearch");
   if(s) s.addEventListener("input", e=>{ externalFilter = e.target.value; renderExternal(); applyEditMode(); });
@@ -2936,6 +3606,8 @@ function switchPage(page){
 
 /* ---------- global search across all sections ---------- */
 const GLOBAL_SEARCH_SOURCES = [
+  { section:"matrix",     page:"program",   kind:"Capability",  fields:["cap","owner","status"],     label:r=>r.cap,        sub:r=>r.owner },
+  { section:"externalExcluded", page:"external", kind:"Excluded tender", fields:["name","agency","rn"], label:r=>r.name, sub:r=>r.reason },
   { section:"external",   page:"external",  kind:"Tender",      fields:["name","agency","rn"],       label:r=>r.name,       sub:r=>r.agency },
   { section:"internal",   page:"internal",  kind:"Opportunity", fields:["name","client","owner"],    label:r=>r.name,       sub:r=>r.client },
   { section:"projects",   page:"projects",  kind:"Project",     fields:["name","status"],            label:r=>r.name,       sub:r=>r.status },
@@ -3043,6 +3715,7 @@ document.addEventListener("focusout", e=>{
 });
 
 function applyEditMode(){
+  fillEmptyStates();
   document.querySelectorAll("[data-bind]").forEach(el=>el.setAttribute("contenteditable", editing ? "true" : "false"));
   document.querySelectorAll(".edit-only").forEach(el=>el.style.display = editing ? "" : "none");
   document.querySelectorAll(".view-only").forEach(el=>el.style.display = editing ? "none" : "");

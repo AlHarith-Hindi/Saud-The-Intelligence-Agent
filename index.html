@@ -650,6 +650,82 @@
   #presentDots .pd-arrow{width:auto; height:auto; background:none; color:var(--sand); font-size:16px; padding:0 4px;}
   @media (max-width:760px){ .tl-tip{min-width:150px;} #qaFab{bottom:84px;} .hijri{display:none;} }
   @media print{ .ambient, #qaFab, #bootIntro, .drawer, .bell-wrap{display:none !important;} }
+  /* ================= v12: extreme immersion ================= */
+  /* custom cursor + trail */
+  #trailCanvas{position:fixed; inset:0; pointer-events:none; z-index:99990;}
+  #cursorRing{position:fixed; left:-18px; top:-18px; width:36px; height:36px; border-radius:50%; pointer-events:none; z-index:99991;
+    border:1.5px solid color-mix(in srgb, var(--copper) 80%, transparent); box-shadow:0 0 14px color-mix(in srgb, var(--copper) 45%, transparent), inset 0 0 8px color-mix(in srgb, var(--copper) 25%, transparent);
+    transition:width .18s, height .18s, left .18s, top .18s, background .18s, opacity .2s;}
+  #cursorRing::after{content:""; position:absolute; left:50%; top:50%; width:4px; height:4px; margin:-2px; border-radius:50%; background:var(--copper);}
+  #cursorRing.hot{width:54px; height:54px; left:-27px; top:-27px; background:color-mix(in srgb, var(--copper) 10%, transparent);}
+  #cursorRing.core{width:70px; height:70px; left:-35px; top:-35px; border-style:dashed; animation:spin 4s linear infinite;}
+  #cursorRing.down{width:26px; height:26px; left:-13px; top:-13px;}
+  body.calm #cursorRing, body.calm #trailCanvas{display:none;}
+  /* Saud core */
+  .core-wrap{position:relative; width:150px; height:150px; flex-shrink:0; margin:-10px 4px -10px -8px;}
+  #saudCore{width:150px; height:150px; display:block; cursor:grab; touch-action:none;}
+  .core-label{position:absolute; bottom:-4px; left:0; right:0; text-align:center; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); white-space:nowrap; opacity:.7;}
+  #coreTip{position:absolute; z-index:20; translate:-50% calc(-100% - 14px); min-width:180px; max-width:240px; padding:8px 10px; border-radius:10px; pointer-events:none; opacity:0;
+    background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 45%, var(--border)); color:var(--cream); font-size:12px; line-height:1.35; box-shadow:0 14px 34px rgba(0,0,0,.5); transition:opacity .12s;}
+  #coreTip.show{opacity:1;}
+  #coreTip b{display:block; font-size:10px; color:var(--copper); text-transform:uppercase; letter-spacing:.06em;}
+  #coreTip i{display:block; font-style:normal; color:var(--muted); font-size:11px; margin-top:2px;}
+  .hero > div:nth-child(2){flex:1; min-width:220px;}
+  .hero-greet{font-size:28px !important; background:linear-gradient(90deg, var(--cream), color-mix(in srgb, var(--copper) 70%, var(--cream)), var(--cream)); background-size:200% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent !important; animation:shine 6s linear infinite;}
+  @keyframes shine{to{background-position:-200% 0;}}
+  .hero-right{margin-inline-start:auto;}
+  .mic-btn{font-size:15px; padding:7px 11px !important;}
+  .mic-btn.on{background:var(--critical) !important; color:#fff !important; animation:micPulse 1.2s ease-in-out infinite;}
+  @keyframes micPulse{50%{box-shadow:0 0 0 8px color-mix(in srgb, var(--critical) 25%, transparent);}}
+  #voiceBubble{position:fixed; left:50%; bottom:110px; translate:-50% 20px; z-index:99000; max-width:min(560px, 90vw); padding:14px 20px; border-radius:16px; opacity:0; pointer-events:none;
+    background:color-mix(in srgb, var(--night2) 92%, transparent); border:1px solid var(--copper); color:var(--cream); font-size:16px; box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 30px var(--accent-soft); transition:opacity .2s, translate .2s; backdrop-filter:blur(10px);}
+  #voiceBubble.show{opacity:1; translate:-50% 0;}
+  #voiceBubble::before{content:"🎙 "; }
+  .brief-speak{background:none; border:1px solid var(--border); color:var(--sand); border-radius:8px; font-size:11.5px; padding:3px 9px; cursor:pointer; font-family:inherit;}
+  .brief-speak:hover, .brief-speak.on{border-color:var(--copper); color:var(--cream);}
+  .brief-speak.on{background:var(--accent-soft);}
+  /* ticker */
+  .ticker{display:flex; align-items:center; gap:12px; margin:-8px 0 20px; height:34px; border:1px solid var(--border); border-radius:10px; overflow:hidden;
+    background:color-mix(in srgb, var(--night2) 75%, transparent); backdrop-filter:blur(8px); position:relative;}
+  .tk-live{flex-shrink:0; padding:0 12px; height:100%; display:flex; align-items:center; font-size:10.5px; font-weight:800; letter-spacing:.14em; color:#fff; background:var(--critical); font-family:var(--mono);}
+  .tk-live{animation:livePulse 1.6s ease-in-out infinite;} @keyframes livePulse{50%{filter:brightness(1.3);}}
+  .tk-view{flex:1; overflow:hidden; mask-image:linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);}
+  .tk-track{display:inline-flex; gap:34px; white-space:nowrap; animation:tick var(--dur,60s) linear infinite; padding-inline-start:10px;}
+  [dir="rtl"] .tk-track{animation-name:tickR;}
+  .ticker:hover .tk-track{animation-play-state:paused;}
+  @keyframes tick{to{transform:translateX(-50%);}} @keyframes tickR{to{transform:translateX(50%);}}
+  .tk-item{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--sand); cursor:pointer;}
+  .tk-item:hover{color:var(--cream);}
+  .tk-item i{width:7px; height:7px; border-radius:50%; background:var(--series-blue);}
+  .tk-item.crit i{background:var(--critical); box-shadow:0 0 8px var(--critical);} .tk-item.warn i{background:var(--warning);} .tk-item.ok i{background:var(--good);} .tk-item.news i{background:var(--accent2);}
+  .tk-item b{font-family:var(--mono); font-weight:600; color:var(--cream); font-size:11.5px;}
+  [dir="rtl"] .tk-item b{font-family:inherit;}
+  /* page wipe + glitch */
+  #pageWipe{position:fixed; top:0; bottom:0; left:0; width:100vw; z-index:9500; pointer-events:none; opacity:0;
+    background:linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--copper) 0%, transparent) 40%, color-mix(in srgb, var(--copper) 35%, transparent) 49%, var(--accent2) 50%, color-mix(in srgb, var(--copper) 35%, transparent) 51%, transparent 60%);
+    background-size:220% 100%;}
+  #pageWipe.go{animation:wipe .6s cubic-bezier(.5,0,.2,1);}
+  @keyframes wipe{0%{opacity:1; background-position:110% 0;} 100%{opacity:1; background-position:-10% 0;}}
+  .page-title.glitch{position:relative; animation:glitchShake .45s steps(2) 1;}
+  .page-title.glitch::before, .page-title.glitch::after{content:attr(data-t); position:absolute; inset:0; overflow:hidden;}
+  .page-title.glitch::before{color:#4c8dff; translate:-2px 0; clip-path:inset(0 0 55% 0); animation:glitchA .45s steps(3) 1 forwards;}
+  .page-title.glitch::after{color:var(--critical); translate:2px 0; clip-path:inset(55% 0 0 0); animation:glitchA .45s steps(3) 1 reverse forwards;}
+  @keyframes glitchA{0%{opacity:1;} 100%{opacity:0; translate:0 0;}}
+  @keyframes glitchShake{25%{translate:2px 0;} 50%{translate:-2px 1px;} 75%{translate:1px -1px;}}
+  /* present slides */
+  body.present .page.active.slide-n{animation:slideN .55s cubic-bezier(.2,.8,.2,1);}
+  body.present .page.active.slide-p{animation:slideP .55s cubic-bezier(.2,.8,.2,1);}
+  @keyframes slideN{from{opacity:0; transform:translateX(70px) scale(.98);}} @keyframes slideP{from{opacity:0; transform:translateX(-70px) scale(.98);}}
+  [dir="rtl"] body.present .page.active.slide-n{animation-name:slideP;} [dir="rtl"] body.present .page.active.slide-p{animation-name:slideN;}
+  body.present .ticker{display:none;}
+  /* time-of-day ambience */
+  :root[data-ambience="dawn"] .ambient i:nth-child(3){background:#ff7aa2; opacity:.12;}
+  :root[data-ambience="day"] .ambient i:nth-child(3){background:#4cc3ff; opacity:.1;}
+  :root[data-ambience="dusk"] .ambient i:nth-child(3){background:#a259ff; opacity:.14;}
+  :root[data-ambience="night"] .ambient i:nth-child(3){background:#3a4cff; opacity:.12;}
+  @media (max-width:760px){ .core-wrap{width:110px; height:110px; margin:0 auto;} #saudCore{width:110px; height:110px;} .hero-greet{font-size:22px !important;} .tk-live{padding:0 8px;} }
+  @media print{ #trailCanvas, #cursorRing, .ticker, #pageWipe, .core-wrap, #voiceBubble{display:none !important;} }
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -664,6 +740,7 @@
 <body>
 <canvas id="bgCanvas"></canvas>
 <div class="ambient"><i></i><i></i><i></i></div>
+<canvas id="trailCanvas"></canvas><div id="cursorRing"></div><div id="pageWipe"></div><div id="voiceBubble"></div>
 <div id="bootIntro"><div class="boot-core"><div class="boot-ring"></div><div class="boot-lines"></div></div></div>
 <div id="cursorGlow"></div><div id="scrollProg"></div>
 <div class="app">
@@ -696,6 +773,7 @@
   </aside>
 
   <main class="main">
+  <div class="ticker" id="ticker"></div>
   <header class="topbar">
     <div class="topbar-titles">
       <h1 id="h1El" data-bind="titles.h1"></h1>
@@ -710,6 +788,7 @@
         <span class="bell-wrap"><button class="editbtn secondary" id="bellBtn" onclick="toggleBell(event)">🔔<span class="bell-n"></span></button><div id="bellPanel"></div></span>
         <button class="editbtn secondary cmdk-btn" onclick="openCmdk()">✦ <span id="cmdkHint">Command center</span></button>
         <button class="editbtn secondary" id="motionBtn" onclick="toggleMotion()">◉ Motion on</button>
+        <button class="editbtn secondary" id="soundBtn" onclick="toggleSound()">🔊 Sound on</button>
         <button class="editbtn secondary" id="presentBtn" onclick="togglePresent()">▶ <span id="presentLbl">Present</span></button>
         <button class="editbtn secondary" id="langToggle" onclick="toggleLang()">عربي</button>
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
@@ -774,7 +853,7 @@
 
   <!-- ============================== OVERVIEW ============================== -->
   <div class="page active" id="page-overview">
-    <div class="hero"><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="hijri" id="heroHijri"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="editbtn secondary present-btn" id="heroPresent" onclick="togglePresent()">▶ Present</button><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
+    <div class="hero"><div class="core-wrap"><canvas id="saudCore"></canvas><div id="coreTip"></div><div class="core-label" id="coreLabel"></div></div><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="hijri" id="heroHijri"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="editbtn secondary present-btn" id="heroPresent" onclick="togglePresent()">▶ Present</button><button class="editbtn secondary mic-btn" id="micBtn" onclick="voiceAsk()">🎙</button><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
     <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
     <section class="tl-sec"><div class="sechead"><h2 id="tlTitle">Next 30 days — timeline</h2></div><div id="ovTimeline"></div></section>
@@ -1455,6 +1534,11 @@ const UI_AR = {
   "Jump to a page":"الانتقال إلى صفحة", "Presentation mode":"وضع العرض", "Previous / next page (presentation)":"الصفحة السابقة / التالية (وضع العرض)",
   "Keyboard shortcuts":"اختصارات لوحة المفاتيح", "Close":"إغلاق", "Present":"عرض",
   "Presentation mode — use the arrows at the bottom to move":"وضع العرض — استخدم الأسهم في الأسفل للتنقل",
+  "Presentation mode — use ← → on the keyboard or the arrows at the bottom":"وضع العرض — استخدم أسهم لوحة المفاتيح ← → أو الأسهم في الأسفل",
+  "Sound on":"الصوت مفعّل", "Sound off":"الصوت متوقف", "Listen":"استماع", "Stop":"إيقاف", "Ask Saud by voice":"اسأل سعود بصوتك",
+  "Voice input isn't supported in this browser":"الإدخال الصوتي غير مدعوم في هذا المتصفح", "Couldn't hear you — try again":"لم أسمعك — حاول مرة أخرى",
+  "Listening…":"أستمع…", "Drag to spin · click a node":"اسحب للتدوير · انقر على نقطة", "LIVE":"مباشر", "Pipeline":"خط المبيعات",
+  "opportunities":"فرص", "Etimad":"اعتماد", "active tenders":"منافسات نشطة", "excluded":"مستبعدة", "News":"أخبار", "Open to-dos":"مهام مفتوحة",
   "Command center":"مركز الأوامر", "Notifications":"التنبيهات", "All clear":"لا توجد تنبيهات", "Due today":"مستحق اليوم", "Overdue":"متأخر",
   "Critical gap":"فجوة حرجة", "No opportunities logged in the pipeline yet":"لا توجد فرص مسجلة في خط المبيعات بعد",
   "Not synced — changes stay in this browser":"غير متزامن — التعديلات تبقى في هذا المتصفح فقط", "Quick add":"إضافة سريعة", "Title":"العنوان",
@@ -1770,7 +1854,7 @@ function renderBrief(animate){
   const at = new Date(b.at);
   const when = at.toLocaleString(LANG==="ar" ? "ar-u-nu-latn" : "en-GB", { weekday:"short", hour:"2-digit", minute:"2-digit" });
   box.classList.add("show"); box.dataset.lang = LANG; box.dataset.at = b.at;
-  box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4><span class="brief-meta">${escapeHtml(L("Generated"))} ${escapeHtml(when)}</span>
+  box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4><span class="brief-meta">${escapeHtml(L("Generated"))} ${escapeHtml(when)}</span><button class="brief-speak" id="briefSpeak" onclick="speakBrief()">🔊 ${escapeHtml(L("Listen"))}</button>
       <button class="brief-x" title="${escapeHtml(L("Hide"))}" onclick="document.getElementById('briefBox').classList.remove('show')">✕</button></div><ul></ul>`;
   const ul = box.querySelector("ul");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1788,7 +1872,7 @@ function renderBrief(animate){
 async function briefMe(){
   const btn = document.getElementById("briefBtn"); const box = document.getElementById("briefBox");
   if(!btn || !box) return;
-  btn.disabled = true; btn.innerHTML = "✨ " + escapeHtml(L("Thinking…"));
+  btn.disabled = true; btn.innerHTML = "✨ " + escapeHtml(L("Thinking…")); if(typeof CORE !== "undefined") CORE.busy = true;
   box.__tw = null; box.dataset.at = "";
   box.classList.add("show"); box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4></div><div class="typing">${escapeHtml(L("Saud is reading the dashboard"))}</div><div class="scanline"></div>`;
   const ctx = {
@@ -1813,11 +1897,11 @@ async function briefMe(){
     let b = parseBriefReply(text);
     if(!b){ const lines = text.split(/\n+/).map(l=>l.trim()).filter(Boolean); if(!lines.length) throw new Error("empty"); b = { en:lines, ar:lines }; }
     b.at = new Date().toISOString(); saveBrief(b);
-    renderBrief(true);
+    renderBrief(true); if(typeof sfx === "function") sfx("done");
   } catch(e){
     box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4></div><div class="ov-note">${escapeHtml(L("Couldn't reach Saud right now — try again in a moment."))}</div>`;
   } finally {
-    btn.disabled = false; btn.innerHTML = "✨ " + escapeHtml(L(loadBrief() ? "Refresh brief" : "Brief me"));
+    btn.disabled = false; btn.innerHTML = "✨ " + escapeHtml(L(loadBrief() ? "Refresh brief" : "Brief me")); if(typeof CORE !== "undefined") CORE.busy = false;
   }
 }
 
@@ -2102,7 +2186,7 @@ function togglePresent(force){
   const on = typeof force === "boolean" ? force : !document.body.classList.contains("present");
   document.body.classList.toggle("present", on);
   try{ if(on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{}); else if(!on && document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){}
-  renderPresentDots(); showToast(on ? L("Presentation mode — use the arrows at the bottom to move") : L("Presentation mode off"));
+  renderPresentDots(); showToast(on ? L("Presentation mode — use ← → on the keyboard or the arrows at the bottom") : L("Presentation mode off"));
   if(currentPage() === "overview") setTimeout(renderPipelineChart, 50);
 }
 function renderPresentDots(){
@@ -2174,9 +2258,9 @@ function openDrawer(section, i){
     </div>`;
   d.querySelector("#drAsk").onclick = ()=>{ closeDrawer(); askSaud((LANG==="ar" ? "حلّل هذا البند وقدّم توصية واضحة: " : "Analyze this item and give me a clear recommendation: ") + kind + " — " + title + (due ? " (" + due + ")" : "")); };
   d.querySelector("#drGo").onclick = ()=>{ closeDrawer(); goToSearchResult(section, SECTION_PAGE[section], i); };
-  d.classList.add("show"); tickCountdowns();
+  d.classList.add("show"); tickCountdowns(); if(typeof sfx === "function") sfx("open");
 }
-function closeDrawer(){ const d = document.getElementById("drawer"); if(d) d.classList.remove("show"); }
+function closeDrawer(){ const d = document.getElementById("drawer"); if(d && d.classList.contains("show")){ d.classList.remove("show"); if(typeof sfx === "function") sfx("close"); } }
 function findIndex(section, title){ return (state[section]||[]).findIndex(r=>rowLabel(r) === title); }
 document.addEventListener("click", e=>{
   if(editing) return;
@@ -2258,7 +2342,7 @@ function saveQuickAdd(){
   const t = m.querySelector("#qaTitle").value.trim(); if(!t){ m.querySelector("#qaTitle").focus(); return; }
   const d = m.querySelector("#qaDate").value; const o = m.querySelector("#qaOwner").value.trim();
   addRow(k, QA_TYPES[k].make(t, d, o)); closeQuickAdd(); renderAll();
-  const r = document.getElementById("qaFab").getBoundingClientRect(); burst(r.left + r.width/2, r.top);
+  const r = document.getElementById("qaFab").getBoundingClientRect(); burst(r.left + r.width/2, r.top); if(typeof sfx === "function") sfx("pop");
 }
 
 /* ---------- motion switch (per viewer) ---------- */
@@ -2307,6 +2391,207 @@ function renderV11(){
   const tlh = document.getElementById("tlTitle"); if(tlh) tlh.textContent = L("Next 30 days — timeline");
   const fab = document.getElementById("qaFab"); if(fab){ fab.title = L("Quick add"); fab.style.display = READONLY ? "none" : ""; }
   const bb = document.getElementById("bellBtn"); if(bb) bb.title = L("Notifications");
+}
+
+/* ======================= v12: extreme immersion ======================= */
+const FINE_POINTER = matchMedia("(hover: hover) and (pointer: fine)").matches;
+function fxOn(){ return !REDUCED && (typeof MOTION === "undefined" || MOTION); }
+
+/* ---------- UI sound (soft, synthesized; per-viewer toggle) ---------- */
+let SOUND = true; try{ SOUND = localStorage.getItem("saudSound") !== "off"; }catch(e){}
+let __ac = null;
+function sfx(kind){
+  if(!SOUND) return;
+  try{
+    __ac = __ac || new (window.AudioContext || window.webkitAudioContext)();
+    if(__ac.state === "suspended") __ac.resume();
+    const t = __ac.currentTime, o = __ac.createOscillator(), g = __ac.createGain();
+    const P = { tick:[1800,2200,.012,.018,"sine"], click:[520,880,.04,.05,"triangle"], open:[300,900,.12,.05,"sine"], close:[700,250,.1,.04,"sine"],
+                page:[180,620,.18,.05,"sawtooth"], done:[660,1320,.25,.05,"sine"], pop:[400,1200,.08,.06,"square"] }[kind] || [600,600,.05,.03,"sine"];
+    o.type = P[4]; o.frequency.setValueAtTime(P[0], t); o.frequency.exponentialRampToValueAtTime(P[1], t + P[2]);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(P[3] * (kind === "page" ? .5 : 1), t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + P[2] + .05);
+    if(kind === "page"){ const f = __ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 1400; o.connect(f); f.connect(g); } else o.connect(g);
+    g.connect(__ac.destination); o.start(t); o.stop(t + P[2] + .08);
+    if(kind === "done"){ setTimeout(()=>sfx("tick"), 140); }
+  }catch(e){}
+}
+function applySound(){ const b = document.getElementById("soundBtn"); if(b) b.innerHTML = (SOUND ? "🔊 " : "🔈 ") + escapeHtml(L(SOUND ? "Sound on" : "Sound off")); }
+function toggleSound(){ SOUND = !SOUND; try{ localStorage.setItem("saudSound", SOUND ? "on" : "off"); }catch(e){} applySound(); sfx("click"); }
+let __lastTick = 0;
+document.addEventListener("mouseover", e=>{
+  const el = e.target.closest(".tab-btn, .editbtn, .btn-ai, .navcard, .agenda-item, .tl-dot, .kb-card, .bp-item, .cmdk-item, .tk-item, .core-node");
+  if(!el || el === document.__lastHover) return; document.__lastHover = el;
+  const n = performance.now(); if(n - __lastTick > 60){ __lastTick = n; sfx("tick"); }
+});
+document.addEventListener("click", e=>{ if(e.target.closest("button, .clickable, .agenda-item, tr, .tk-item")) sfx("click"); }, true);
+
+/* ---------- custom cursor ring + spark trail ---------- */
+(function(){
+  const ring = document.getElementById("cursorRing"), cv = document.getElementById("trailCanvas");
+  if(!ring || !cv || !FINE_POINTER || REDUCED){ if(ring) ring.remove(); if(cv) cv.remove(); return; }
+  const g = cv.getContext("2d"); let W, H; const sparks = []; let mx = -100, my = -100, rx = -100, ry = -100, lx = 0, ly = 0;
+  function size(){ W = cv.width = innerWidth; H = cv.height = innerHeight; } size(); addEventListener("resize", size);
+  addEventListener("mousemove", e=>{ mx = e.clientX; my = e.clientY;
+    const hot = e.target.closest && e.target.closest("a, button, input, select, .clickable, tr, .tl-dot, .agenda-item, .kb-card, .tk-item, #saudCore, [contenteditable='true']");
+    ring.classList.toggle("hot", !!hot); ring.classList.toggle("core", !!(e.target.closest && e.target.closest("#saudCore")));
+    if(fxOn() && Math.hypot(mx-lx, my-ly) > 6){ lx = mx; ly = my; sparks.push({ x:mx, y:my, vx:(Math.random()-.5)*.8, vy:(Math.random()-.5)*.8 - .3, l:1, s:1+Math.random()*2 }); if(sparks.length > 60) sparks.shift(); }
+  }, { passive:true });
+  addEventListener("mousedown", ()=>ring.classList.add("down")); addEventListener("mouseup", ()=>ring.classList.remove("down"));
+  document.addEventListener("mouseleave", ()=>{ ring.style.opacity = "0"; }); document.addEventListener("mouseenter", ()=>{ ring.style.opacity = ""; });
+  (function loop(){
+    rx += (mx - rx) * .22; ry += (my - ry) * .22; ring.style.transform = `translate(${rx}px, ${ry}px)`;
+    g.clearRect(0,0,W,H);
+    if(fxOn()){ const acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522";
+      for(const s of sparks){ s.x += s.vx; s.y += s.vy; s.l -= .03; if(s.l <= 0) continue; g.globalAlpha = s.l*.8; g.fillStyle = acc; g.beginPath(); g.arc(s.x, s.y, s.s*s.l, 0, 6.283); g.fill(); }
+      g.globalAlpha = 1; }
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ---------- Saud Core: interactive 3D data sphere in the hero ---------- */
+const CORE = { rx:-.35, ry:0, vy:.004, drag:null, nodes:[], hover:null, pulse:0, busy:false };
+function coreNodes(){
+  const out = []; const today = new Date(); today.setHours(0,0,0,0);
+  upcomingItems(30).forEach(x=>{ const sec = KIND_SECTION[x.kind]; const d = Math.round((x.d - today)/864e5);
+    out.push({ sec, idx:findIndex(sec, x.title), label:tx(x.title), kind:L(x.kind), sub: d===0 ? L("Due today") : (LANG==="ar" ? `خلال ${d} يوم` : `in ${d}d`), col: d <= 3 ? "#e5484d" : d <= 10 ? "#e8a33d" : "#22b573", r:5 }); });
+  (state.internal||[]).forEach((r,i)=>{ if(!out.some(o=>o.sec==="internal" && o.idx===i)) out.push({ sec:"internal", idx:i, label:tx(r.name), kind:L("Opportunity"), sub:disp(r.stage), col:"#4c8dff", r:4.5 }); });
+  (state.projects||[]).slice(0,6).forEach((r,i)=>{ if(!out.some(o=>o.sec==="projects" && o.idx===i) && r.name && !/Connect GitHub/i.test(r.name)) out.push({ sec:"projects", idx:i, label:tx(r.name), kind:L("Project"), sub:disp(r.status||""), col:"#2bb5a0", r:4 }); });
+  const N = out.length; const ga = Math.PI * (3 - Math.sqrt(5));
+  out.forEach((n,i)=>{ const y = 1 - (i + .5) / Math.max(N,1) * 2, rad = Math.sqrt(1 - y*y), th = ga * i * 7 + 1.3; n.p = [Math.cos(th)*rad, y*.9, Math.sin(th)*rad]; });
+  return out;
+}
+const CORE_DOTS = (()=>{ const a = [], n = 260, ga = Math.PI*(3-Math.sqrt(5)); for(let i=0;i<n;i++){ const y = 1 - (i+.5)/n*2, r = Math.sqrt(1-y*y), th = ga*i; a.push([Math.cos(th)*r, y, Math.sin(th)*r]); } return a; })();
+function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(CORE.ry), cx = Math.cos(CORE.rx), sx = Math.sin(CORE.rx);
+  const x1 = x*cy + z*sy, z1 = -x*sy + z*cy; const y2 = y*cx - z1*sx, z2 = y*sx + z1*cx; return [x1, y2, z2]; }
+(function coreLoop(){
+  const cv = document.getElementById("saudCore");
+  if(cv){
+    const g = cv.getContext("2d"); const dpr = Math.min(2, devicePixelRatio||1); const S = cv.clientWidth || 150;
+    if(cv.width !== S*dpr){ cv.width = cv.height = S*dpr; }
+    g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,S,S);
+    const c = S/2, R = S*.38, acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522";
+    let rgb = { r:242, g:101, b:34 }; try{ if(acc.startsWith("#")) rgb = hexToRgb(acc); }catch(e){}
+    const A = a => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
+    if(!CORE.drag && fxOn()) CORE.ry += CORE.busy ? .03 : CORE.vy;
+    CORE.pulse = (CORE.pulse + (CORE.busy ? .08 : .02)) % (Math.PI*2);
+    // glow
+    const gr = g.createRadialGradient(c,c,R*.1,c,c,R*1.35); gr.addColorStop(0, A(.33)); gr.addColorStop(1, A(0)); g.fillStyle = gr; g.fillRect(0,0,S,S);
+    // orbit rings
+    g.strokeStyle = A(.25); g.lineWidth = 1;
+    for(let k=0;k<2;k++){ g.beginPath(); g.ellipse(c, c, R*(1.18+k*.14), R*(.32+k*.1), CORE.ry*(k?-.7:.5), 0, 6.283); g.stroke(); }
+    // lattice dots
+    CORE_DOTS.forEach(p=>{ const [x,y,z] = rot(p); const s = 1/(1.9 - z*.5); g.globalAlpha = .15 + (z+1)*.25; g.fillStyle = acc; g.beginPath(); g.arc(c + x*R*s*1.4, c + y*R*s*1.4, .9 + (z+1)*.5, 0, 6.283); g.fill(); });
+    // data nodes
+    CORE.proj = [];
+    CORE.nodes.forEach(n=>{ const [x,y,z] = rot(n.p); const s = 1/(1.9 - z*.5); const px = c + x*R*s*1.4, py = c + y*R*s*1.4; const front = z > -.2;
+      const pr = n.r * (0.7 + (z+1)*.35) * (CORE.hover === n ? 1.6 : 1);
+      g.globalAlpha = front ? 1 : .35; g.fillStyle = n.col; g.shadowColor = n.col; g.shadowBlur = front ? 12 : 0;
+      g.beginPath(); g.arc(px, py, pr, 0, 6.283); g.fill(); g.shadowBlur = 0;
+      if(front){ g.globalAlpha = .25; g.strokeStyle = n.col; g.beginPath(); g.moveTo(c, c); g.lineTo(px, py); g.stroke(); }
+      CORE.proj.push({ n, x:px, y:py, r:pr+4, z }); });
+    // pulse
+    g.globalAlpha = .5 + Math.sin(CORE.pulse)*.3; g.strokeStyle = acc; g.lineWidth = 1.5; g.beginPath(); g.arc(c, c, R*(.28 + Math.sin(CORE.pulse)*.04), 0, 6.283); g.stroke();
+    g.globalAlpha = 1; g.fillStyle = acc; g.beginPath(); g.arc(c, c, 3, 0, 6.283); g.fill();
+  }
+  requestAnimationFrame(coreLoop);
+})();
+function coreHit(e){ const cv = e.currentTarget; const r = cv.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
+  return (CORE.proj||[]).filter(p=>p.z > -.2).sort((a,b)=>b.z-a.z).find(p=>Math.hypot(p.x-x, p.y-y) < p.r) || null; }
+function wireCore(){
+  const cv = document.getElementById("saudCore"); if(!cv || cv._w) return; cv._w = true;
+  const tip = document.getElementById("coreTip");
+  cv.addEventListener("pointerdown", e=>{ CORE.drag = { x:e.clientX, y:e.clientY, ry:CORE.ry, rx:CORE.rx, moved:false }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e=>{
+    if(CORE.drag){ const dx = e.clientX - CORE.drag.x, dy = e.clientY - CORE.drag.y; if(Math.abs(dx)+Math.abs(dy) > 3) CORE.drag.moved = true;
+      CORE.ry = CORE.drag.ry + dx*.012; CORE.rx = Math.max(-1.2, Math.min(1.2, CORE.drag.rx + dy*.012)); }
+    const h = coreHit(e); CORE.hover = h ? h.n : null; cv.style.cursor = h ? "pointer" : "grab";
+    if(tip){ if(h){ tip.innerHTML = `<b>${escapeHtml(h.n.kind)}</b>${escapeHtml(h.n.label)}<i>${escapeHtml(h.n.sub||"")}</i>`; tip.style.left = (h.x) + "px"; tip.style.top = (h.y) + "px"; tip.classList.add("show"); } else tip.classList.remove("show"); }
+  });
+  cv.addEventListener("pointerup", e=>{ const d = CORE.drag; CORE.drag = null; if(d && !d.moved){ const h = coreHit(e); if(h && h.n.idx >= 0) openDrawer(h.n.sec, h.n.idx); else { CORE.vy = CORE.vy > .01 ? .004 : .02; } } });
+  cv.addEventListener("pointerleave", ()=>{ CORE.hover = null; if(tip) tip.classList.remove("show"); });
+}
+
+/* ---------- live ticker ---------- */
+function renderTicker(){
+  const el = document.getElementById("ticker"); if(!el) return;
+  const items = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  upcomingItems(30).forEach(x=>{ const d = Math.round((x.d - today)/864e5); const sec = KIND_SECTION[x.kind];
+    items.push({ c: d <= 3 ? "crit" : d <= 10 ? "warn" : "ok", t:`${L(x.kind)} · ${tx(x.title)}`, s: d===0 ? L("Due today") : (LANG==="ar" ? `خلال ${d} يوم` : `${d}d`), sec, idx:findIndex(sec, x.title) }); });
+  const opps = (state.internal||[]), val = opps.reduce((s,r)=>s+(+r.value||0),0);
+  items.push({ c:"info", t:`${L("Pipeline")} · ${opps.length} ${L("opportunities")}`, s: val.toLocaleString() + " " + L("SAR"), page:"internal" });
+  items.push({ c:"info", t:`${L("Etimad")} · ${(state.external||[]).length} ${L("active tenders")}`, s: (state.externalExcluded||[]).length + " " + L("excluded"), page:"external" });
+  const ph = state.phases||[]; if(ph.length) items.push({ c:"info", t:`${T().tabProgram||"Saud Program"}`, s: Math.round(ph.reduce((s,p)=>s+(parseFloat(p.pct)||0),0)/ph.length) + "%", page:"program" });
+  (state.news||[]).filter(n=>n.headline && !/Connect GitHub/i.test(n.headline)).slice(0,5).forEach(n=>items.push({ c:"news", t:`${L("News")} · ${tx(n.headline)}`, s: tx(n.source||""), page:"external" }));
+  const open = (state.todos||[]).filter(t=>!t.done).length; items.push({ c:"info", t:L("Open to-dos"), s:String(open), page:"tasks" });
+  const html = items.map((it,k)=>`<span class="tk-item ${it.c}" data-k="${k}"><i></i>${escapeHtml(it.t)}<b>${escapeHtml(it.s)}</b></span>`).join("");
+  el.innerHTML = `<span class="tk-live">● ${escapeHtml(L("LIVE"))}</span><div class="tk-view"><div class="tk-track" style="--dur:${Math.max(30, items.length*7)}s">${html}${html}</div></div>`;
+  el.querySelectorAll(".tk-item").forEach(s=>s.onclick = ()=>{ const it = items[+s.dataset.k]; if(it.sec && it.idx >= 0) openDrawer(it.sec, it.idx); else if(it.page) switchPage(it.page); });
+}
+
+/* ---------- read the brief aloud + ask Saud by voice ---------- */
+function speakBrief(){
+  const b = loadBrief(); if(!b || !("speechSynthesis" in window)) return;
+  if(speechSynthesis.speaking){ speechSynthesis.cancel(); setSpeakBtn(false); return; }
+  const lines = (LANG === "ar" ? b.ar : b.en).map(x=>String(x).replace(/\*\*/g,""));
+  const u = new SpeechSynthesisUtterance(lines.join(". "));
+  u.lang = LANG === "ar" ? "ar-SA" : "en-US"; u.rate = LANG === "ar" ? .95 : 1.02;
+  const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.toLowerCase().startsWith(LANG === "ar" ? "ar" : "en")); if(v) u.voice = v;
+  u.onend = u.onerror = ()=>{ setSpeakBtn(false); CORE.busy = false; };
+  CORE.busy = true; setSpeakBtn(true); speechSynthesis.speak(u);
+}
+function setSpeakBtn(on){ const b = document.getElementById("briefSpeak"); if(b){ b.classList.toggle("on", on); b.textContent = on ? "■ " + L("Stop") : "🔊 " + L("Listen"); } }
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let __rec = null;
+function voiceAsk(){
+  const b = document.getElementById("micBtn");
+  if(!SR){ showToast(L("Voice input isn't supported in this browser")); return; }
+  if(__rec){ __rec.stop(); return; }
+  __rec = new SR(); __rec.lang = LANG === "ar" ? "ar-SA" : "en-US"; __rec.interimResults = true;
+  let finalText = "";
+  __rec.onresult = ev=>{ let txt = ""; for(const r of ev.results){ txt += r[0].transcript; if(r.isFinal) finalText = txt; } b.dataset.live = txt; showVoiceBubble(txt); };
+  __rec.onend = ()=>{ b.classList.remove("on"); __rec = null; CORE.busy = false; hideVoiceBubble(); const q = (finalText || b.dataset.live || "").trim(); b.dataset.live = ""; if(q) askSaud(q); };
+  __rec.onerror = ()=>{ showToast(L("Couldn't hear you — try again")); };
+  b.classList.add("on"); CORE.busy = true; sfx("open"); showVoiceBubble(L("Listening…")); __rec.start();
+}
+function showVoiceBubble(t){ const v = document.getElementById("voiceBubble"); if(v){ v.textContent = t; v.classList.add("show"); } }
+function hideVoiceBubble(){ const v = document.getElementById("voiceBubble"); if(v) v.classList.remove("show"); }
+
+/* ---------- page transition sweep + glitch title ---------- */
+let __lastPage = "overview";
+function pageFx(page){
+  if(page === __lastPage) return;
+  const dir = PAGE_ORDER.indexOf(page) > PAGE_ORDER.indexOf(__lastPage) ? 1 : -1; __lastPage = page;
+  sfx("page");
+  if(!fxOn()) return;
+  const w = document.getElementById("pageWipe"); if(w){ w.classList.remove("go"); void w.offsetWidth; w.classList.add("go"); }
+  const pt = document.getElementById("pageTitle"); if(pt){ pt.classList.remove("glitch"); void pt.offsetWidth; pt.dataset.t = pt.textContent; pt.classList.add("glitch"); }
+  const a = document.querySelector(".page.active");
+  if(a && document.body.classList.contains("present")){ a.classList.remove("slide-n","slide-p"); void a.offsetWidth; a.classList.add(dir > 0 ? "slide-n" : "slide-p"); }
+}
+
+/* ---------- presentation mode: keyboard navigation (only while presenting) ---------- */
+document.addEventListener("keydown", e=>{
+  if(!document.body.classList.contains("present")) return;
+  const fwd = ["ArrowRight","PageDown"," ","ArrowDown"], back = ["ArrowLeft","PageUp","ArrowUp"];
+  let k = e.key; if(LANG === "ar"){ if(k === "ArrowRight") k = "ArrowLeft"; else if(k === "ArrowLeft") k = "ArrowRight"; }
+  let n = 0; if(fwd.includes(k)) n = 1; else if(back.includes(k)) n = -1; else if(k === "Home"){ switchPage(PAGE_ORDER[0]); e.preventDefault(); return; } else if(k === "End"){ switchPage(PAGE_ORDER[PAGE_ORDER.length-1]); e.preventDefault(); return; }
+  if(!n) return; e.preventDefault();
+  const i = PAGE_ORDER.indexOf(currentPage()); switchPage(PAGE_ORDER[(i + n + PAGE_ORDER.length) % PAGE_ORDER.length]);
+});
+
+/* ---------- time-of-day ambience ---------- */
+function applyAmbience(){
+  const h = new Date().getHours(); const mode = h >= 5 && h < 8 ? "dawn" : h >= 8 && h < 16 ? "day" : h >= 16 && h < 19 ? "dusk" : "night";
+  document.documentElement.dataset.ambience = mode;
+}
+
+/* ---------- glue ---------- */
+function renderV12(){
+  CORE.nodes = coreNodes(); wireCore(); renderTicker(); applySound(); applyAmbience();
+  const sp = document.getElementById("briefSpeak"); if(sp && !sp.classList.contains("on")) sp.textContent = "🔊 " + L("Listen");
+  const mic = document.getElementById("micBtn"); if(mic){ mic.title = L("Ask Saud by voice"); mic.style.display = SR ? "" : "none"; }
+  const cl = document.getElementById("coreLabel"); if(cl) cl.textContent = L("Drag to spin · click a node");
 }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
@@ -2875,6 +3160,7 @@ function renderAll(){
   renderV9();
   renderV10();
   renderV11();
+  renderV12();
   saveLocalDraft();
   scheduleTranslate();
 }
@@ -3501,6 +3787,7 @@ function switchPage(page){
   window.scrollTo({ top:0, behavior:"smooth" });
   if(page === "overview") setTimeout(renderPipelineChart, 0);
   if(typeof renderPresentDots === "function") renderPresentDots();
+  if(typeof pageFx === "function") pageFx(page);
 }
 
 /* ---------- global search across all sections ---------- */

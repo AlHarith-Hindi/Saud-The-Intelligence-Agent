@@ -405,6 +405,7 @@
       </div>
       <span id="ownerLineEl" data-bind="titles.ownerLine"></span>
       <span class="autosave-indicator" id="autosaveIndicator">💾 <span id="autosaveTime"></span></span>
+      <span class="autosave-indicator" id="trIndicator" style="display:none;">🌐 <span>Translating content…</span></span>
     </div>
   </aside>
 
@@ -465,7 +466,7 @@
       <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
       <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
       <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
-      <button class="editbtn secondary" onclick="forgetGhConfig()">Disconnect</button>
+      <button class="editbtn secondary" id="ghDisconnectBtn" onclick="forgetGhConfig()">Disconnect</button>
     </div>
     <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
   </div>
@@ -1119,7 +1120,16 @@ const UI_AR = {
   "🔎 Search tenders, projects, tasks...":"🔎 ابحث في المنافسات والمشاريع والمهام...",
   "🔎 Search competition name, agency, or RN...":"🔎 ابحث باسم المنافسة أو الجهة أو الرقم...",
   "Ask about tenders, pipeline, projects…":"اسأل عن المنافسات والفرص والمشاريع…",
-  "Phase":"المرحلة"
+  "Phase":"المرحلة",
+  "Translating content…":"جارٍ ترجمة المحتوى…",
+  "Tender":"منافسة", "Opportunity":"فرصة", "Project":"مشروع", "Prototype":"نموذج أولي", "Campaign":"حملة",
+  "Task":"مهمة", "Milestone":"مرحلة", "To-do":"بند", "Capability":"قدرة", "Excluded tender":"منافسة مستبعدة",
+  "Disconnect":"قطع الاتصال", "Connecting...":"جارٍ الاتصال...", "Saving...":"جارٍ الحفظ...",
+  "Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.":"تم الاتصال والتحميل من GitHub. تُحفظ التعديلات تلقائيًا بعد ثوانٍ من التوقف عن الكتابة.",
+  "Fill in the token, repo owner, and repo name first.":"أدخل الرمز واسم مالك المستودع واسم المستودع أولًا.",
+  "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.":"فعّل مزامنة GitHub أولًا — وإلا تبقى التعديلات في هذه الصفحة فقط.",
+  "GitHub personal access token (ghp_...)":"رمز الوصول الشخصي لـ GitHub",
+  "repo owner / org":"مالك المستودع", "repo name":"اسم المستودع", "file path":"مسار الملف", "branch":"الفرع"
 };
 /* display-only translation of status / category values (stored data stays in English) */
 const ENUM_AR = {
@@ -1152,6 +1162,11 @@ function applyLangChrome(){
   const gs = document.getElementById("globalSearch"); if(gs) gs.placeholder = L("🔎 Search tenders, projects, tasks...");
   const es = document.getElementById("externalSearch"); if(es) es.placeholder = L("🔎 Search competition name, agency, or RN...");
   const ci = document.getElementById("saud-chat-input"); if(ci) ci.placeholder = L("Ask about tenders, pipeline, projects…");
+  const dc = document.getElementById("ghDisconnectBtn"); if(dc) dc.textContent = L("Disconnect");
+  [["ghToken","GitHub personal access token (ghp_...)"],["ghOwner","repo owner / org"],["ghRepo","repo name"],["ghPath","file path"],["ghBranch","branch"]]
+    .forEach(([id,ph])=>{ const e = document.getElementById(id); if(e) e.placeholder = L(ph); });
+  const at = document.getElementById("autosaveTime"); if(at && window.__lastSaved) at.textContent = L("Saved locally") + " " + window.__lastSaved.toLocaleTimeString(LANG==="ar" ? "ar-u-nu-latn" : [], {hour:"2-digit", minute:"2-digit"});
+  const ti = document.getElementById("trIndicator"); if(ti) ti.querySelector("span").textContent = L("Translating content…");
 }
 function toggleLang(){
   LANG = LANG === "ar" ? "en" : "ar";
@@ -1159,6 +1174,106 @@ function toggleLang(){
   applyLangChrome();
   window.__skipSave = true;
   try{ renderAll(); if(typeof renderTitles === "function") renderTitles(); } finally { window.__skipSave = false; }
+}
+
+/* ---------- content translation (data entered in one language, shown in the other) ---------- */
+/* Every piece of text people type into the dashboard is shown in the reader's language.
+   Translations are kept in state.i18n = { ar:{ "<original>":"<arabic>" }, en:{ "<original>":"<english>" } }
+   and filled in automatically through the Saud worker (Claude), then saved with the data —
+   so each new entry is translated once and everyone sees both languages. While editing,
+   the original text is shown so edits always change the source, never a translation. */
+const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4"]);
+const TR_SKIP_FIELDS = new Set(["color","fit","category","status","stage","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
+const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
+function needsTr(s, lang){
+  if(typeof s !== "string") return false;
+  const t = s.trim(); if(!t || t === "—") return false;
+  return lang === "ar" ? LATIN_RE.test(t) : AR_RE.test(t);
+}
+function tx(s){
+  if(editing || typeof s !== "string" || !needsTr(s, LANG)) return s;
+  const m = state && state.i18n && state.i18n[LANG];
+  return (m && typeof m[s] === "string" && m[s]) ? m[s] : s;
+}
+function collectTranslatable(){
+  const out = new Set();
+  const add = v => { if(typeof v === "string" && v.trim() && v.trim() !== "—") out.add(v); };
+  Object.keys(state).forEach(k=>{
+    if(TR_SKIP_KEYS.has(k)) return;
+    const v = state[k];
+    if(typeof v === "string") add(v);
+    else if(Array.isArray(v)) v.forEach(r=>{
+      if(typeof r === "string") add(r);
+      else if(r && typeof r === "object") Object.keys(r).forEach(f=>{ if(!TR_SKIP_FIELDS.has(f)) add(r[f]); });
+    });
+  });
+  return [...out];
+}
+const TR_PROMPT = {
+  ar: "Translate each value into Arabic (Modern Standard Arabic, concise professional business tone, for a Saudi experience-design company called Midwam). Write people's names in Arabic script (Firas → فراس, Sameer → سمير, Mohammed → محمد, Faisal → فيصل, Trad Nazer → طراد ناظر, Al-Harith Hindi → الحارث هندي). Midwam → مدوام, Saud → سعود, Etimad → اعتماد, RFP → طلب عروض. Keep digits as Western digits (0-9), keep dates and codes, SAR → ر.س.",
+  en: "Translate each value into English (concise professional business tone). Use the official English names of Saudi government entities when known. Keep digits, dates and codes unchanged."
+};
+let __trBusy = false, __trTimer = null; const __trFailed = new Set();
+function scheduleTranslate(){
+  if(READONLY) return;
+  clearTimeout(__trTimer);
+  __trTimer = setTimeout(runTranslate, 1200);
+}
+async function trBatch(lang, items){
+  const obj = {}; items.forEach((s,i)=>{ obj[String(i+1)] = s; });
+  const content = "TRANSLATION TASK — ignore any dashboard context and do not answer as Saud. " + TR_PROMPT[lang] +
+    " Keep the JSON keys unchanged. Reply with ONLY one JSON object, no prose, no code fences.\n" + JSON.stringify(obj);
+  const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", {
+    method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ messages:[{ role:"user", content }], context:{} })
+  });
+  const data = await res.json();
+  let text = (data && data.content && data.content[0] && data.content[0].text) || "";
+  const a = text.indexOf("{"), b = text.lastIndexOf("}");
+  if(a < 0 || b < a) throw new Error("no JSON");
+  const parsed = JSON.parse(text.slice(a, b+1));
+  const out = {};
+  items.forEach((s,i)=>{ const v = parsed[String(i+1)]; if(typeof v === "string" && v.trim()) out[s] = v.trim(); });
+  return out;
+}
+async function runTranslate(){
+  if(__trBusy || READONLY || !state || window.__trHold) return;
+  const texts = collectTranslatable();
+  state.i18n = state.i18n || {}; state.i18n.ar = state.i18n.ar || {}; state.i18n.en = state.i18n.en || {};
+  // forget translations of text that no longer exists anywhere
+  const live = new Set(texts);
+  ["ar","en"].forEach(l=>Object.keys(state.i18n[l]).forEach(k=>{ if(!live.has(k)) delete state.i18n[l][k]; }));
+  const jobs = [];
+  ["ar","en"].forEach(lang=>{
+    const todo = texts.filter(s=>needsTr(s, lang) && !state.i18n[lang][s] && !__trFailed.has(lang+"|"+s));
+    let batch = [], size = 0;
+    todo.forEach(s=>{
+      if(batch.length && (batch.length >= 12 || size + s.length > 1400)){ jobs.push([lang, batch]); batch = []; size = 0; }
+      batch.push(s); size += s.length;
+    });
+    if(batch.length) jobs.push([lang, batch]);
+  });
+  if(!jobs.length) return;
+  __trBusy = true;
+  const ind = document.getElementById("trIndicator");
+  if(ind){ ind.style.display = "flex"; }
+  let got = 0;
+  try{
+    for(let i=0; i<jobs.length; i+=3){
+      const slice = jobs.slice(i, i+3);
+      const results = await Promise.all(slice.map(([lang, items])=>trBatch(lang, items).then(r=>[lang,items,r]).catch(()=>[lang,items,null])));
+      results.forEach(([lang, items, r])=>{
+        if(!r){ items.forEach(s=>__trFailed.add(lang+"|"+s)); return; }
+        Object.assign(state.i18n[lang], r); got += Object.keys(r).length;
+        items.forEach(s=>{ if(!r[s]) __trFailed.add(lang+"|"+s); });
+      });
+      if(ind) ind.querySelector("span").textContent = L("Translating content…") + " " + Math.min(100, Math.round((i+3)/jobs.length*100)) + "%";
+    }
+  } finally {
+    __trBusy = false;
+    if(ind) ind.style.display = "none";
+  }
+  if(got){ renderAll(); }
 }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
@@ -1466,8 +1581,8 @@ function renderPhases(){
     wrap.appendChild(el(`
       <div class="phase-row">
         <div class="phase-top">
-          <div style="flex:1;"><span data-bind="phases.${i}.name">${escapeHtml(p.name)}</span>
-            <div class="lbl" data-bind="phases.${i}.label">${escapeHtml(p.label)}</div></div>
+          <div style="flex:1;"><span data-bind="phases.${i}.name">${escapeHtml(tx(p.name))}</span>
+            <div class="lbl" data-bind="phases.${i}.label">${escapeHtml(tx(p.label))}</div></div>
           <div style="white-space:nowrap; font-weight:700; color:${col};"><span data-bind="phases.${i}.pct">${escapeHtml(String(p.pct))}</span>%</div>
           <span class="edit-only">${reorderBtns('phases', i, state.phases.length)}
             <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('phases',${i}))">✕</button></span>
@@ -1485,10 +1600,10 @@ function renderCapTeams(){
     const col = CAP_COLOR[c.color] || "var(--copper)";
     wrap.appendChild(el(`
       <div class="stat-tile">
-        <div class="label" data-bind="capTeams.${i}.team">${escapeHtml(c.team)}</div>
+        <div class="label" data-bind="capTeams.${i}.team">${escapeHtml(tx(c.team))}</div>
         <div class="value" style="color:${col};"><span data-bind="capTeams.${i}.num">${escapeHtml(String(c.num))}</span> <span style="font-size:12px; color:var(--muted); font-weight:400;">${L("capabilities")}</span></div>
-        <div class="sub" data-bind="capTeams.${i}.role">${escapeHtml(c.role)}</div>
-        <div class="sub" data-bind="capTeams.${i}.caption">${escapeHtml(c.caption)}</div>
+        <div class="sub" data-bind="capTeams.${i}.role">${escapeHtml(tx(c.role))}</div>
+        <div class="sub" data-bind="capTeams.${i}.caption">${escapeHtml(tx(c.caption))}</div>
         <div class="edit-only" style="margin-top:6px;">${reorderBtns('capTeams', i, state.capTeams.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('capTeams',${i}))">✕</button></div>
       </div>`));
@@ -1504,8 +1619,8 @@ function renderMatrix(){
     const stCol = /live|piloted|done|proven/i.test(m.status||"") ? "#22b573" : "#e8833a";
     body.appendChild(elTR(`
       <tr>
-        <td data-bind="matrix.${i}.cap">${escapeHtml(m.cap)}</td>
-        <td data-bind="matrix.${i}.owner">${escapeHtml(m.owner)}</td>
+        <td data-bind="matrix.${i}.cap">${escapeHtml(tx(m.cap))}</td>
+        <td data-bind="matrix.${i}.owner">${escapeHtml(tx(m.owner))}</td>
         <td><span class="status-pill" style="background:${tierCol}22; color:${tierCol};">${L("Tier")} <span data-bind="matrix.${i}.tier">${escapeHtml(String(m.tier))}</span></span></td>
         <td><span class="status-pill" style="background:${stCol}22; color:${stCol};" data-bind="matrix.${i}.status">${escapeHtml(editing ? m.status : disp(m.status))}</span></td>
         <td class="actions-cell edit-only">${reorderBtns('matrix', i, state.matrix.length)}
@@ -1522,7 +1637,7 @@ function renderGaps(){
     wrap.appendChild(el(`
       <div style="display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);">
         <span class="gap-sev" style="background:${col}22; color:${col};" data-bind="gaps.${i}.sev">${escapeHtml(editing ? g.sev : disp(g.sev))}</span>
-        <div data-bind="gaps.${i}.text" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(g.text)}</div>
+        <div data-bind="gaps.${i}.text" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(tx(g.text))}</div>
         <span class="edit-only">${reorderBtns('gaps', i, state.gaps.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('gaps',${i}))">✕</button></span>
       </div>`));
@@ -1538,10 +1653,10 @@ function renderExternalExcluded(){
     body.appendChild(elTR(`
       <tr>
         <td data-bind="externalExcluded.${i}.rn">${escapeHtml(r.rn)}</td>
-        <td data-bind="externalExcluded.${i}.name">${escapeHtml(r.name)}</td>
-        <td data-bind="externalExcluded.${i}.agency">${escapeHtml(r.agency)}</td>
-        <td data-bind="externalExcluded.${i}.deadline">${escapeHtml(r.deadline)}</td>
-        <td data-bind="externalExcluded.${i}.reason">${escapeHtml(r.reason)}</td>
+        <td data-bind="externalExcluded.${i}.name">${escapeHtml(tx(r.name))}</td>
+        <td data-bind="externalExcluded.${i}.agency">${escapeHtml(tx(r.agency))}</td>
+        <td data-bind="externalExcluded.${i}.deadline">${escapeHtml(tx(r.deadline))}</td>
+        <td data-bind="externalExcluded.${i}.reason">${escapeHtml(tx(r.reason))}</td>
         <td class="actions-cell edit-only">${reorderBtns('externalExcluded', i, state.externalExcluded.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('externalExcluded',${i}))">✕</button></td>
       </tr>`));
@@ -1579,7 +1694,7 @@ function renderOverviewExtras(){
     dlEl.innerHTML = upcoming.slice(0,5).map(x=>{
       const days = Math.round((x.d - today)/86400000);
       const col = days <= 3 ? "var(--critical)" : days <= 10 ? "var(--warning)" : "var(--good)";
-      return `<div class="ov-list-item"><div><div class="t">${escapeHtml(x.r.name)}</div><div class="s">${escapeHtml(x.r.agency||"")} · ${fmt(x.d)}</div></div>
+      return `<div class="ov-list-item"><div><div class="t">${escapeHtml(tx(x.r.name))}</div><div class="s">${escapeHtml(tx(x.r.agency||""))} · ${fmt(x.d)}</div></div>
         <span class="status-pill" style="background:${col}22; color:${col};">${days===0?L("Today"):days+L("d")}</span></div>`;
     }).join("");
   } else if(dated.length){
@@ -1715,10 +1830,11 @@ function renderAll(){
   renderNotes();
   applyEditMode();
   saveLocalDraft();
+  scheduleTranslate();
 }
 
 function renderLastUpdated(){
-  document.getElementById("lastUpdatedText").innerText = state.lastUpdated;
+  document.getElementById("lastUpdatedText").innerText = tx(state.lastUpdated);
 }
 
 function renderTitles(){
@@ -1912,8 +2028,8 @@ function renderExternal(){
     const tr = elTR(`
       <tr>
         <td data-bind="external.${i}.rn">${escapeHtml(r.rn)}</td>
-        <td data-bind="external.${i}.name">${escapeHtml(r.name)}</td>
-        <td data-bind="external.${i}.agency">${escapeHtml(r.agency)}</td>
+        <td data-bind="external.${i}.name">${escapeHtml(tx(r.name))}</td>
+        <td data-bind="external.${i}.agency">${escapeHtml(tx(r.agency))}</td>
         <td>
           <span class="status-pill view-only" style="background:${fitColor}22; color:${fitColor};">${escapeHtml(disp(r.fit))}</span>
           <input class="status-select edit-only" list="fitOptionsList" data-fitselect="${i}" style="background:${fitColor}22; color:${fitColor};" value="${escapeHtml(r.fit)}">
@@ -1922,8 +2038,8 @@ function renderExternal(){
           <span class="status-pill view-only" style="background:#3987e522; color:#3987e5;">${escapeHtml(disp(r.category))}</span>
           <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
-        <td data-bind="external.${i}.bidDeadline">${escapeHtml(r.bidDeadline)}</td>
-        <td><div data-bind="external.${i}.notes">${escapeHtml(r.notes)}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">${L("Details ▾")}</button>`:""}</td>
+        <td data-bind="external.${i}.bidDeadline">${escapeHtml(tx(r.bidDeadline))}</td>
+        <td><div data-bind="external.${i}.notes">${escapeHtml(tx(r.notes))}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">${L("Details ▾")}</button>`:""}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('external', i, list.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>
@@ -1931,10 +2047,10 @@ function renderExternal(){
       </tr>`);
     body.appendChild(tr);
     if(r.details||r.price||r.place||r.partners||r.award){
-      const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(v)}</div>` : "";
+      const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(tx(v))}</div>` : "";
       const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
         <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}${f(L("Partners"), r.partners)}</div>
-        ${r.details ? `<div style="margin-top:8px;"><b>${L("Scope")}:</b> ${escapeHtml(r.details)}</div>` : ""}
+        ${r.details ? `<div style="margin-top:8px;"><b>${L("Scope")}:</b> ${escapeHtml(tx(r.details))}</div>` : ""}
       </td></tr>`);
       body.appendChild(d);
     }
@@ -1968,7 +2084,7 @@ function renderNews(){
   body.innerHTML = "";
   const fields = ["date","source","headline","relevance","link","notes"];
   state.news.forEach((r,i)=>{
-    const cells = fields.map(f=>`<td data-bind="news.${i}.${f}">${escapeHtml(r[f])}</td>`).join("");
+    const cells = fields.map(f=>`<td data-bind="news.${i}.${f}">${escapeHtml(tx(r[f]))}</td>`).join("");
     body.appendChild(elTR(`
       <tr>
         ${cells}
@@ -2006,16 +2122,16 @@ function renderInternal(){
     const weightedVal = Math.round((+r.value||0) * probForStage(r.stage));
     const tr = elTR(`
       <tr>
-        <td data-bind="internal.${i}.name">${escapeHtml(r.name)}</td>
-        <td data-bind="internal.${i}.client">${escapeHtml(r.client)}</td>
+        <td data-bind="internal.${i}.name">${escapeHtml(tx(r.name))}</td>
+        <td data-bind="internal.${i}.client">${escapeHtml(tx(r.client))}</td>
         <td data-bind="internal.${i}.value">${escapeHtml(r.value)}</td>
         <td>
           <span class="status-pill view-only" style="background:${stageColor}22; color:${stageColor};">${escapeHtml(disp(r.stage))}</span>
           <input class="status-select edit-only" list="stageOptionsList" data-stageselect="${i}" style="background:${stageColor}22; color:${stageColor};" value="${escapeHtml(r.stage)}">
         </td>
-        <td data-bind="internal.${i}.subDate">${escapeHtml(r.subDate)}</td>
-        <td data-bind="internal.${i}.nextStep">${escapeHtml(r.nextStep)}</td>
-        <td data-bind="internal.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="internal.${i}.subDate">${escapeHtml(tx(r.subDate))}</td>
+        <td data-bind="internal.${i}.nextStep">${escapeHtml(tx(r.nextStep))}</td>
+        <td data-bind="internal.${i}.owner">${escapeHtml(tx(r.owner))}</td>
         <td>${weightedVal.toLocaleString()}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('internal', i, list.length)}
@@ -2043,7 +2159,7 @@ function renderProbTable(){
   const tbody = document.createElement("tbody");
   state.stageProbs.forEach((p,i)=>{
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td data-bind="stageProbs.${i}.stage">${escapeHtml(p.stage)}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
+    tr.innerHTML = `<td data-bind="stageProbs.${i}.stage">${escapeHtml(editing ? p.stage : disp(p.stage))}</td><td><input type="number" min="0" max="100" value="${p.prob}" data-probinput="${i}" class="edit-only"><span class="view-only">${p.prob}%</span></td>`;
     tbody.appendChild(tr);
   });
   t.appendChild(tbody);
@@ -2066,15 +2182,15 @@ function renderProjects(){
     const color = PROJECT_STATUS_COLOR[r.status] || PROJECT_STATUS_COLOR["Not started"];
     const tr = elTR(`
       <tr>
-        <td data-bind="projects.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="projects.${i}.name">${escapeHtml(tx(r.name))}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="projStatusOptionsList" data-projstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
-        <td data-bind="projects.${i}.financially">${escapeHtml(r.financially)}</td>
-        <td data-bind="projects.${i}.operationally">${escapeHtml(r.operationally)}</td>
-        <td data-bind="projects.${i}.issues">${escapeHtml(r.issues)}</td>
-        <td data-bind="projects.${i}.deadline">${escapeHtml(r.deadline)}</td>
+        <td data-bind="projects.${i}.financially">${escapeHtml(tx(r.financially))}</td>
+        <td data-bind="projects.${i}.operationally">${escapeHtml(tx(r.operationally))}</td>
+        <td data-bind="projects.${i}.issues">${escapeHtml(tx(r.issues))}</td>
+        <td data-bind="projects.${i}.deadline">${escapeHtml(tx(r.deadline))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('projects', i, state.projects.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('projects',${i}))">✕</button>
@@ -2112,13 +2228,13 @@ function renderPrototypes(){
     const color = PROTO_STATUS_COLOR[r.status] || PROTO_STATUS_COLOR["On shelf"];
     const tr = elTR(`
       <tr>
-        <td data-bind="prototypes.${i}.name">${escapeHtml(r.name)}</td>
+        <td data-bind="prototypes.${i}.name">${escapeHtml(tx(r.name))}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="protoStatusOptionsList" data-protostatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
-        <td data-bind="prototypes.${i}.team">${escapeHtml(r.team)}</td>
-        <td data-bind="prototypes.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="prototypes.${i}.team">${escapeHtml(tx(r.team))}</td>
+        <td data-bind="prototypes.${i}.notes">${escapeHtml(tx(r.notes))}</td>
         <td data-bind="prototypes.${i}.value">${escapeHtml(r.value)}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('prototypes', i, list.length)}
@@ -2148,14 +2264,14 @@ function renderMarketing(){
     const color = MARKETING_STATUS_COLOR[r.status] || MARKETING_STATUS_COLOR["Not started"];
     const tr = elTR(`
       <tr>
-        <td data-bind="marketing.${i}.initiative">${escapeHtml(r.initiative)}</td>
-        <td data-bind="marketing.${i}.channel">${escapeHtml(r.channel)}</td>
+        <td data-bind="marketing.${i}.initiative">${escapeHtml(tx(r.initiative))}</td>
+        <td data-bind="marketing.${i}.channel">${escapeHtml(tx(r.channel))}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="marketingStatusOptionsList" data-marketingstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
-        <td data-bind="marketing.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
-        <td data-bind="marketing.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="marketing.${i}.targetDate">${escapeHtml(tx(r.targetDate))}</td>
+        <td data-bind="marketing.${i}.notes">${escapeHtml(tx(r.notes))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('marketing', i, state.marketing.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('marketing',${i}))">✕</button>
@@ -2181,14 +2297,14 @@ function renderTasks(){
     const color = TASK_STATUS_COLOR[r.status] || TASK_STATUS_COLOR["Not started"];
     const tr = elTR(`
       <tr>
-        <td data-bind="tasks.${i}.task">${escapeHtml(r.task)}</td>
-        <td data-bind="tasks.${i}.owner">${escapeHtml(r.owner)}</td>
+        <td data-bind="tasks.${i}.task">${escapeHtml(tx(r.task))}</td>
+        <td data-bind="tasks.${i}.owner">${escapeHtml(tx(r.owner))}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="taskStatusOptionsList" data-taskstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
-        <td data-bind="tasks.${i}.cadence">${escapeHtml(r.cadence)}</td>
-        <td data-bind="tasks.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="tasks.${i}.cadence">${escapeHtml(tx(r.cadence))}</td>
+        <td data-bind="tasks.${i}.notes">${escapeHtml(tx(r.notes))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('tasks', i, state.tasks.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('tasks',${i}))">✕</button>
@@ -2213,14 +2329,14 @@ function renderMilestones(){
     const color = MILESTONE_STATUS_COLOR[r.status] || MILESTONE_STATUS_COLOR["Not started"];
     const tr = elTR(`
       <tr>
-        <td data-bind="milestones.${i}.milestone">${escapeHtml(r.milestone)}</td>
-        <td data-bind="milestones.${i}.owner">${escapeHtml(r.owner)}</td>
-        <td data-bind="milestones.${i}.targetDate">${escapeHtml(r.targetDate)}</td>
+        <td data-bind="milestones.${i}.milestone">${escapeHtml(tx(r.milestone))}</td>
+        <td data-bind="milestones.${i}.owner">${escapeHtml(tx(r.owner))}</td>
+        <td data-bind="milestones.${i}.targetDate">${escapeHtml(tx(r.targetDate))}</td>
         <td>
           <span class="status-pill view-only" style="background:${color}22; color:${color};">${escapeHtml(disp(r.status))}</span>
           <input class="status-select edit-only" list="mstatusOptionsList" data-mstatus="${i}" style="background:${color}22; color:${color};" value="${escapeHtml(r.status)}">
         </td>
-        <td data-bind="milestones.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="milestones.${i}.notes">${escapeHtml(tx(r.notes))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('milestones', i, state.milestones.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('milestones',${i}))">✕</button>
@@ -2243,10 +2359,10 @@ function renderTodos(){
     const tr = elTR(`
       <tr class="todo-row ${r.done?'done':''}">
         <td><input type="checkbox" class="donecheck" data-donecheck="${i}" ${r.done?"checked":""}></td>
-        <td data-bind="todos.${i}.item">${escapeHtml(r.item)}</td>
-        <td data-bind="todos.${i}.owner">${escapeHtml(r.owner)}</td>
-        <td data-bind="todos.${i}.due">${escapeHtml(r.due)}</td>
-        <td data-bind="todos.${i}.notes">${escapeHtml(r.notes)}</td>
+        <td data-bind="todos.${i}.item">${escapeHtml(tx(r.item))}</td>
+        <td data-bind="todos.${i}.owner">${escapeHtml(tx(r.owner))}</td>
+        <td data-bind="todos.${i}.due">${escapeHtml(tx(r.due))}</td>
+        <td data-bind="todos.${i}.notes">${escapeHtml(tx(r.notes))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('todos', i, state.todos.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('todos',${i}))">✕</button>
@@ -2269,9 +2385,9 @@ function renderRaci(){
   state.raci.forEach((r,i)=>{
     body.appendChild(elTR(`
       <tr>
-        <td data-bind="raci.${i}.section">${escapeHtml(r.section)}</td>
-        <td data-bind="raci.${i}.owner" style="color:var(--copper); font-weight:700;">${escapeHtml(r.owner)}</td>
-        <td data-bind="raci.${i}.basis">${escapeHtml(r.basis)}</td>
+        <td data-bind="raci.${i}.section">${escapeHtml(tx(r.section))}</td>
+        <td data-bind="raci.${i}.owner" style="color:var(--copper); font-weight:700;">${escapeHtml(tx(r.owner))}</td>
+        <td data-bind="raci.${i}.basis">${escapeHtml(tx(r.basis))}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('raci', i, state.raci.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('raci',${i}))">✕</button>
@@ -2290,13 +2406,13 @@ function renderTeam(){
       <div class="teamcard">
         <div class="teamcard-head">
           <div>
-            <div class="teamcard-name" data-bind="team.${i}.name">${escapeHtml(r.name)}</div>
-            <div class="teamcard-title" data-bind="team.${i}.title">${escapeHtml(r.title)}</div>
+            <div class="teamcard-name" data-bind="team.${i}.name">${escapeHtml(tx(r.name))}</div>
+            <div class="teamcard-title" data-bind="team.${i}.title">${escapeHtml(tx(r.title))}</div>
           </div>
         </div>
-        <div class="teamcard-reports" data-bind="team.${i}.reports">${escapeHtml(r.reports)}</div>
+        <div class="teamcard-reports" data-bind="team.${i}.reports">${escapeHtml(tx(r.reports))}</div>
         <div class="teamcard-label" data-bind="titles.labelTeamResponsibilities">${escapeHtml(t.labelTeamResponsibilities||"")}</div>
-        <div class="teamcard-resp" data-bind="team.${i}.responsibilities">${escapeHtml(r.responsibilities)}</div>
+        <div class="teamcard-resp" data-bind="team.${i}.responsibilities">${escapeHtml(tx(r.responsibilities))}</div>
         <div class="teamcard-actions edit-only">
           ${reorderBtns('team', i, state.team.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('team',${i}))">✕</button>
@@ -2313,7 +2429,7 @@ function renderStringList(section, elementId){
     list.appendChild(elLI(`
       <li style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);">
         <span class="dot" style="background:var(--copper); margin-top:6px;"></span>
-        <div class="txt" data-bind="${section}.${i}" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(s)}</div>
+        <div class="txt" data-bind="${section}.${i}" style="flex:1; font-size:13.5px; color:var(--cream); line-height:1.5;">${escapeHtml(tx(s))}</div>
         ${reorderBtns(section, i, state[section].length)}
         <button class="rowdel edit-only" onclick="confirmDelete(this, ()=>removeRow('${section}',${i}))">✕</button>
       </li>`));
@@ -2323,7 +2439,7 @@ RENDER_FN.sources = ()=>renderStringList('sources','sourcesList');
 RENDER_FN.methodology = ()=>renderStringList('methodology','methodologyList');
 
 function renderNotes(){
-  document.getElementById("notesArea").innerText = state.notes;
+  document.getElementById("notesArea").innerText = tx(state.notes);
   document.getElementById("notesArea").setAttribute("data-bind","notes");
 }
 
@@ -2396,9 +2512,9 @@ function renderGlobalSearchResults(){
   wrap.innerHTML = results.length
     ? results.map(r=>`
         <div class="gsr-item" data-gopage="${r.page}" data-gosection="${r.section}" data-goindex="${r.index}">
-          <div class="gsr-sec">${escapeHtml(r.kind)}</div>
-          <div class="gsr-title">${escapeHtml(r.label)}</div>
-          ${r.sub ? `<div class="gsr-sub">${escapeHtml(r.sub)}</div>` : ""}
+          <div class="gsr-sec">${escapeHtml(L(r.kind))}</div>
+          <div class="gsr-title">${escapeHtml(tx(r.label))}</div>
+          ${r.sub ? `<div class="gsr-sub">${escapeHtml(tx(r.sub))}</div>` : ""}
         </div>`).join("")
     : `<div class="gsr-empty">${escapeHtml(t.globalSearchEmpty || "No matches")}</div>`;
   wrap.querySelectorAll("[data-gopage]").forEach(item=>{
@@ -2471,8 +2587,8 @@ document.getElementById("toggleEdit").addEventListener("click", ()=>{
   const key = editing ? "btnDoneEditing" : "btnEdit";
   span.dataset.bind = "titles." + key;
   span.textContent = T()[key];
-  if(LANG === "ar"){ renderGaps(); renderMatrix(); }
-  applyEditMode();
+  window.__skipSave = true;
+  try{ renderAll(); } finally { window.__skipSave = false; }
 });
 document.getElementById("undoBtn").addEventListener("click", undo);
 document.getElementById("setTodayBtn").addEventListener("click", ()=>{
@@ -2510,11 +2626,13 @@ document.addEventListener("keydown", e=>{
 const LOCAL_DRAFT_KEY = "saudDashboardLocalDraft";
 function saveLocalDraft(){
   if(READONLY || window.__skipSave) return;
+  scheduleTranslate();
   try{
     localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
     const ind = document.getElementById("autosaveIndicator");
     const timeEl = document.getElementById("autosaveTime");
     if(ind && timeEl){
+      window.__lastSaved = new Date();
       timeEl.innerText = L("Saved locally") + " " + new Date().toLocaleTimeString(LANG==="ar" ? "ar-u-nu-latn" : [], {hour:"2-digit", minute:"2-digit"});
       ind.classList.add("show");
     }
@@ -2641,11 +2759,11 @@ async function connectGitHub(){
   const statusEl = document.getElementById("syncStatus");
   if(!gh.token || !gh.owner || !gh.repo){
     statusEl.className = "sync-status err";
-    statusEl.innerText = "Fill in the token, repo owner, and repo name first.";
+    statusEl.innerText = L("Fill in the token, repo owner, and repo name first.");
     return;
   }
   statusEl.className = "sync-status";
-  statusEl.innerText = "Connecting...";
+  statusEl.innerText = L("Connecting...");
   try{
     const resp = await fetch(ghApiUrl(), {
       headers:{ "Authorization":"Bearer "+gh.token, "Accept":"application/vnd.github+json" }
@@ -2691,7 +2809,7 @@ async function connectGitHub(){
     dismissLocalDraft();
     renderAll();
     statusEl.className = "sync-status ok";
-    statusEl.innerText = "Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.";
+    statusEl.innerText = L("Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.");
   } catch(e){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Connection failed — " + e.message;
@@ -2703,12 +2821,12 @@ async function saveToGitHub(){
   if(!gh.connected){
     document.getElementById("syncPanel").classList.add("open");
     statusEl.className = "sync-status err";
-    statusEl.innerText = "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.";
+    statusEl.innerText = L("Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.");
     return;
   }
   const btn = document.getElementById("saveBtn");
   const origBtnHTML = btn.innerHTML;
-  btn.disabled = true; btn.innerText = "Saving...";
+  btn.disabled = true; btn.innerText = L("Saving...");
   try{
     const body = {
       message: "Update Saud dashboard — " + new Date().toISOString(),
@@ -2729,7 +2847,7 @@ async function saveToGitHub(){
     }
     gh.sha = data.content.sha;
     statusEl.className = "sync-status ok";
-    statusEl.innerText = "Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.";
+    statusEl.innerText = LANG === "ar" ? ("تم الحفظ — رقم الحفظ " + data.commit.sha.slice(0,7) + " الساعة " + new Date().toLocaleTimeString("ar-u-nu-latn") + ". السجل الكامل في GitHub.") : ("Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.");
     showToast("Saved to GitHub");
   } catch(e){
     statusEl.className = "sync-status err";
@@ -2899,8 +3017,10 @@ async function exportPPTX(){
     state = draft;
     document.getElementById("draftBanner").classList.add("show");
   }
+  window.__trHold = true; // wait for the GitHub copy before translating, so work isn't done twice
   renderAll();
   tryAutoConnectGithub().then(function(ok){
+    window.__trHold = false; scheduleTranslate();
     if(!ok) document.getElementById("syncPanel").classList.add("open"); // no saved connection: prompt to connect
   });
 })();
@@ -3194,7 +3314,7 @@ async function exportPPTX(){
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, context: currentContext() }),
+        body: JSON.stringify({ messages: (typeof LANG !== 'undefined' && LANG === 'ar') ? history.map((m,i)=> i===history.length-1 && m.role==='user' ? { role:'user', content: m.content + '\n\n(أجب باللغة العربية)' } : m) : history, context: currentContext() }),
       });
       const data = await res.json();
       const replyText = (data && data.content && data.content[0] && data.content[0].text) || data.error || "Sorry, I couldn't get a response.";

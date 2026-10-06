@@ -1152,7 +1152,7 @@ function T(){
   return Object.assign({}, base, TITLES_AR, (state && state.titlesAr) || {});
 }
 function L(s){ return LANG === "ar" && Object.prototype.hasOwnProperty.call(UI_AR, s) ? UI_AR[s] : s; }
-function disp(v){ return LANG === "ar" && Object.prototype.hasOwnProperty.call(ENUM_AR, v) ? ENUM_AR[v] : v; }
+function disp(v){ if(LANG === "ar" && Object.prototype.hasOwnProperty.call(ENUM_AR, v)) return ENUM_AR[v]; return (typeof tx === "function") ? tx(v) : v; }
 function dateLocale(){ return LANG === "ar" ? "ar-u-ca-gregory-nu-latn" : undefined; }
 function applyLangChrome(){
   const html = document.documentElement;
@@ -1183,7 +1183,7 @@ function toggleLang(){
    so each new entry is translated once and everyone sees both languages. While editing,
    the original text is shown so edits always change the source, never a translation. */
 const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4"]);
-const TR_SKIP_FIELDS = new Set(["color","fit","category","status","stage","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
+const TR_SKIP_FIELDS = new Set(["color","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
 const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
 function needsTr(s, lang){
   if(typeof s !== "string") return false;
@@ -2049,7 +2049,7 @@ function renderExternal(){
     if(r.details||r.price||r.place||r.partners||r.award){
       const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(tx(v))}</div>` : "";
       const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
-        <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [r.inqStart, r.inqDeadline].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}${f(L("Partners"), r.partners)}</div>
+        <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [tx(r.inqStart), tx(r.inqDeadline)].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}${f(L("Partners"), r.partners)}</div>
         ${r.details ? `<div style="margin-top:8px;"><b>${L("Scope")}:</b> ${escapeHtml(tx(r.details))}</div>` : ""}
       </td></tr>`);
       body.appendChild(d);

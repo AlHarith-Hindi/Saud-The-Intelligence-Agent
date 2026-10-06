@@ -9,7 +9,7 @@
 <title>Saud — Business Tracking Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
      Design tokens. Colors are driven by state.theme via applyTheme()
@@ -368,6 +368,121 @@
   [dir="rtl"] #saud-chat-fab{right:auto; left:20px;}
   [dir="rtl"] #saud-chat-panel{right:auto; left:20px;}
 
+  /* ================= v9: immersive / interactive layer ================= */
+  :root{ --mono:"JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace; }
+  #bgCanvas{position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none;}
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(var(--grid-line,rgba(255,255,255,.025)) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line,rgba(255,255,255,.025)) 1px, transparent 1px);
+    background-size:44px 44px; mask-image:radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%); -webkit-mask-image:radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);}
+  .app{position:relative; z-index:1;}
+  .sidebar{backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); background:color-mix(in srgb, var(--sidebar) 82%, transparent);}
+  section, .stat-tile, .overview-nav .navcard, .kb-card{
+    background-image:radial-gradient(420px circle at var(--mx,-999px) var(--my,-999px), var(--accent-soft), transparent 45%);
+    background-color:color-mix(in srgb, var(--night2) 88%, transparent);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    transition:border-color .2s, transform .2s, box-shadow .2s;
+  }
+  section:hover, .stat-tile:hover{border-color:color-mix(in srgb, var(--copper) 35%, var(--border));}
+  .stat-tile:hover{transform:translateY(-2px); box-shadow:0 14px 34px rgba(0,0,0,.28), 0 0 0 1px color-mix(in srgb, var(--copper) 20%, transparent);}
+  .stat-tile::before{background:linear-gradient(90deg, transparent, var(--copper), var(--accent2), transparent); background-size:200% 100%; animation:scanBar 4s linear infinite;}
+  @keyframes scanBar{from{background-position:200% 0;} to{background-position:-200% 0;}}
+  .kpi-row .stat-tile{background-color:color-mix(in srgb, var(--night) 70%, transparent);}
+
+  /* hero */
+  .hero{display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:18px; padding:18px 22px;
+    border:1px solid var(--border); border-radius:var(--radius); position:relative; overflow:hidden;
+    background:linear-gradient(120deg, color-mix(in srgb, var(--copper) 16%, var(--night2)) 0%, var(--night2) 55%);}
+  .hero::after{content:""; position:absolute; right:-80px; top:-80px; width:260px; height:260px; border-radius:50%;
+    background:radial-gradient(circle, color-mix(in srgb, var(--copper) 35%, transparent), transparent 70%); filter:blur(10px); opacity:.6; pointer-events:none;}
+  .hero-greet{font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--cream);}
+  .hero-sub{font-size:13px; color:var(--muted); margin-top:4px;}
+  .hero-right{display:flex; align-items:center; gap:12px; flex-wrap:wrap; position:relative; z-index:1;}
+  .clock{font-family:var(--mono); font-size:13px; color:var(--sand); padding:7px 12px; border:1px solid var(--border); border-radius:10px; background:color-mix(in srgb, var(--night) 60%, transparent); letter-spacing:.04em;}
+  [dir="rtl"] .clock{font-family:"IBM Plex Sans Arabic", var(--mono); letter-spacing:0;}
+  .status-dot{display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--sand); padding:7px 12px; border:1px solid var(--border); border-radius:999px; background:color-mix(in srgb, var(--night) 60%, transparent);}
+  .status-dot i{width:8px; height:8px; border-radius:50%; background:var(--warning); animation:pulseWarn 2s infinite;}
+  .status-dot.ok i{background:var(--good); animation:pulseOk 2s infinite;}
+  @keyframes pulseOk{0%{box-shadow:0 0 0 0 rgba(34,181,115,.6);} 70%{box-shadow:0 0 0 8px rgba(34,181,115,0);} 100%{box-shadow:0 0 0 0 rgba(34,181,115,0);}}
+  @keyframes pulseWarn{0%{box-shadow:0 0 0 0 rgba(232,163,61,.6);} 70%{box-shadow:0 0 0 8px rgba(232,163,61,0);} 100%{box-shadow:0 0 0 0 rgba(232,163,61,0);}}
+  .btn-ai{display:inline-flex; align-items:center; gap:8px; border:1px solid color-mix(in srgb, var(--copper) 55%, transparent); color:#fff; font-weight:700; font-size:12.5px;
+    padding:8px 14px; border-radius:10px; cursor:pointer; font-family:inherit; position:relative; overflow:hidden;
+    background:linear-gradient(120deg, var(--copper), var(--accent2), var(--copper)); background-size:200% 100%; animation:aiShift 6s ease infinite;}
+  .btn-ai:disabled{opacity:.6; cursor:progress;}
+  @keyframes aiShift{0%,100%{background-position:0% 0;} 50%{background-position:100% 0;}}
+  .brief{display:none; margin:-6px 0 18px; padding:16px 20px; border:1px solid color-mix(in srgb, var(--copper) 40%, var(--border)); border-radius:var(--radius);
+    background:color-mix(in srgb, var(--night2) 90%, transparent); font-size:13.5px; line-height:1.7; color:var(--cream); position:relative;}
+  .brief.show{display:block; animation:pageIn .3s ease;}
+  .brief h4{margin:0 0 8px; font-family:var(--font-display); font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--copper);}
+  .brief ul{margin:0; padding-inline-start:18px;} .brief li{margin:4px 0;}
+  .brief .typing{color:var(--muted);} .brief .typing::after{content:"▍"; animation:blink 1s steps(1) infinite; margin-inline-start:2px;}
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ring gauge */
+  .ring-wrap{display:flex; align-items:center; gap:18px; margin-bottom:10px;}
+  .ring{width:104px; height:104px; flex-shrink:0;}
+  .ring circle{fill:none; stroke-width:9;}
+  .ring .bg{stroke:var(--muted-bar);} .ring .fg{stroke:url(#ringGrad); stroke-linecap:round; transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1);}
+  .ring text{font-family:"Rajdhani",sans-serif; font-weight:700; font-size:26px; fill:var(--cream);}
+
+  /* upcoming agenda */
+  .agenda-item{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);}
+  .agenda-item:last-child{border-bottom:none;}
+  .agenda-date{width:48px; text-align:center; border-radius:10px; padding:5px 0; background:color-mix(in srgb, var(--night) 70%, transparent); border:1px solid var(--border);}
+  .agenda-date b{display:block; font-family:"Rajdhani",sans-serif; font-size:20px; line-height:1; color:var(--cream);}
+  .agenda-date span{font-size:10px; text-transform:uppercase; color:var(--muted); letter-spacing:.06em;}
+  .agenda-kind{font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--copper);}
+  .agenda-title{font-size:13px; color:var(--cream); line-height:1.35; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;}
+  .ov-grid2{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:20px; margin-bottom:20px;}
+  .ov-grid2 section{margin-bottom:0;}
+
+  /* activity feed */
+  .act-item{display:flex; gap:12px; padding:9px 0; border-bottom:1px solid var(--border); align-items:flex-start;}
+  .act-item:last-child{border-bottom:none;}
+  .act-ico{width:28px; height:28px; border-radius:8px; display:grid; place-items:center; flex-shrink:0; font-size:13px; background:var(--accent-soft); color:var(--copper);}
+  .act-text{font-size:12.5px; color:var(--cream); line-height:1.4;}
+  .act-time{font-size:11px; color:var(--muted); font-family:var(--mono); margin-top:2px;}
+
+  /* kanban */
+  .view-toggle{display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+  .view-toggle button{background:none; border:none; color:var(--muted); font-size:12px; font-weight:600; padding:6px 12px; cursor:pointer; font-family:inherit;}
+  .view-toggle button.on{background:var(--accent-soft); color:var(--cream);}
+  .kanban{display:none; grid-auto-flow:column; grid-auto-columns:minmax(160px,1fr); gap:12px; overflow-x:auto; padding-bottom:6px;}
+  .kanban.show{display:grid;}
+  .kb-col{background:color-mix(in srgb, var(--night) 65%, transparent); border:1px solid var(--border); border-radius:14px; padding:10px; min-height:180px; transition:border-color .15s, background .15s;}
+  .kb-col.over{border-color:var(--copper); background:var(--accent-soft);}
+  .kb-head{display:flex; justify-content:space-between; align-items:center; padding:4px 4px 10px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--sand);}
+  .kb-head .n{font-family:var(--mono); color:var(--muted);}
+  .kb-card{border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:grab; user-select:none;}
+  .kb-card:active{cursor:grabbing;} .kb-card.dragging{opacity:.4;}
+  .kb-card .t{font-size:13px; color:var(--cream); font-weight:600; line-height:1.35;}
+  .kb-card .m{font-size:11.5px; color:var(--muted); margin-top:4px; display:flex; justify-content:space-between; gap:8px;}
+  .kb-card .v{font-family:var(--mono); color:var(--sand);}
+  .kb-empty{font-size:11.5px; color:var(--muted); text-align:center; padding:18px 4px; border:1px dashed var(--border); border-radius:10px;}
+
+  /* command palette */
+  .cmdk-btn{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11.5px;}
+  .cmdk-overlay{position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:none; align-items:flex-start; justify-content:center; padding-top:12vh;}
+  .cmdk-overlay.show{display:flex; animation:pageIn .18s ease;}
+  .cmdk{width:min(640px, 92vw); background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 35%, var(--border)); border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03) inset; overflow:hidden;}
+  .cmdk input{width:100%; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--cream); font-size:16px; padding:16px 18px; font-family:inherit; outline:none;}
+  .cmdk-list{max-height:52vh; overflow-y:auto; padding:6px;}
+  .cmdk-group{font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); padding:10px 12px 4px; font-weight:700;}
+  .cmdk-item{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; color:var(--sand); font-size:13.5px;}
+  .cmdk-item .ic{width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background:color-mix(in srgb, var(--night) 70%, transparent); flex-shrink:0; font-size:13px;}
+  .cmdk-item .sub{font-size:11.5px; color:var(--muted); margin-inline-start:auto; max-width:45%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+  .cmdk-item.on{background:var(--accent-soft); color:var(--cream);}
+  .cmdk-foot{display:flex; gap:14px; justify-content:flex-end; padding:8px 14px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); font-family:var(--mono);}
+  kbd{font-family:var(--mono); font-size:10.5px; border:1px solid var(--border); border-bottom-width:2px; border-radius:5px; padding:0 5px; color:var(--sand);}
+
+  /* mono for codes & dates */
+  td[data-bind$=".rn"], td[data-bind$=".bidDeadline"], td[data-bind$=".deadline"]{font-family:var(--mono); font-size:12.5px;}
+  .sb-alert{display:inline-grid; place-items:center; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--critical); color:#fff; font-size:10.5px; font-weight:700; margin-inline-start:auto; font-family:var(--mono);}
+
+  @media (max-width:1180px){ .ov-grid2{grid-template-columns:1fr;} }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{animation:none !important; transition:none !important;}
+    #bgCanvas{display:none;}
+  }
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -380,6 +495,7 @@
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
 <div class="app">
 
   <aside class="sidebar" id="sidebar">
@@ -421,6 +537,7 @@
         <div class="global-search-results" id="globalSearchResults"></div>
       </div>
       <div class="editbar">
+        <button class="editbtn secondary cmdk-btn" onclick="openCmdk()"><kbd>⌘K</kbd><span id="cmdkHint">Search</span></button>
         <button class="editbtn secondary" id="langToggle" onclick="toggleLang()">عربي</button>
         <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
         <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
@@ -472,32 +589,42 @@
   </div>
 
 
+  <div class="cmdk-overlay" id="cmdk"><div class="cmdk"><input id="cmdkInput" autocomplete="off"><div class="cmdk-list" id="cmdkList"></div><div class="cmdk-foot">↑↓ · Enter · Esc</div></div></div>
+
   <div class="page-head"><h2 class="page-title" id="pageTitle">Overview</h2></div>
 
   <!-- ============================== OVERVIEW ============================== -->
   <div class="page active" id="page-overview">
+    <div class="hero"><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
+    <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
     <div class="ov-grid">
       <section>
-        <div class="sechead"><h2 data-bind="titles.ovCatTitle"></h2></div>
-        <div id="ovCategories"></div>
-      </section>
-      <section>
-        <div class="sechead"><h2 data-bind="titles.ovDeadlinesTitle"></h2></div>
+        <div class="sechead"><h2 data-bind="titles.ovUpcomingTitle"></h2></div>
         <div id="ovDeadlines"></div>
       </section>
       <section>
         <div class="sechead"><h2 data-bind="titles.ovProgramTitle"></h2></div>
         <div id="ovProgram"></div>
       </section>
+      <section>
+        <div class="sechead"><h2 data-bind="titles.ovCatTitle"></h2></div>
+        <div id="ovCategories"></div>
+      </section>
     </div>
-    <section>
-      <div class="sechead"><h2 data-bind="titles.sectionPipelineChart"></h2></div>
-      <div class="chart-wrap">
-        <canvas id="pipelineChart"></canvas>
-        <div class="chart-empty" id="pipelineChartEmpty" style="display:none;" data-bind="titles.pipelineChartEmpty"></div>
-      </div>
-    </section>
+    <div class="ov-grid2">
+      <section>
+        <div class="sechead"><h2 data-bind="titles.sectionPipelineChart"></h2></div>
+        <div class="chart-wrap">
+          <canvas id="pipelineChart"></canvas>
+          <div class="chart-empty" id="pipelineChartEmpty" style="display:none;" data-bind="titles.pipelineChartEmpty"></div>
+        </div>
+      </section>
+      <section>
+        <div class="sechead"><h2 data-bind="titles.ovActivityTitle"></h2></div>
+        <div id="ovActivity"></div>
+      </section>
+    </div>
     <section>
       <div class="sechead"><h2 data-bind="titles.sectionOverviewNav"></h2></div>
       <div class="overview-nav" id="overviewNav"></div>
@@ -612,11 +739,15 @@
     <section>
       <div class="sechead">
         <h2 id="secInternalTitle" data-bind="titles.sectionInternal"></h2>
+        <div class="sechead-actions">
+        <div class="view-toggle" id="internalViewToggle"><button data-v="table" onclick="setInternalView('table')">Table</button><button data-v="board" onclick="setInternalView('board')">Board</button></div>
         <button class="addbtn" onclick="addRow('internal', {name:'New opportunity', client:'', value:0, stage:'Not started', subDate:'', nextStep:'', owner:''})"><span data-bind="titles.addBtnOpportunity"></span></button>
+        </div>
       </div>
       <div class="subhead" data-bind="titles.internalOwnerLine"></div>
       <div class="kpi-row" id="internalKpis"></div>
-      <div class="table-scroll">
+      <div class="kanban" id="internalBoard"></div>
+      <div class="table-scroll" id="internalTableWrap">
         <table class="wide-table">
           <thead><tr>
             <th data-bind="titles.colIntName"></th><th data-bind="titles.colIntClient"></th><th data-bind="titles.colIntValue"></th>
@@ -1101,7 +1232,9 @@ const TITLES_AR = {
   programNavOwner: "الحارث",
   ovCatTitle: "اعتماد حسب التصنيف",
   ovDeadlinesTitle: "مواعيد تقديم العروض",
-  ovProgramTitle: "برنامج سعود"
+  ovProgramTitle: "برنامج سعود",
+  ovUpcomingTitle: "المواعيد القادمة — 30 يومًا",
+  ovActivityTitle: "آخر النشاطات"
 };
 
 /* fixed UI phrases that live in code rather than in titles */
@@ -1129,7 +1262,15 @@ const UI_AR = {
   "Fill in the token, repo owner, and repo name first.":"أدخل الرمز واسم مالك المستودع واسم المستودع أولًا.",
   "Connect GitHub sync first (top right) — otherwise this edit only lasts for this tab.":"فعّل مزامنة GitHub أولًا — وإلا تبقى التعديلات في هذه الصفحة فقط.",
   "GitHub personal access token (ghp_...)":"رمز الوصول الشخصي لـ GitHub",
-  "repo owner / org":"مالك المستودع", "repo name":"اسم المستودع", "file path":"مسار الملف", "branch":"الفرع"
+  "repo owner / org":"مالك المستودع", "repo name":"اسم المستودع", "file path":"مسار الملف", "branch":"الفرع",
+  "Added":"أُضيف", "Removed":"حُذف", "Moved":"نُقل", "Edited":"عُدّل", "Updated":"تحديث",
+  "No activity yet — changes you make will show up here.":"لا توجد نشاطات بعد — ستظهر تعديلاتك هنا.",
+  "Nothing due in the next 30 days.":"لا توجد مواعيد خلال 30 يومًا القادمة.", "Due within 7 days":"مستحق خلال 7 أيام",
+  "Brief me":"ملخص اليوم", "Thinking…":"جارٍ التحليل…", "Today's brief":"ملخص اليوم", "Saud is reading the dashboard":"سعود يقرأ لوحة المتابعة",
+  "Couldn't reach Saud right now — try again in a moment.":"تعذّر الوصول إلى سعود الآن — حاول بعد قليل.",
+  "Live · synced":"مباشر · متزامن", "Local only":"محلي فقط", "Table":"جدول", "Board":"لوحة", "Drop here":"أفلت هنا",
+  "Go to":"انتقال", "Actions":"إجراءات", "Data":"البيانات", "Switch language":"تبديل اللغة", "Ask Saud":"اسأل سعود",
+  "Pipeline board":"لوحة الفرص", "Type a command or search…":"اكتب أمرًا أو ابحث…", "Search":"بحث"
 };
 /* display-only translation of status / category values (stored data stays in English) */
 const ENUM_AR = {
@@ -1182,7 +1323,7 @@ function toggleLang(){
    and filled in automatically through the Saud worker (Claude), then saved with the data —
    so each new entry is translated once and everyone sees both languages. While editing,
    the original text is shown so edits always change the source, never a translation. */
-const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4"]);
+const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity"]);
 const TR_SKIP_FIELDS = new Set(["color","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
 const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
 function needsTr(s, lang){
@@ -1274,6 +1415,345 @@ async function runTranslate(){
     if(ind) ind.style.display = "none";
   }
   if(got){ renderAll(); }
+}
+
+/* ======================= v9: immersive + productivity features ======================= */
+
+/* ---------- activity log (who changed what, newest first) ---------- */
+const ACT_LABEL_FIELDS = ["name","task","milestone","item","initiative","headline","cap","text","section","team"];
+function rowLabel(r){ if(typeof r === "string") return r; if(!r) return ""; for(const f of ACT_LABEL_FIELDS){ if(r[f]) return String(r[f]); } return ""; }
+function logActivity(kind, section, label, extra){
+  if(READONLY || !state) return;
+  state.activity = Array.isArray(state.activity) ? state.activity : [];
+  state.activity.unshift(Object.assign({ t:new Date().toISOString(), kind, section, label:String(label||"").slice(0,140) }, extra||{}));
+  if(state.activity.length > 40) state.activity.length = 40;
+}
+const SECTION_NAME_KEY = { external:"tabExternal", externalExcluded:"sectionExtExcluded", internal:"tabInternal", projects:"sectionProjects", prototypes:"sectionPrototypes",
+  marketing:"tabMarketing", tasks:"sectionTasks", milestones:"sectionMilestones", todos:"sectionTodos", news:"sectionNews", phases:"sectionPhases",
+  matrix:"sectionMatrix", gaps:"sectionGaps", programSteps:"sectionProgramSteps", capTeams:"sectionCaps", team:"sectionTeam", raci:"sectionRaci",
+  sources:"sectionSources", methodology:"sectionMethodology" };
+function relTime(iso){
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime())/1000);
+  const ar = LANG === "ar";
+  if(s < 60) return ar ? "الآن" : "just now";
+  const m = Math.floor(s/60); if(m < 60) return ar ? `قبل ${m} د` : `${m}m ago`;
+  const h = Math.floor(m/60); if(h < 24) return ar ? `قبل ${h} س` : `${h}h ago`;
+  const d = Math.floor(h/24); return ar ? `قبل ${d} يوم` : `${d}d ago`;
+}
+function renderActivity(){
+  const el = document.getElementById("ovActivity"); if(!el) return;
+  const list = (state.activity||[]).slice(0,8);
+  const icon = { add:"＋", remove:"−", stage:"⇢", move:"⇄", edit:"✎" };
+  const verb = k => L({ add:"Added", remove:"Removed", stage:"Moved", move:"Moved", edit:"Edited" }[k] || "Updated");
+  if(!list.length){ el.innerHTML = `<div class="ov-note">${escapeHtml(L("No activity yet — changes you make will show up here."))}</div>`; return; }
+  const t = T();
+  el.innerHTML = list.map(a=>{
+    const sec = t[SECTION_NAME_KEY[a.section]] || a.section || "";
+    const to = a.to ? ` → ${escapeHtml(disp(a.to))}` : "";
+    return `<div class="act-item"><div class="act-ico">${icon[a.kind]||"•"}</div><div><div class="act-text"><b>${verb(a.kind)}</b> ${escapeHtml(tx(a.label))}${to} <span style="color:var(--muted)">· ${escapeHtml(sec)}</span></div><div class="act-time">${relTime(a.t)}</div></div></div>`;
+  }).join("");
+}
+
+/* ---------- upcoming agenda: every dated item across the dashboard ---------- */
+function upcomingItems(days){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const end = new Date(today.getTime() + days*86400000);
+  const out = [];
+  const push = (dateStr, kind, title, page) => { const d = parseDeadline(dateStr); if(d && d >= today && d <= end) out.push({ d, kind, title, page }); };
+  (state.external||[]).forEach(r=>push(r.bidDeadline, "Tender", r.name, "external"));
+  (state.internal||[]).forEach(r=>push(r.subDate, "Opportunity", r.name, "internal"));
+  (state.projects||[]).forEach(r=>push(r.deadline, "Project", r.name, "projects"));
+  (state.marketing||[]).forEach(r=>push(r.targetDate, "Campaign", r.initiative, "marketing"));
+  (state.milestones||[]).forEach(r=>push(r.targetDate, "Milestone", r.milestone, "tasks"));
+  (state.todos||[]).forEach(r=>{ if(!r.done) push(r.due, "To-do", r.item, "tasks"); });
+  return out.sort((a,b)=>a.d-b.d);
+}
+function renderUpcoming(){
+  const el = document.getElementById("ovDeadlines"); if(!el) return;
+  const items = upcomingItems(30);
+  const today = new Date(); today.setHours(0,0,0,0);
+  if(!items.length){ el.innerHTML = `<div class="ov-note">${escapeHtml(L("Nothing due in the next 30 days."))}</div>`; return; }
+  el.innerHTML = items.slice(0,6).map(x=>{
+    const days = Math.round((x.d - today)/86400000);
+    const col = days <= 3 ? "var(--critical)" : days <= 10 ? "var(--warning)" : "var(--good)";
+    const mon = x.d.toLocaleDateString(dateLocale(), { month:"short" });
+    return `<div class="agenda-item" style="cursor:pointer" onclick="switchPage('${x.page}')">
+      <div class="agenda-date"><b>${x.d.getDate()}</b><span>${escapeHtml(mon)}</span></div>
+      <div><div class="agenda-kind">${escapeHtml(L(x.kind))}</div><div class="agenda-title">${escapeHtml(tx(x.title))}</div></div>
+      <span class="status-pill" style="background:${col}22; color:${col};">${days===0?L("Today"):days+L("d")}</span></div>`;
+  }).join("");
+  // sidebar badge: items due within 7 days
+  const soon = items.filter(x=>Math.round((x.d - today)/86400000) <= 7).length;
+  const ov = document.querySelector('.tab-btn[data-page="overview"]');
+  if(ov){ let b = ov.querySelector(".sb-alert"); if(soon){ if(!b){ b = document.createElement("span"); b.className = "sb-alert"; ov.appendChild(b); } b.textContent = soon; b.title = L("Due within 7 days"); } else if(b) b.remove(); }
+}
+
+/* ---------- program ring gauge ---------- */
+function renderProgramRing(){
+  const el = document.getElementById("ovProgram"); if(!el) return;
+  const phases = state.phases || [];
+  if(!phases.length) return;
+  const avg = Math.round(phases.reduce((s,p)=>s+(parseFloat(p.pct)||0),0)/phases.length);
+  const done = phases.filter(p=>(parseFloat(p.pct)||0) >= 100).length;
+  const caps = (state.matrix||[]).length;
+  const live = (state.matrix||[]).filter(m=>/live|piloted|done|proven/i.test(m.status||"")).length;
+  const crit = (state.gaps||[]).filter(g=>g.sev==="critical").length;
+  const C = 2*Math.PI*42;
+  el.innerHTML = `
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 104 104"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--copper)"/><stop offset="1" stop-color="var(--accent2)"/></linearGradient></defs>
+        <circle class="bg" cx="52" cy="52" r="42"/><circle class="fg" cx="52" cy="52" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 52 52)" data-target="${C*(1-avg/100)}"/>
+        <text x="52" y="60" text-anchor="middle">${avg}%</text></svg>
+      <div class="ov-note">${LANG==="ar" ? `متوسط التقدم عبر ${phases.length} مراحل · ${done} مكتملة` : `average progress across ${phases.length} phases · ${done} complete`}</div>
+    </div>
+    <div class="ov-list-item"><div class="t">${L("Capabilities defined")}</div><div class="ov-bar-val">${caps}</div></div>
+    <div class="ov-list-item"><div class="t">${L("Live / piloted")}</div><div class="ov-bar-val">${live}</div></div>
+    <div class="ov-list-item"><div class="t">${L("Critical gaps")}</div><div class="ov-bar-val" style="color:${crit?"var(--critical)":"inherit"}">${crit}</div></div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ const fg = el.querySelector(".fg"); if(fg) fg.style.strokeDashoffset = fg.dataset.target; }));
+}
+
+/* ---------- hero: greeting, live clock, sync status ---------- */
+function greeting(){
+  const h = new Date().getHours(); const ar = LANG === "ar";
+  const name = ((T().ownerLine||"").split(":").pop()||"").trim().split(" ")[0] || "";
+  if(ar) return (h < 12 ? "صباح الخير" : "مساء الخير") + (name ? "، " + name : "");
+  return (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + (name ? ", " + name : "");
+}
+function renderHero(){
+  const g = document.getElementById("heroGreet"); if(g) g.textContent = greeting();
+  const sub = document.getElementById("heroSub");
+  if(sub){
+    const up = upcomingItems(7).length, opps = (state.internal||[]).length, tenders = (state.external||[]).length;
+    sub.textContent = LANG === "ar"
+      ? `${tenders} منافسة نشطة · ${opps} فرصة في خط المبيعات · ${up} موعد خلال 7 أيام`
+      : `${tenders} active tenders · ${opps} opportunities in the pipeline · ${up} due in the next 7 days`;
+  }
+  updateSyncPill();
+  const btn = document.getElementById("briefBtn"); if(btn && !btn.disabled) btn.innerHTML = "✨ " + escapeHtml(L("Brief me"));
+}
+function updateSyncPill(){
+  const p = document.getElementById("syncPill"); if(!p) return;
+  const ok = typeof gh !== "undefined" && gh.connected;
+  p.classList.toggle("ok", ok);
+  p.querySelector("span").textContent = ok ? L("Live · synced") : L("Local only");
+}
+function tickClock(){
+  const c = document.getElementById("heroClock"); if(!c) return;
+  const d = new Date();
+  c.textContent = d.toLocaleTimeString(LANG==="ar" ? "ar-u-nu-latn" : "en-GB", { hour:"2-digit", minute:"2-digit", second:"2-digit" }) + "  ·  " +
+    d.toLocaleDateString(dateLocale(), { weekday:"short", day:"numeric", month:"short" });
+}
+setInterval(tickClock, 1000);
+
+/* ---------- count-up animation for KPI numbers ---------- */
+const __kpiPrev = {};
+function animateCounters(){
+  document.querySelectorAll("#statRow .value, .kpi-row .value").forEach((el, i)=>{
+    const txt = el.textContent; const m = txt.match(/^([\d,]+)(.*)$/);
+    if(!m) return;
+    const key = (el.closest(".stat-tile")?.querySelector(".label")?.dataset.bind || "") + i;
+    const target = parseInt(m[1].replace(/,/g,""), 10); const rest = m[2];
+    const from = __kpiPrev[key] ?? 0; __kpiPrev[key] = target;
+    if(from === target || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t0 = performance.now(), dur = 700;
+    (function step(now){ const p = Math.min(1, (now - t0)/dur); const e = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.round(from + (target-from)*e).toLocaleString() + rest; if(p < 1) requestAnimationFrame(step); })(t0);
+  });
+}
+
+/* ---------- AI daily brief (Saud) ---------- */
+async function briefMe(){
+  const btn = document.getElementById("briefBtn"); const box = document.getElementById("briefBox");
+  if(!btn || !box) return;
+  btn.disabled = true; btn.innerHTML = "✨ " + escapeHtml(L("Thinking…"));
+  box.classList.add("show"); box.innerHTML = `<h4>${escapeHtml(L("Today's brief"))}</h4><div class="typing">${escapeHtml(L("Saud is reading the dashboard"))}</div>`;
+  const ctx = {
+    today: new Date().toISOString().slice(0,10),
+    activeTenders: (state.external||[]).map(r=>({ name:r.name, agency:r.agency, fit:r.fit, deadline:r.bidDeadline, notes:r.notes })),
+    pipeline: (state.internal||[]).map(r=>({ name:r.name, stage:r.stage, value:r.value, next:r.nextStep, owner:r.owner })),
+    projects: state.projects||[], upcoming: upcomingItems(30).map(x=>({ date:x.d.toISOString().slice(0,10), kind:x.kind, title:x.title })),
+    program: (state.phases||[]).map(p=>({ name:p.name, pct:p.pct })), gaps: (state.gaps||[]).map(g=>({ sev:g.sev, text:g.text })),
+    openTodos: (state.todos||[]).filter(t=>!t.done)
+  };
+  const lang = LANG === "ar" ? "Arabic (Modern Standard, professional)" : "English";
+  const prompt = `You are Saud, Midwam's intelligence agent. Write today's executive brief in ${lang} for the dashboard owner. ` +
+    `Use exactly 4 short bullet points starting with "- ": 1) what needs attention first (deadlines within 7 days), 2) pipeline/tenders status, 3) Saud program progress or risk, 4) one concrete recommended action today. ` +
+    `Be specific with names and dates from the data. No headings, no intro, no closing.\nDATA:\n` + JSON.stringify(ctx);
+  try{
+    const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", { method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ messages:[{ role:"user", content:prompt }], context:{} }) });
+    const data = await res.json();
+    const text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    const bullets = text.split(/\n+/).map(l=>l.replace(/^\s*[-•*]\s*/, "").replace(/\*\*/g,"").trim()).filter(Boolean);
+    box.innerHTML = `<h4>${escapeHtml(L("Today's brief"))}</h4><ul>${bullets.map(b=>`<li>${escapeHtml(b)}</li>`).join("")}</ul>`;
+  } catch(e){
+    box.innerHTML = `<h4>${escapeHtml(L("Today's brief"))}</h4><div class="ov-note">${escapeHtml(L("Couldn't reach Saud right now — try again in a moment."))}</div>`;
+  } finally {
+    btn.disabled = false; btn.innerHTML = "✨ " + escapeHtml(L("Brief me"));
+  }
+}
+
+/* ---------- pipeline board (kanban) ---------- */
+let internalView = "table";
+try{ internalView = localStorage.getItem("saudInternalView") || "table"; }catch(e){}
+function setInternalView(v){
+  internalView = v; try{ localStorage.setItem("saudInternalView", v); }catch(e){}
+  renderInternalBoard();
+}
+function renderInternalBoard(){
+  const board = document.getElementById("internalBoard"); const tbl = document.getElementById("internalTableWrap");
+  if(!board || !tbl) return;
+  document.querySelectorAll("#internalViewToggle button").forEach(b=>{ b.classList.toggle("on", b.dataset.v === internalView); b.textContent = L(b.dataset.v === "table" ? "Table" : "Board"); });
+  const isBoard = internalView === "board";
+  board.classList.toggle("show", isBoard); tbl.style.display = isBoard ? "none" : "";
+  if(!isBoard) return;
+  const stages = (state.stageProbs||[]).map(p=>p.stage);
+  board.innerHTML = stages.map(st=>{
+    const cards = (state.internal||[]).map((r,i)=>({r,i})).filter(x=>x.r.stage === st || (st === stages[0] && !stages.includes(x.r.stage)));
+    const color = STAGE_COLOR[st] || "var(--muted)";
+    return `<div class="kb-col" data-stage="${escapeHtml(st)}">
+      <div class="kb-head"><span style="color:${color}">● ${escapeHtml(disp(st))}</span><span class="n">${cards.length}</span></div>
+      ${cards.length ? cards.map(({r,i})=>`<div class="kb-card" draggable="true" data-idx="${i}">
+          <div class="t">${escapeHtml(tx(r.name))}</div>
+          <div class="m"><span>${escapeHtml(tx(r.client||""))}</span><span class="v">${(+r.value||0).toLocaleString()} ${escapeHtml(L("SAR"))}</span></div>
+        </div>`).join("") : `<div class="kb-empty">${escapeHtml(L("Drop here"))}</div>`}
+    </div>`;
+  }).join("");
+  board.querySelectorAll(".kb-card").forEach(c=>{
+    c.addEventListener("dragstart", e=>{ c.classList.add("dragging"); e.dataTransfer.setData("text/plain", c.dataset.idx); });
+    c.addEventListener("dragend", ()=>c.classList.remove("dragging"));
+  });
+  board.querySelectorAll(".kb-col").forEach(col=>{
+    col.addEventListener("dragover", e=>{ e.preventDefault(); col.classList.add("over"); });
+    col.addEventListener("dragleave", ()=>col.classList.remove("over"));
+    col.addEventListener("drop", e=>{
+      e.preventDefault(); col.classList.remove("over");
+      const i = +e.dataTransfer.getData("text/plain"); const r = state.internal[i]; const to = col.dataset.stage;
+      if(!r || r.stage === to) return;
+      pushHistory(); const from = r.stage; r.stage = to;
+      logActivity("stage", "internal", r.name, { from, to });
+      renderInternal(); renderStats(); renderPipelineChart(); renderInternalBoard(); renderActivity(); applyEditMode(); saveLocalDraft();
+      showToast(L("Moved") + " → " + disp(to));
+    });
+  });
+  applySpotlight(board);
+}
+
+/* ---------- command palette (Ctrl/⌘ + K) ---------- */
+let __cmdkItems = [], __cmdkSel = 0;
+function cmdkCommands(){
+  const t = T();
+  const pages = [["overview","tabOverview","◫"],["program","tabProgram","◎"],["external","tabExternal","▤"],["internal","tabInternal","▥"],["projects","tabProjects","◈"],["marketing","tabMarketing","◉"],["tasks","tabTasks","☑"],["notes","tabNotes","❏"]]
+    .map(([p,k,ic])=>({ group:L("Go to"), label:t[k]||p, ic, run:()=>switchPage(p) }));
+  const actions = [
+    { label:L("Switch language"), ic:"🌐", run:toggleLang },
+    { label:L("Brief me"), ic:"✨", run:()=>{ switchPage("overview"); briefMe(); } },
+    { label:L("Ask Saud"), ic:"💬", run:()=>{ const f=document.getElementById("saud-chat-fab"); if(f) f.click(); } },
+    { label:t.btnEdit||"Edit", ic:"✎", run:()=>document.getElementById("toggleEdit").click() },
+    { label:t.btnTheme||"Theme", ic:"🎨", run:()=>document.getElementById("themePanel").classList.toggle("open") },
+    { label:t.btnGithubSync||"GitHub sync", ic:"⇄", run:()=>document.getElementById("syncPanel").classList.toggle("open") },
+    { label:L("Pipeline board"), ic:"▦", run:()=>{ switchPage("internal"); setInternalView("board"); } },
+    { label:t.btnExportPptx||"Export PPTX", ic:"⬇", run:()=>exportPPTX() },
+    { label:t.btnExportExcel||"Export Excel", ic:"⬇", run:()=>{ switchPage("external"); exportExternalExcel(); } },
+    { label:t.btnPrint||"Print", ic:"🖨", run:()=>window.print() }
+  ].map(a=>Object.assign({ group:L("Actions") }, a));
+  return pages.concat(actions);
+}
+function openCmdk(){
+  const o = document.getElementById("cmdk"); if(!o) return;
+  o.classList.add("show"); const inp = document.getElementById("cmdkInput");
+  inp.value = ""; inp.placeholder = L("Type a command or search…"); renderCmdk(""); setTimeout(()=>inp.focus(), 20);
+}
+function closeCmdk(){ const o = document.getElementById("cmdk"); if(o) o.classList.remove("show"); }
+function renderCmdk(q){
+  q = (q||"").trim().toLowerCase();
+  let items = cmdkCommands().filter(c=>!q || c.label.toLowerCase().includes(q));
+  if(q){
+    const found = globalSearch(q).slice(0,8).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) }));
+    // also search the translated text the reader actually sees
+    items = items.concat(found);
+  }
+  __cmdkItems = items; __cmdkSel = 0;
+  const list = document.getElementById("cmdkList");
+  if(!items.length){ list.innerHTML = `<div class="gsr-empty">${escapeHtml(T().globalSearchEmpty||"No matches")}</div>`; return; }
+  let html = "", lastGroup = "";
+  items.forEach((c,i)=>{
+    if(c.group !== lastGroup){ html += `<div class="cmdk-group">${escapeHtml(c.group)}</div>`; lastGroup = c.group; }
+    html += `<div class="cmdk-item${i===0?" on":""}" data-i="${i}"><span class="ic">${c.ic}</span><span>${escapeHtml(c.label)}</span>${c.sub?`<span class="sub">${escapeHtml(c.sub)}</span>`:""}</div>`;
+  });
+  list.innerHTML = html;
+  list.querySelectorAll(".cmdk-item").forEach(el=>{
+    el.addEventListener("mousemove", ()=>selectCmdk(+el.dataset.i));
+    el.addEventListener("click", ()=>runCmdk(+el.dataset.i));
+  });
+}
+function selectCmdk(i){
+  __cmdkSel = Math.max(0, Math.min(__cmdkItems.length-1, i));
+  document.querySelectorAll("#cmdkList .cmdk-item").forEach(el=>el.classList.toggle("on", +el.dataset.i === __cmdkSel));
+  const on = document.querySelector("#cmdkList .cmdk-item.on"); if(on) on.scrollIntoView({ block:"nearest" });
+}
+function runCmdk(i){ const c = __cmdkItems[i]; closeCmdk(); if(c) setTimeout(c.run, 30); }
+document.addEventListener("keydown", e=>{
+  const o = document.getElementById("cmdk");
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){ e.preventDefault(); o && o.classList.contains("show") ? closeCmdk() : openCmdk(); return; }
+  if(!o || !o.classList.contains("show")) return;
+  if(e.key === "Escape"){ closeCmdk(); }
+  else if(e.key === "ArrowDown"){ e.preventDefault(); selectCmdk(__cmdkSel+1); }
+  else if(e.key === "ArrowUp"){ e.preventDefault(); selectCmdk(__cmdkSel-1); }
+  else if(e.key === "Enter"){ e.preventDefault(); runCmdk(__cmdkSel); }
+});
+document.addEventListener("DOMContentLoaded", ()=>{
+  const inp = document.getElementById("cmdkInput"); if(inp) inp.addEventListener("input", e=>renderCmdk(e.target.value));
+  const ov = document.getElementById("cmdk"); if(ov) ov.addEventListener("click", e=>{ if(e.target === ov) closeCmdk(); });
+});
+
+/* ---------- cursor spotlight on cards ---------- */
+function applySpotlight(root){
+  (root||document).querySelectorAll("section, .stat-tile, .overview-nav .navcard, .kb-card").forEach(el=>{
+    if(el._spot) return; el._spot = true;
+    el.addEventListener("mousemove", e=>{ const r = el.getBoundingClientRect(); el.style.setProperty("--mx", (e.clientX - r.left) + "px"); el.style.setProperty("--my", (e.clientY - r.top) + "px"); });
+    el.addEventListener("mouseleave", ()=>{ el.style.setProperty("--mx", "-999px"); el.style.setProperty("--my", "-999px"); });
+  });
+}
+
+/* ---------- animated network background ---------- */
+(function bgNetwork(){
+  const c = document.getElementById("bgCanvas"); if(!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ctx = c.getContext("2d"); let W, H, dpr, pts = [], mouse = { x:-9999, y:-9999 };
+  function size(){ dpr = Math.min(2, window.devicePixelRatio||1); W = innerWidth; H = innerHeight; c.width = W*dpr; c.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    const n = Math.round(Math.min(70, W*H/26000)); pts = Array.from({length:n}, ()=>({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25 })); }
+  size(); addEventListener("resize", size);
+  addEventListener("mousemove", e=>{ mouse.x = e.clientX; mouse.y = e.clientY; });
+  function frame(){
+    if(document.hidden){ requestAnimationFrame(frame); return; }
+    const cs = getComputedStyle(document.documentElement);
+    const acc = (cs.getPropertyValue("--copper")||"#F26522").trim();
+    const light = relLuminance((state && state.theme && state.theme.bg) || "#0E0E11") > .5;
+    ctx.clearRect(0,0,W,H);
+    const rgb = hexToRgb(acc.startsWith("#") ? acc : "#F26522");
+    for(const p of pts){
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < 0 || p.x > W) p.vx *= -1; if(p.y < 0 || p.y > H) p.vy *= -1;
+      const dx = mouse.x - p.x, dy = mouse.y - p.y, dm = Math.hypot(dx,dy);
+      if(dm < 160){ p.x -= dx*0.002; p.y -= dy*0.002; }
+    }
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const a = pts[i], b = pts[j], d = Math.hypot(a.x-b.x, a.y-b.y);
+        if(d < 140){ ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${(1-d/140)*(light?0.18:0.22)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+      }
+      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${light?0.35:0.55})`; ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, 1.6, 0, Math.PI*2); ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ---------- glue: run after every full render ---------- */
+function renderV9(){
+  renderHero(); tickClock(); renderUpcoming(); renderProgramRing(); renderActivity(); renderInternalBoard(); animateCounters(); applySpotlight();
+  document.documentElement.style.setProperty("--grid-line", relLuminance((state.theme && state.theme.bg) || "#0E0E11") > .5 ? "rgba(0,0,0,.04)" : "rgba(255,255,255,.025)");
+  const kb = document.getElementById("cmdkHint"); if(kb) kb.textContent = L("Search");
 }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
@@ -1503,7 +1983,9 @@ const V3_TITLE_DEFAULTS = {
   programNavOwner: "Al-Harith",
   ovCatTitle: "Etimad by category",
   ovDeadlinesTitle: "Bid deadlines",
-  ovProgramTitle: "Saud program"
+  ovProgramTitle: "Saud program",
+  ovUpcomingTitle: "Upcoming — next 30 days",
+  ovActivityTitle: "Recent activity"
 };
 const PLACEHOLDER_PREFIX = "Connect GitHub sync above";
 function isPlaceholderRow(r){
@@ -1768,33 +2250,41 @@ function moveItem(section, i, dir){
 }
 function duplicateRow(section, i){
   pushHistory();
+  logActivity('add', section, rowLabel(state[section][i]));
   const clone = JSON.parse(JSON.stringify(state[section][i]));
   state[section].splice(i+1, 0, clone);
   RENDER_FN[section]();
+  if(typeof renderActivity === "function"){ renderActivity(); renderUpcoming(); }
   applyEditMode();
   saveLocalDraft();
   showToast("Duplicated");
 }
 function addRow(section, template){
   pushHistory();
+  logActivity('add', section, rowLabel(template));
   state[section].push(JSON.parse(JSON.stringify(template)));
   RENDER_FN[section]();
+  if(typeof renderActivity === "function"){ renderActivity(); renderUpcoming(); }
   applyEditMode();
   saveLocalDraft();
   showToast("Added");
 }
 function addStringRow(section, text){
   pushHistory();
+  logActivity('add', section, text);
   state[section].push(text);
   RENDER_FN[section]();
+  if(typeof renderActivity === "function"){ renderActivity(); renderUpcoming(); }
   applyEditMode();
   saveLocalDraft();
   showToast("Added");
 }
 function removeRow(section, i){
   pushHistory();
+  logActivity('remove', section, rowLabel(state[section][i]));
   state[section].splice(i,1);
   RENDER_FN[section]();
+  if(typeof renderActivity === "function"){ renderActivity(); renderUpcoming(); }
   applyEditMode();
   saveLocalDraft();
   showToast("Removed");
@@ -1829,6 +2319,7 @@ function renderAll(){
   renderStringList('methodology','methodologyList');
   renderNotes();
   applyEditMode();
+  renderV9();
   saveLocalDraft();
   scheduleTranslate();
 }
@@ -1845,7 +2336,7 @@ function renderTitles(){
   });
   if(t.h1) document.title = t.h1;
   const activeBtn = document.querySelector(".tab-btn.active"); const ptEl = document.getElementById("pageTitle");
-  if(activeBtn && ptEl) ptEl.textContent = activeBtn.innerText.trim();
+  if(activeBtn && ptEl) ptEl.textContent = (activeBtn.querySelector("span[data-bind]")||activeBtn).innerText.trim();
   const fab = document.getElementById("saud-chat-fab"); if(fab) fab.title = t.tipChatOpen || "Ask Saud";
   const chatClose = document.getElementById("saud-chat-close"); if(chatClose) chatClose.title = t.tipChatClose || "Close";
   const chatSend = document.getElementById("saud-chat-send"); if(chatSend) chatSend.title = t.tipChatSend || "Send";
@@ -2143,8 +2634,10 @@ function renderInternal(){
   body.querySelectorAll("[data-valuebind]");
   body.querySelectorAll("[data-stageselect]").forEach(s=>s.addEventListener("change", e=>{
     pushHistory();
-    state.internal[+e.target.dataset.stageselect].stage = e.target.value;
-    renderInternal(); renderStats(); applyEditMode(); saveLocalDraft();
+    const __r = state.internal[+e.target.dataset.stageselect]; const __from = __r.stage;
+    __r.stage = e.target.value;
+    if(__from !== __r.stage) logActivity('stage', 'internal', __r.name, { from:__from, to:__r.stage });
+    renderInternal(); renderStats(); renderInternalBoard(); renderActivity(); applyEditMode(); saveLocalDraft();
   }));
   // value column needs to recompute weighted value + KPIs on edit, not just save text
   body.querySelectorAll('[data-bind^="internal."][data-bind$=".value"]').forEach(td=>{
@@ -2449,7 +2942,7 @@ function switchPage(page){
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.page === page));
   const btn = document.querySelector(`.tab-btn[data-page="${page}"]`);
   const pt = document.getElementById("pageTitle");
-  if(btn && pt) pt.textContent = btn.innerText.trim();
+  if(btn && pt) pt.textContent = (btn.querySelector("span[data-bind]")||btn).innerText.trim();
   window.scrollTo({ top:0, behavior:"smooth" });
   if(page === "overview") setTimeout(renderPipelineChart, 0);
 }
@@ -2810,6 +3303,7 @@ async function connectGitHub(){
     renderAll();
     statusEl.className = "sync-status ok";
     statusEl.innerText = L("Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.");
+    updateSyncPill();
   } catch(e){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Connection failed — " + e.message;
@@ -2849,6 +3343,7 @@ async function saveToGitHub(){
     statusEl.className = "sync-status ok";
     statusEl.innerText = LANG === "ar" ? ("تم الحفظ — رقم الحفظ " + data.commit.sha.slice(0,7) + " الساعة " + new Date().toLocaleTimeString("ar-u-nu-latn") + ". السجل الكامل في GitHub.") : ("Saved — commit " + data.commit.sha.slice(0,7) + " at " + new Date().toLocaleTimeString() + ". Full history is on GitHub.");
     showToast("Saved to GitHub");
+    updateSyncPill();
   } catch(e){
     statusEl.className = "sync-status err";
     statusEl.innerText = "Save failed — " + e.message;

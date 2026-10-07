@@ -972,6 +972,46 @@
     background:color-mix(in srgb, var(--night2) 92%, transparent); border:1px solid var(--copper); box-shadow:0 12px 34px rgba(0,0,0,.45), 0 0 20px var(--accent-soft); backdrop-filter:blur(10px); animation:rise .25s ease;}
   #focusPill b{color:var(--copper);} #focusPill button{width:24px; height:24px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--sand); cursor:pointer;}
   @media print{ #fxCanvas, #missionOv, #focusPill, #voiceWave{display:none !important;} }
+  /* v21: core tooltip on body */
+  #coreTip{position:fixed !important; z-index:100004 !important; translate:none !important; max-width:300px !important; white-space:normal;}
+  #coreTip.below{box-shadow:0 -10px 30px rgba(0,0,0,.4);}
+  /* v21: living background */
+  #moodVeil{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.0; transition:opacity 2.5s ease, background 2.5s ease;}
+  :root[data-mood] #moodVeil{opacity:1;}
+  :root[data-mood="calm"] #moodVeil{background:radial-gradient(120% 90% at 50% 120%, rgba(56,140,255,.16), transparent 60%), radial-gradient(80% 60% at 100% 0%, rgba(40,200,190,.08), transparent 60%);}
+  :root[data-mood="busy"] #moodVeil{background:radial-gradient(120% 90% at 50% 120%, rgba(255,170,40,.18), transparent 60%), radial-gradient(80% 60% at 0% 0%, rgba(255,120,30,.10), transparent 60%);}
+  :root[data-mood="alert"] #moodVeil{background:radial-gradient(130% 95% at 50% 120%, rgba(255,60,60,.22), transparent 62%), radial-gradient(70% 55% at 100% 0%, rgba(255,80,40,.12), transparent 60%); animation:moodPulse 3.2s ease-in-out infinite;}
+  @keyframes moodPulse{50%{opacity:.45;}}
+  .ambient i{transition:background 2.5s ease, opacity 2.5s ease;}
+  :root[data-mood="calm"] .ambient i:nth-child(2){background:#2f7bff !important; opacity:.12;}
+  :root[data-mood="busy"] .ambient i:nth-child(2){background:#ffaa28 !important; opacity:.16;}
+  :root[data-mood="alert"] .ambient i:nth-child(2){background:#ff3c3c !important; opacity:.2;}
+  body.calm #moodVeil{animation:none !important;}
+  .mood-chip{display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;
+    border:1px solid var(--border); background:color-mix(in srgb, var(--night) 60%, transparent); color:var(--sand); --mc:#4c8dff; transition:all .4s;}
+  .mood-chip i{width:8px; height:8px; border-radius:50%; background:var(--mc); box-shadow:0 0 10px var(--mc);}
+  .mood-chip[data-mood="busy"]{--mc:#ffaa28;} .mood-chip[data-mood="alert"]{--mc:#ff4b4b; border-color:color-mix(in srgb, #ff4b4b 55%, var(--border)); color:var(--cream);}
+  .mood-chip[data-mood="alert"] i{animation:moodDot 1.2s ease-in-out infinite;} @keyframes moodDot{50%{transform:scale(1.6); opacity:.5;}}
+  .mood-chip:hover{border-color:var(--mc);}
+  /* v21: time machine */
+  #tmBar{position:fixed; left:50%; bottom:18px; translate:-50% 0; z-index:9800; width:min(860px, calc(100vw - 32px)); display:none; padding:12px 16px 10px; border-radius:18px;
+    background:color-mix(in srgb, var(--night2) 94%, transparent); border:1px solid color-mix(in srgb, #4c8dff 55%, var(--border)); box-shadow:0 24px 70px rgba(0,0,0,.6), 0 0 40px rgba(76,141,255,.18); backdrop-filter:blur(14px);}
+  #tmBar.show{display:block; animation:rise .3s ease;}
+  .tm-load{font-size:13px; color:var(--sand); text-align:center; padding:6px;}
+  .tm-head{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .tm-badge{font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#7fb0ff;}
+  .tm-date{font-family:var(--font-display); font-size:17px; color:var(--cream);} .tm-note{font-size:11px; color:var(--muted);}
+  .tm-play{margin-inline-start:auto;} .tm-head .editbtn{padding:6px 12px; font-size:12px;}
+  .tm-track{position:relative; margin:10px 0 2px; direction:ltr;} .tm-ends{direction:ltr;}
+  .tm-ticks{position:absolute; left:8px; right:8px; top:50%; height:10px; translate:0 -50%; pointer-events:none;}
+  .tm-ticks i{position:absolute; left:var(--x); width:2px; height:10px; margin-left:-1px; background:var(--border); border-radius:1px;} .tm-ticks i.now{background:var(--copper); height:14px; top:-2px;}
+  #tmRange{width:100%; position:relative; accent-color:#4c8dff; cursor:pointer;}
+  .tm-ends{display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); font-family:var(--mono);}
+  body.replaying::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:9000; box-shadow:inset 0 0 0 3px rgba(76,141,255,.6), inset 0 0 120px rgba(76,141,255,.22);}
+  body.replaying #cmtBtn, body.replaying #qaFab, body.replaying #editDock, body.replaying .addbtn, body.replaying .rowdel, body.replaying .cu-edit, body.replaying #tmBtn, body.replaying #briefBtn, body.replaying .ms-step{pointer-events:none; opacity:.4;}
+  body.tm-loading #tmBar .tm-date::after{content:" …";}
+  body.tm-flash .main{animation:tmFlash .5s ease;} @keyframes tmFlash{0%{opacity:.5;} 100%{opacity:1;}}
+  @media print{ #tmBar, #moodVeil{display:none !important;} }
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -1809,6 +1849,10 @@ const UI_AR = {
   "Voice input isn't supported in this browser":"الإدخال الصوتي غير مدعوم في هذا المتصفح", "Couldn't hear you — try again":"لم أسمعك — حاول مرة أخرى",
   "Listening…":"أستمع…", "Drag to spin · click a node":"اسحب للتدوير · انقر على نقطة", "LIVE":"مباشر", "Pipeline":"خط المبيعات",
   "opportunities":"فرص",
+  "All clear":"كل شيء هادئ", "Nothing urgent in the next 7 days":"لا شيء عاجل خلال 7 أيام", "Time machine":"آلة الزمن", "read-only replay":"إعادة عرض للقراءة فقط", "Play":"تشغيل", "Pause":"إيقاف مؤقت",
+  "Back to live":"العودة للوضع المباشر", "latest":"الأحدث", "Loading history…":"جارٍ تحميل السجل…", "Connect GitHub sync to use the time machine":"اربط مزامنة GitHub لاستخدام آلة الزمن", "Finish editing first":"أنهِ التحرير أولًا",
+  "Couldn't load the history right now":"تعذّر تحميل السجل الآن", "Not enough history yet — come back after a few days of changes":"لا يوجد سجل كافٍ بعد — عد بعد أيام من التعديلات", "Couldn't load that day":"تعذّر تحميل ذلك اليوم",
+  "Back to live first — the time machine is read-only":"ارجع للوضع المباشر أولًا — آلة الزمن للقراءة فقط",
   "Team constellation":"كوكبة الفريق", "Missions":"المهام الحاسمة", "Turn an opportunity into a step-by-step bid plan":"حوّل الفرصة إلى خطة تقديم خطوة بخطوة", "Start mission":"ابدأ المهمة", "Continue":"تابع",
   "Mission":"المهمة", "ready":"جاهز", "Ask Saud for a plan":"اطلب خطة من سعود", "Mission complete — ready to submit!":"اكتملت المهمة — جاهز للتقديم!", "days":"يوم", "hours":"ساعة", "min":"دقيقة", "sec":"ثانية", "Missed":"فات", "Due":"الموعد", "Close":"إغلاق",
   "Buy the tender documents":"شراء وثائق المنافسة", "Read the RFP and scope":"قراءة كراسة الشروط والنطاق", "Send inquiries":"إرسال الاستفسارات", "Go / No-go decision":"قرار المشاركة", "Line up team and partners":"تجهيز الفريق والشركاء",
@@ -1929,7 +1973,7 @@ const TR_PROMPT = {
 };
 let __trBusy = false, __trTimer = null; const __trFailed = new Set();
 function scheduleTranslate(){
-  if(READONLY) return;
+  if(READONLY || window.__REPLAY) return;
   clearTimeout(__trTimer);
   __trTimer = setTimeout(runTranslate, 1200);
 }
@@ -2838,7 +2882,7 @@ function wireCore(){
     if(CORE.drag){ const dx = e.clientX - CORE.drag.x, dy = e.clientY - CORE.drag.y; if(Math.abs(dx)+Math.abs(dy) > 3) CORE.drag.moved = true;
       CORE.ry = CORE.drag.ry + dx*.012; CORE.rx = Math.max(-1.2, Math.min(1.2, CORE.drag.rx + dy*.012)); }
     const h = coreHit(e); CORE.hover = h ? h.n : null; cv.style.cursor = h ? "pointer" : "grab";
-    if(tip){ if(h){ tip.innerHTML = `<b>${escapeHtml(h.n.kind)}</b>${escapeHtml(h.n.label)}<i>${escapeHtml(h.n.sub||"")}</i>`; tip.style.left = (h.x) + "px"; tip.style.top = (h.y) + "px"; tip.classList.add("show"); } else tip.classList.remove("show"); }
+    if(tip){ if(h){ tip.innerHTML = `<b>${escapeHtml(h.n.kind)}</b>${escapeHtml(h.n.label)}<i>${escapeHtml(h.n.sub||"")}</i>`; placeCoreTip(tip, cv, h); } else tip.classList.remove("show"); }
   });
   cv.addEventListener("pointerup", e=>{ const d = CORE.drag; CORE.drag = null; if(d && !d.moved){ const h = coreHit(e); if(h && h.n.idx >= 0) openDrawer(h.n.sec, h.n.idx); else { CORE.vy = CORE.vy > .01 ? .004 : .02; } } });
   cv.addEventListener("pointerleave", ()=>{ CORE.hover = null; if(tip) tip.classList.remove("show"); });
@@ -3323,6 +3367,131 @@ function renderV20(){
   if(MISSION_I >= 0 && document.getElementById("missionOv")?.classList.contains("show")) renderMission(false);
 }
 
+/* ======================= v21: living background · time machine · core tooltip fix ======================= */
+/* ---------- core tooltip: lives on <body>, never clipped, flips below when there's no room above ---------- */
+function placeCoreTip(tip, cv, h){
+  if(tip.parentElement !== document.body) document.body.appendChild(tip);
+  const r = cv.getBoundingClientRect(); const x = r.left + h.x, y = r.top + h.y;
+  tip.style.left = "0px"; tip.style.top = "0px"; tip.classList.add("show");
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  const below = y - th - 16 < 8;
+  const left = Math.max(8, Math.min(innerWidth - tw - 8, x - tw/2));
+  tip.style.left = left + "px"; tip.style.top = (below ? y + 16 : y - th - 14) + "px";
+  tip.classList.toggle("below", below);
+}
+
+/* ---------- 4) living background: the page mood follows the workload ---------- */
+let MOOD = "";
+function computeMood(){
+  const items = (typeof radarItems === "function") ? radarItems() : [];
+  const today = items.filter(x=>x.days <= 1), soon = items.filter(x=>x.days <= 3), week = items.filter(x=>x.days <= 7);
+  if(today.length) return { mood:"alert", n: today.length, first: today[0] };
+  if(soon.length || week.length >= 3) return { mood:"busy", n: week.length, first: (soon[0] || week[0]) };
+  return { mood:"calm", n: week.length, first: null };
+}
+function applyMood(){
+  const m = computeMood(); const root = document.documentElement;
+  if(m.mood !== MOOD){ root.dataset.mood = m.mood; MOOD = m.mood; }
+  let veil = document.getElementById("moodVeil");
+  if(!veil){ veil = document.createElement("div"); veil.id = "moodVeil"; document.body.prepend(veil); }
+  const right = document.querySelector(".hero-right"); if(!right) return;
+  let chip = document.getElementById("moodChip");
+  if(!chip){ chip = document.createElement("button"); chip.id = "moodChip"; chip.className = "mood-chip"; right.prepend(chip); }
+  const label = m.mood === "alert" ? (LANG==="ar" ? `${m.n} يُغلق اليوم` : `${m.n} closing today`)
+    : m.mood === "busy" ? (LANG==="ar" ? `أسبوع مزدحم · ${m.n}` : `Busy week · ${m.n}`) : L("All clear");
+  chip.innerHTML = `<i></i>${escapeHtml(label)}`; chip.dataset.mood = m.mood;
+  chip.title = m.first ? `${L(m.first.kind)} — ${tx(m.first.title)}` : L("Nothing urgent in the next 7 days");
+  chip.onclick = ()=>{ if(m.first) openDrawer(m.first.sec, m.first.idx); else document.getElementById("radarBox")?.scrollIntoView({ behavior:"smooth", block:"center" }); };
+}
+setInterval(()=>{ if(!document.hidden && typeof state !== "undefined" && !window.__REPLAY) applyMood(); }, 60000);
+
+/* ---------- 6) time machine: replay the dashboard from its saved history ---------- */
+let TM = { days:[], cache:{}, live:null, idx:-1, playing:0, loading:false };
+function b64DecodeUnicode(b64){ const bin = atob(String(b64||"").replace(/\s/g,"")); const bytes = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
+async function tmLoadHistory(){
+  const H = { "Authorization":"Bearer " + gh.token, "Accept":"application/vnd.github+json" };
+  const all = [];
+  for(let page=1; page<=3; page++){
+    const r = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/commits?path=${encodeURIComponent(gh.path)}&sha=${encodeURIComponent(gh.branch)}&per_page=100&page=${page}`, { headers:H });
+    if(!r.ok) throw new Error("history " + r.status);
+    const list = await r.json(); all.push(...list); if(list.length < 100) break;
+  }
+  const byDay = {};   // newest commit of each day
+  all.forEach(c=>{ const at = c.commit && (c.commit.committer || c.commit.author) && (c.commit.committer || c.commit.author).date; if(!at) return;
+    const d = new Date(at); const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    if(!byDay[key] || new Date(byDay[key].at) < d) byDay[key] = { day:key, at, sha:c.sha }; });
+  return Object.values(byDay).sort((a,b)=>a.day < b.day ? -1 : 1);
+}
+async function tmSnapshot(sha){
+  if(TM.cache[sha]) return JSON.parse(TM.cache[sha]);
+  const r = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path}?ref=${sha}`, { headers:{ "Authorization":"Bearer " + gh.token, "Accept":"application/vnd.github.raw+json" } });
+  if(!r.ok) throw new Error("snapshot " + r.status);
+  const txt = await r.text(); TM.cache[sha] = txt; return JSON.parse(txt);
+}
+async function openTimeMachine(){
+  if(window.__REPLAY){ return; }
+  if(READONLY || !gh.connected || !gh.token){ showToast(L("Connect GitHub sync to use the time machine")); return; }
+  if(editing){ showToast(L("Finish editing first")); return; }
+  let bar = document.getElementById("tmBar");
+  if(!bar){ bar = document.createElement("div"); bar.id = "tmBar"; document.body.appendChild(bar); }
+  bar.innerHTML = `<div class="tm-load">⏳ ${escapeHtml(L("Loading history…"))}</div>`; bar.classList.add("show");
+  try{ TM.days = await tmLoadHistory(); }catch(e){ bar.classList.remove("show"); showToast(L("Couldn't load the history right now")); return; }
+  if(TM.days.length < 2){ bar.classList.remove("show"); showToast(L("Not enough history yet — come back after a few days of changes")); return; }
+  TM.live = state; window.__REPLAY = true; window.__skipSave = true; document.body.classList.add("replaying");
+  if(typeof sfx === "function") sfx("open");
+  renderTmBar(); tmGo(TM.days.length - 2);
+}
+function renderTmBar(){
+  const bar = document.getElementById("tmBar"); if(!bar) return; const n = TM.days.length;
+  const fmt = d=>new Date(d + "T12:00:00").toLocaleDateString(dateLocale(), { day:"numeric", month:"short" });
+  const ticks = TM.days.map((d,k)=>`<i style="--x:${k/(n-1)*100}%" class="${k === n-1 ? "now" : ""}"></i>`).join("");
+  bar.innerHTML = `<div class="tm-head"><span class="tm-badge">⏪ ${escapeHtml(L("Time machine"))}</span><span class="tm-date" id="tmDate"></span><span class="tm-note">${escapeHtml(L("read-only replay"))}</span>
+      <button class="editbtn secondary tm-play" id="tmPlay">▶ ${escapeHtml(L("Play"))}</button><button class="editbtn tm-live" id="tmLive">● ${escapeHtml(L("Back to live"))}</button></div>
+    <div class="tm-track"><div class="tm-ticks">${ticks}</div><input type="range" id="tmRange" min="0" max="${n-1}" step="1" value="${Math.max(0, TM.idx)}"></div>
+    <div class="tm-ends"><span>${escapeHtml(fmt(TM.days[0].day))}</span><span>${escapeHtml(L("Today"))}</span></div>`;
+  const rg = bar.querySelector("#tmRange"); let t = 0;
+  rg.oninput = ()=>{ tmStopPlay(); tmLabel(+rg.value); clearTimeout(t); t = setTimeout(()=>tmGo(+rg.value), 220); if(typeof sfx === "function") sfx("tick"); };
+  bar.querySelector("#tmLive").onclick = closeTimeMachine;
+  bar.querySelector("#tmPlay").onclick = ()=>TM.playing ? tmStopPlay() : tmPlay();
+}
+function tmLabel(i){ const d = TM.days[i]; const el = document.getElementById("tmDate"); if(el && d) el.textContent = new Date(d.day + "T12:00:00").toLocaleDateString(dateLocale(), { weekday:"short", day:"numeric", month:"long", year:"numeric" }) + (i === TM.days.length-1 ? " · " + L("latest") : ""); }
+async function tmGo(i){
+  i = Math.max(0, Math.min(TM.days.length - 1, i)); TM.idx = i; tmLabel(i);
+  const rg = document.getElementById("tmRange"); if(rg && +rg.value !== i) rg.value = i;
+  if(!window.__REPLAY) return;
+  document.body.classList.add("tm-loading");
+  try{
+    const snap = await tmSnapshot(TM.days[i].sha); if(!window.__REPLAY || TM.idx !== i) return;
+    state = snap; document.body.classList.add("tm-flash"); setTimeout(()=>document.body.classList.remove("tm-flash"), 500);
+    renderAll(); if(typeof animateCounters === "function") animateCounters();
+  }catch(e){ showToast(L("Couldn't load that day")); }
+  finally{ document.body.classList.remove("tm-loading"); }
+}
+function tmPlay(){
+  if(TM.idx >= TM.days.length - 1) TM.idx = -1;
+  const b = document.getElementById("tmPlay"); if(b) b.textContent = "❚❚ " + L("Pause");
+  const step = async ()=>{ if(!TM.playing) return; const next = TM.idx + 1; if(next >= TM.days.length){ tmStopPlay(); return; }
+    await tmGo(next); if(TM.playing) TM.playing = setTimeout(step, 1400); };
+  TM.playing = setTimeout(step, 10);
+}
+function tmStopPlay(){ clearTimeout(TM.playing); TM.playing = 0; const b = document.getElementById("tmPlay"); if(b) b.textContent = "▶ " + L("Play"); }
+function closeTimeMachine(){
+  tmStopPlay();
+  if(window.__REPLAY && TM.live){ state = TM.live; }
+  TM.live = null; window.__REPLAY = false; window.__skipSave = false; document.body.classList.remove("replaying");
+  const bar = document.getElementById("tmBar"); if(bar) bar.classList.remove("show");
+  renderAll(); if(typeof sfx === "function") sfx("close");
+}
+function ensureTmButton(){
+  const right = document.querySelector(".hero-right"); if(!right || document.getElementById("tmBtn") || READONLY) return;
+  const b = document.createElement("button"); b.id = "tmBtn"; b.className = "editbtn secondary"; b.onclick = openTimeMachine;
+  const present = document.getElementById("heroPresent"); right.insertBefore(b, present || null);
+}
+function renderV21(){
+  ensureTmButton(); const b = document.getElementById("tmBtn"); if(b) b.textContent = "⏪ " + L("Time machine");
+  applyMood();
+}
+
 /* ---------- popover (composer + thread) ---------- */
 function placePop(pop, rect){
   const W = Math.min(380, innerWidth - 24); pop.style.width = W + "px";
@@ -3517,7 +3686,7 @@ function migrateV14(){
 
 /* ---------- auto-expire: active opportunities past their deadline move to "expired" ---------- */
 function expireOpportunities(){
-  if(editing || READONLY || !Array.isArray(state.external)) return 0;
+  if(editing || READONLY || window.__REPLAY || !Array.isArray(state.external)) return 0;
   const now = Date.now(); const moved = [];
   state.external = state.external.filter(r=>{
     const d = dueTarget(r.bidDeadline);
@@ -4258,6 +4427,7 @@ function renderAll(){
   renderV16();
   renderV18();
   renderV20();
+  renderV21();
   saveLocalDraft();
   scheduleTranslate();
 }
@@ -5173,7 +5343,7 @@ async function tryAutoConnectGithub(){
 let ghAutosaveTimer = null;
 const GH_AUTOSAVE_DELAY_MS = 2500;
 function scheduleGithubAutosave(){
-  if(!gh.connected) return;
+  if(!gh.connected || window.__REPLAY) return;
   if(ghAutosaveTimer) clearTimeout(ghAutosaveTimer);
   ghAutosaveTimer = setTimeout(()=>{
     ghAutosaveTimer = null;
@@ -5249,6 +5419,7 @@ async function connectGitHub(){
 }
 
 async function saveToGitHub(){
+  if(window.__REPLAY) return;   // time machine is read-only
   const statusEl = document.getElementById("syncStatus");
   if(!gh.connected){
     document.getElementById("syncPanel").classList.add("open");

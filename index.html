@@ -726,6 +726,84 @@
   :root[data-ambience="night"] .ambient i:nth-child(3){background:#3a4cff; opacity:.12;}
   @media (max-width:760px){ .core-wrap{width:110px; height:110px; margin:0 auto;} #saudCore{width:110px; height:110px;} .hero-greet{font-size:22px !important;} .tk-live{padding:0 8px;} }
   @media print{ #trailCanvas, #cursorRing, .ticker, #pageWipe, .core-wrap, #voiceBubble{display:none !important;} }
+  /* ================= v13: comments, sidebar search, Customize tab, clean-up ================= */
+  /* removed / relocated */
+  .tab-btn[data-page="notes"], #page-notes, .global-search-wrap, .ticker{display:none !important;}
+  .page-title.glitch::before, .page-title.glitch::after{display:none !important; content:none !important;}
+  .page-title.glitch{animation:none !important;}
+  /* language pill next to the logo */
+  .sb-logo{display:flex; align-items:center; gap:10px;}
+  .lang-pill{margin-inline-start:auto; display:inline-flex; padding:3px; gap:2px; border-radius:999px; border:1px solid var(--border); background:color-mix(in srgb, var(--night) 70%, transparent); cursor:pointer; font-family:var(--font-body);}
+  .lang-pill span{min-width:30px; height:24px; padding:0 8px; display:grid; place-items:center; border-radius:999px; font-size:11.5px; font-weight:700; color:var(--muted); letter-spacing:.04em; transition:background .2s, color .2s;}
+  .lang-pill span:last-child{font-family:"IBM Plex Sans Arabic", var(--font-body); font-size:13px;}
+  .lang-pill span.on{background:var(--copper); color:#fff; box-shadow:0 0 12px var(--accent-soft);}
+  .lang-pill:hover{border-color:var(--copper);}
+  /* sidebar search */
+  .sb-search{position:relative; margin:0 4px 14px;}
+  .sb-search .sb-s-ic{position:absolute; top:50%; translate:0 -50%; inset-inline-start:12px; color:var(--muted); font-size:14px; pointer-events:none;}
+  .sb-search input{width:100%; background:color-mix(in srgb, var(--night) 70%, transparent); border:1px solid var(--border); border-radius:10px; color:var(--cream); padding:9px 12px; padding-inline-start:32px; font-size:12.5px; font-family:inherit; outline:none; transition:border-color .2s, box-shadow .2s;}
+  .sb-search input:focus{border-color:var(--copper); box-shadow:0 0 0 3px var(--accent-soft);}
+  #sbResults{position:absolute; top:calc(100% + 6px); inset-inline-start:0; width:min(400px, 86vw); max-height:62vh; overflow-y:auto; z-index:9900; display:none; padding:6px;
+    background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 35%, var(--border)); border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.55);}
+  #sbResults.show{display:block; animation:rise .18s ease;}
+  .sidebar{overflow:visible !important;}
+  .tabs-nav{overflow:visible;}
+  /* comment button + mode */
+  #cmtBtn{position:relative;}
+  #cmtBtn.on{background:var(--copper) !important; color:#fff !important; border-color:var(--copper) !important;}
+  #cmtBtn .bell-n{position:absolute; top:-6px; inset-inline-end:-6px; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--series-blue); color:#fff; font-size:10.5px; font-weight:700; display:none; place-items:center; font-family:var(--mono);}
+  #cmtBtn.has .bell-n{display:grid;}
+  body.commenting .main, body.commenting .main *{cursor:crosshair !important;}
+  body.commenting #cursorRing{border-style:dashed; border-color:var(--series-blue);}
+  #cmtHover{position:fixed; z-index:9600; pointer-events:none; opacity:0; border:2px dashed var(--series-blue); border-radius:8px; background:rgba(76,141,255,.08); transition:all .08s ease-out;}
+  body.commenting::after{content:attr(data-cmt-hint); position:fixed; top:14px; left:50%; translate:-50% 0; z-index:9700; padding:8px 16px; border-radius:999px; background:var(--series-blue); color:#fff; font-size:12.5px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.4);}
+  #cmtLayer{position:absolute; left:0; top:0; width:0; height:0; z-index:9400;}
+  .cmt-pin{position:absolute; min-width:26px; height:26px; padding:0 6px; border-radius:13px 13px 13px 3px; border:2px solid #fff; background:var(--series-blue); color:#fff; font-size:11.5px; font-weight:800; cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,.45), 0 0 0 4px rgba(76,141,255,.25); display:inline-flex; align-items:center; gap:3px; font-family:var(--mono); animation:pinIn .35s cubic-bezier(.2,1.4,.4,1) backwards; transition:transform .15s;}
+  .cmt-pin:hover{transform:scale(1.15);}
+  .cmt-pin.ai{background:linear-gradient(135deg, var(--series-blue), var(--copper));}
+  .cmt-pin.res{background:var(--muted-bar); box-shadow:none; opacity:.7;}
+  .cmt-pin small{font-size:9px; opacity:.85; background:rgba(0,0,0,.25); border-radius:6px; padding:0 3px;}
+  @keyframes pinIn{from{transform:scale(0) translateY(8px);}}
+  .cmt-flash{animation:cmtFlash 1.4s ease;} @keyframes cmtFlash{0%,60%{box-shadow:0 0 0 3px var(--series-blue), 0 0 24px rgba(76,141,255,.5);} 100%{box-shadow:none;}}
+  #cmtPop{position:fixed; z-index:100002; display:none; max-height:min(70vh, 560px); overflow-y:auto; padding:14px; border-radius:14px;
+    background:color-mix(in srgb, var(--night2) 96%, transparent); backdrop-filter:blur(14px); border:1px solid color-mix(in srgb, var(--series-blue) 55%, var(--border)); box-shadow:0 30px 80px rgba(0,0,0,.55);}
+  #cmtPop.show{display:block; animation:rise .18s ease;}
+  .cmt-ctx{font-size:11.5px; color:var(--muted); border-inline-start:3px solid var(--series-blue); padding:4px 8px; margin-bottom:10px; background:rgba(76,141,255,.07); border-radius:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .cmt-msg{padding:8px 0; border-bottom:1px solid var(--border);}
+  .cmt-msg.ai .cmt-text{background:linear-gradient(120deg, color-mix(in srgb, var(--copper) 10%, transparent), transparent); border-radius:8px; padding:6px 8px;}
+  .cmt-meta{font-size:11px; color:var(--muted); display:flex; gap:6px; align-items:center;} .cmt-meta b{color:var(--cream);}
+  .cmt-text{font-size:13px; color:var(--cream); line-height:1.5; margin-top:3px; white-space:pre-wrap; border-radius:6px; outline:none;}
+  .cmt-text[contenteditable="true"]:hover{background:rgba(255,255,255,.04);} .cmt-text[contenteditable="true"]:focus{background:rgba(76,141,255,.08); box-shadow:0 0 0 1px var(--series-blue);}
+  .cmt-x{margin-inline-start:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px;}
+  .cmt-res{color:var(--good); font-weight:700;}
+  .cmt-input, .cmt-name{width:100%; margin-top:10px; background:var(--night); border:1px solid var(--border); border-radius:10px; color:var(--cream); padding:9px 11px; font-size:13px; font-family:inherit; resize:vertical; outline:none;}
+  .cmt-input:focus, .cmt-name:focus{border-color:var(--series-blue);}
+  .cmt-row{display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; margin-top:10px;}
+  .cmt-row .editbtn{padding:6px 11px; font-size:12px;}
+  .cmt-hint{font-size:10.5px; color:var(--muted); margin-top:8px;}
+  /* Customize page */
+  .cu-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px;}
+  .cu-card{border:1px solid var(--border); border-radius:14px; padding:16px; background:color-mix(in srgb, var(--night) 60%, transparent); display:flex; flex-direction:column; gap:8px;}
+  .cu-card .cu-t{font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--cream); letter-spacing:.03em;}
+  .cu-card .cu-d{font-size:12.5px; color:var(--muted); line-height:1.5; flex:1;}
+  .cu-card .editbtn{align-self:flex-start;}
+  #page-customize .sync-panel{display:block !important; margin:0; box-shadow:none; background:transparent; border:none; padding:0;}
+  #page-customize #toggleTheme, #page-customize #toggleSync{display:none !important;}
+  .cu-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+  .cu-cmt{border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:pointer; transition:border-color .15s, background .15s; border-inline-start:3px solid var(--series-blue);}
+  .cu-cmt:hover{border-color:var(--series-blue); background:rgba(76,141,255,.05);}
+  .cu-cmt.res{opacity:.6; border-inline-start-color:var(--good);}
+  .cu-cmt-top{display:flex; gap:10px; font-size:11px; color:var(--muted);} .cu-cmt-top b{color:var(--cream);}
+  .cu-cmt-text{font-size:13px; color:var(--cream); margin:4px 0;} .cu-cmt-ctx{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .cu-toggle{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--sand); margin-bottom:10px; cursor:pointer;}
+  @media print{ #cmtLayer, #cmtPop, #cmtHover, .sb-search{display:none !important;} }
+  /* v14: month filter */
+  .ext-filters{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px;}
+  .ext-filters .row-search{margin:0;}
+  .ext-filters #externalSearch{flex:1; min-width:220px;}
+  .month-sel{width:auto !important; min-width:190px; cursor:pointer; color-scheme:dark;}
+  .month-note{font-size:12px; color:var(--copper); font-weight:600;}
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -740,16 +818,17 @@
 <body>
 <canvas id="bgCanvas"></canvas>
 <div class="ambient"><i></i><i></i><i></i></div>
-<canvas id="trailCanvas"></canvas><div id="cursorRing"></div><div id="pageWipe"></div><div id="voiceBubble"></div>
+<div id="cmtLayer"></div><canvas id="trailCanvas"></canvas><div id="cursorRing"></div><div id="pageWipe"></div><div id="voiceBubble"></div>
 <div id="bootIntro"><div class="boot-core"><div class="boot-ring"></div><div class="boot-lines"></div></div></div>
 <div id="cursorGlow"></div><div id="scrollProg"></div>
 <div class="app">
 
   <aside class="sidebar" id="sidebar">
     <div class="sb-brand">
-      <div class="sb-logo" id="brandLogo"><span class="sb-logo-mark"></span><span class="sb-logo-text">MIDWAM</span></div>
+      <div class="sb-logo" id="brandLogo"><span class="sb-logo-mark"></span><span class="sb-logo-text">MIDWAM</span><button class="lang-pill" id="langToggle" onclick="toggleLang()" title="English / عربي"><span class="on">EN</span><span>ع</span></button></div>
       <div class="brand" id="brandEl" data-bind="titles.brand"></div>
     </div>
+    <div class="sb-search"><span class="sb-s-ic">⌕</span><input id="sbSearch" autocomplete="off" data-lp="Search or ask Saud…" placeholder="Search or ask Saud…"><div id="sbResults"></div></div>
     <div class="nav-label" id="navLabel">Workspace</div>
     <nav class="tabs-nav" id="tabsNav">
       <button class="tab-btn active" data-page="overview" onclick="switchPage('overview')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-bind="titles.tabOverview"></span></button>
@@ -759,6 +838,7 @@
       <button class="tab-btn" data-page="projects" onclick="switchPage('projects')"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg><span data-bind="titles.tabProjects"></span></button>
       <button class="tab-btn" data-page="marketing" onclick="switchPage('marketing')"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg><span data-bind="titles.tabMarketing"></span></button>
       <button class="tab-btn" data-page="tasks" onclick="switchPage('tasks')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M8 13l3 3 5-6"/></svg><span data-bind="titles.tabTasks"></span></button>
+      <button class="tab-btn" data-page="customize" onclick="switchPage('customize')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-l="Customize">Customize</span></button>
       <button class="tab-btn" data-page="notes" onclick="switchPage('notes')"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><span data-bind="titles.tabNotes"></span></button>
     </nav>
     <div class="sb-foot meta">
@@ -773,7 +853,6 @@
   </aside>
 
   <main class="main">
-  <div class="ticker" id="ticker"></div>
   <header class="topbar">
     <div class="topbar-titles">
       <h1 id="h1El" data-bind="titles.h1"></h1>
@@ -786,15 +865,7 @@
       </div>
       <div class="editbar">
         <span class="bell-wrap"><button class="editbtn secondary" id="bellBtn" onclick="toggleBell(event)">🔔<span class="bell-n"></span></button><div id="bellPanel"></div></span>
-        <button class="editbtn secondary cmdk-btn" onclick="openCmdk()">✦ <span id="cmdkHint">Command center</span></button>
-        <button class="editbtn secondary" id="motionBtn" onclick="toggleMotion()">◉ Motion on</button>
-        <button class="editbtn secondary" id="soundBtn" onclick="toggleSound()">🔊 Sound on</button>
-        <button class="editbtn secondary" id="presentBtn" onclick="togglePresent()">▶ <span id="presentLbl">Present</span></button>
-        <button class="editbtn secondary" id="langToggle" onclick="toggleLang()">عربي</button>
-        <button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
-        <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button>
-        <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
-        <button class="editbtn secondary" id="toggleSync"><span data-bind="titles.btnGithubSync"></span></button>
+        <button class="editbtn secondary" id="cmtBtn" onclick="toggleCommentMode()">💬 <span class="cl">Comment</span><span class="bell-n"></span></button>
         <button class="editbtn secondary edit-only" id="undoBtn" disabled><span data-bind="titles.btnUndo"></span></button>
         <button class="editbtn" id="toggleEdit"><span data-bind="titles.btnEdit"></span></button>
         <button class="editbtn" id="saveBtn" style="display:none;"><span data-bind="titles.btnSaveToGithub"></span></button>
@@ -810,37 +881,6 @@
     </span>
   </div>
 
-  <div class="sync-panel" id="themePanel">
-    <b data-bind="titles.themeHeading"></b><br>
-    <span data-bind="titles.themeDesc"></span>
-    <div class="row" id="themePresets"></div>
-    <div class="row" style="align-items:center;">
-      <span style="font-size:12px; color:var(--muted);" data-bind="titles.labelAccentColor"></span>
-      <input type="color" id="accentPicker" value="#C1701E">
-      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelBackgroundColor"></span>
-      <input type="color" id="bgPicker" value="#1F1B16">
-      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelTextColor"></span>
-      <input type="color" id="textPicker" value="#FBF6EA">
-      <button class="editbtn secondary" onclick="resetTheme()"><span data-bind="titles.btnResetTheme"></span></button>
-    </div>
-  </div>
-
-  <div class="sync-panel" id="syncPanel">
-    <b data-bind="titles.githubSyncHeading"></b><br>
-    <span data-bind="titles.githubSyncDesc"></span>
-    <div class="row">
-      <input class="token" type="password" id="ghToken" placeholder="GitHub personal access token (ghp_...)">
-      <input class="short" type="text" id="ghOwner" placeholder="repo owner / org">
-      <input class="short" type="text" id="ghRepo" placeholder="repo name">
-      <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
-      <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
-      <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
-      <button class="editbtn secondary" id="ghDisconnectBtn" onclick="forgetGhConfig()">Disconnect</button>
-    </div>
-    <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
-  </div>
-
-
   <div class="cmdk-overlay" id="cmdk"><div class="cmdk"><input id="cmdkInput" autocomplete="off"><div class="cmdk-list" id="cmdkList"></div><div class="cmdk-foot">↑↓ · Enter · Esc</div></div></div>
   <div class="drawer" id="drawer"><div class="dr-scrim" onclick="closeDrawer()"></div><aside class="dr-panel"><button class="dr-close" onclick="closeDrawer()">✕</button><div class="dr-body"></div></aside></div>
   <div class="qa-modal" id="qaModal" onclick="if(event.target===this) closeQuickAdd()"><div class="qa-box"><h4>Quick add</h4><div class="qa-types"></div>
@@ -848,6 +888,7 @@
     <div class="qa-actions"><button class="editbtn secondary" id="qaCancel" onclick="closeQuickAdd()">Cancel</button><button class="editbtn" id="qaSave" onclick="saveQuickAdd()">Add</button></div></div></div>
   <button id="qaFab" onclick="openQuickAdd()">＋</button>
   <div id="presentDots"></div>
+  <div id="cmtHover"></div><div id="cmtPop"></div>
 
   <div class="page-head"><h2 class="page-title" id="pageTitle">Overview</h2></div>
 
@@ -942,12 +983,13 @@
         <h2 id="secExternalTitle" data-bind="titles.sectionExternal"></h2>
         <div class="sechead-actions">
           <button class="editbtn secondary" id="exportExternalExcelBtn" onclick="exportExternalExcel()"><span data-bind="titles.btnExportExcel"></span></button>
-          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New tender', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})"><span data-bind="titles.addBtnTender"></span></button>
+          <button class="addbtn" onclick="addRow('external', {rn:'', name:'New opportunity', agency:'', fit:'Unknown', category:'Other/Uncategorized', bidDeadline:'', notes:''})"><span data-bind="titles.addBtnTender"></span></button>
         </div>
       </div>
       <div class="subhead" data-bind="titles.externalOwnerLine"></div>
       <div class="kpi-row" id="externalKpis"></div>
-      <input type="text" class="row-search" id="externalSearch" placeholder="🔎 Search competition name, agency, or RN...">
+      <div class="ext-filters"><input type="text" class="row-search" id="externalSearch" placeholder="🔎 Search competition name, agency, or RN...">
+        <select class="row-search month-sel" id="extMonth" onchange="setExtMonth(this.value)"></select><span class="month-note" id="extMonthNote"></span></div>
       <div class="table-scroll">
         <table class="wide-table">
           <thead><tr>
@@ -964,7 +1006,7 @@
     <section>
       <div class="sechead">
         <h2 data-bind="titles.sectionExtExcluded"></h2>
-        <button class="addbtn" onclick="addRow('externalExcluded', {rn:'', name:'Excluded tender', agency:'', deadline:'', reason:''})"><span data-bind="titles.addBtnExcluded"></span></button>
+        <button class="addbtn" onclick="addRow('externalExcluded', {rn:'', name:'Expired opportunity', agency:'', deadline:'', reason:''})"><span data-bind="titles.addBtnExcluded"></span></button>
       </div>
       <div class="subhead" data-bind="titles.extExcludedSub"></div>
       <div class="table-scroll">
@@ -1128,6 +1170,68 @@
   </div>
 
   <!-- ============================== NOTES & LEGEND ============================== -->
+  <!-- ============================== CUSTOMIZE ============================== -->
+  <div class="page" id="page-customize">
+    <section>
+      <div class="sechead"><h2 data-l="Display &amp; experience">Display &amp; experience</h2></div>
+      <div class="cu-grid">
+        <div class="cu-card"><div class="cu-t" data-l="Motion &amp; effects">Motion &amp; effects</div><div class="cu-d" data-l="Animations, 3D effects, cursor trail and background. Turn off for a calmer, faster dashboard.">Animations, 3D effects, cursor trail and background.</div>
+          <button class="editbtn secondary" id="motionBtn" onclick="toggleMotion()">◉ Motion on</button></div>
+        <div class="cu-card"><div class="cu-t" data-l="Sound">Sound</div><div class="cu-d" data-l="Soft interface sounds on hover, click and page change.">Soft interface sounds on hover, click and page change.</div>
+          <button class="editbtn secondary" id="soundBtn" onclick="toggleSound()">🔊 Sound on</button></div>
+        <div class="cu-card"><div class="cu-t" data-l="Presentation mode">Presentation mode</div><div class="cu-d" data-l="Full screen, no menus. Move between pages with the keyboard arrows or the dots at the bottom.">Full screen, no menus.</div>
+          <button class="editbtn secondary" id="presentBtn" onclick="togglePresent()">▶ <span id="presentLbl">Present</span></button></div>
+        <div class="cu-card"><div class="cu-t" data-l="Export">Export</div><div class="cu-d" data-l="Download the dashboard as slides, or print it.">Download the dashboard as slides, or print it.</div>
+          <div class="cu-actions" style="margin:0"><button class="editbtn secondary" id="exportPptxBtn" onclick="exportPPTX()"><span data-bind="titles.btnExportPptx"></span></button>
+          <button class="editbtn secondary" id="printBtn" onclick="window.print()"><span data-bind="titles.btnPrint"></span></button></div></div>
+      </div>
+    </section>
+    <section>
+      <div class="sechead"><h2 data-l="Theme">Theme</h2></div>
+      <button class="editbtn secondary" id="toggleTheme"><span data-bind="titles.btnTheme"></span></button>
+  <div class="sync-panel" id="themePanel">
+    <b data-bind="titles.themeHeading"></b><br>
+    <span data-bind="titles.themeDesc"></span>
+    <div class="row" id="themePresets"></div>
+    <div class="row" style="align-items:center;">
+      <span style="font-size:12px; color:var(--muted);" data-bind="titles.labelAccentColor"></span>
+      <input type="color" id="accentPicker" value="#C1701E">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelBackgroundColor"></span>
+      <input type="color" id="bgPicker" value="#1F1B16">
+      <span style="font-size:12px; color:var(--muted); margin-left:14px;" data-bind="titles.labelTextColor"></span>
+      <input type="color" id="textPicker" value="#FBF6EA">
+      <button class="editbtn secondary" onclick="resetTheme()"><span data-bind="titles.btnResetTheme"></span></button>
+    </div>
+  </div>
+
+    </section>
+    <section>
+      <div class="sechead"><h2 data-l="Data &amp; GitHub sync">Data &amp; GitHub sync</h2></div>
+      <button class="editbtn secondary" id="toggleSync"><span data-bind="titles.btnGithubSync"></span></button>
+  <div class="sync-panel" id="syncPanel">
+    <b data-bind="titles.githubSyncHeading"></b><br>
+    <span data-bind="titles.githubSyncDesc"></span>
+    <div class="row">
+      <input class="token" type="password" id="ghToken" placeholder="GitHub personal access token (ghp_...)">
+      <input class="short" type="text" id="ghOwner" placeholder="repo owner / org">
+      <input class="short" type="text" id="ghRepo" placeholder="repo name">
+      <input class="short" type="text" id="ghPath" placeholder="file path" value="saud-dashboard-data.json">
+      <input class="short" type="text" id="ghBranch" placeholder="branch" value="main">
+      <button class="editbtn" onclick="connectGitHub()"><span data-bind="titles.btnConnectLoad"></span></button>
+      <button class="editbtn secondary" id="ghDisconnectBtn" onclick="forgetGhConfig()">Disconnect</button>
+    </div>
+    <div class="sync-status" id="syncStatus" data-bind="titles.syncNotConnectedMsg"></div>
+  </div>
+
+
+    </section>
+    <section>
+      <div class="sechead"><h2 data-l="Comments">Comments</h2></div>
+      <label class="cu-toggle"><input type="checkbox" id="cuShowRes" onchange="document.body.classList.toggle('cmt-show-resolved', this.checked); renderCommentPins();"> <span data-l="Show resolved comments on the page">Show resolved comments on the page</span></label>
+      <div id="cuComments"></div>
+    </section>
+  </div>
+
   <div class="page" id="page-notes">
     <section>
       <div class="sechead">
@@ -1201,7 +1305,7 @@ const DEFAULT_STATE = {
     h1: "Saud — Business Tracking Dashboard",
     subtitle: "External pipeline, internal performance, projects, prototypes, and tasks — where things stand.",
     ownerLine: "Owner: Harith · Midwam",
-    sectionExternal: "External — Etimad Tender Pipeline",
+    sectionExternal: "External — Etimad Opportunity Pipeline",
     sectionNews: "News — Coverage Tracker",
     sectionInternal: "Internal Performance — RFP / Opportunity Pipeline",
     sectionProbTable: "Win Probability by Stage",
@@ -1223,13 +1327,13 @@ const DEFAULT_STATE = {
     globalSearchPlaceholder: "🔎 Search everything...",
     globalSearchEmpty: "No matches",
 
-    externalOwnerLine: "Owner: Firas · Etimad tender pipeline, tourism/exhibition filter.",
+    externalOwnerLine: "Owner: Firas · Etimad opportunity pipeline, tourism/exhibition filter.",
     internalOwnerLine: "Owner: Firas · Value and stage figures are illustrative until replaced with real pipeline entries.",
     projectsOwnerLine: "Owner: Sameer · Status, financial, and operational tracking for live projects.",
     prototypesOwnerLine: "Owner: Mohammed · 'Value' is a placeholder score — redefine once a real scoring method is agreed.",
     marketingOwnerLine: "Owner: Faisal Almadani · Head of Marketing — campaigns, brand, and external communications for Saud's initiatives.",
 
-    externalFooterNote: "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic tender title by keyword match; feel free to keep that convention when filling this in.",
+    externalFooterNote: "Category is a manual tag here (set it per row) — on the Excel version it's auto-detected from the Arabic opportunity title by keyword match; feel free to keep that convention when filling this in.",
     internalFooterNote: "Weighted Value = Value × the win probability for that row's Stage, from the probability table below.",
     probNote: "Placeholder probabilities — replace with real figures once enough closed opportunities exist to calibrate a win-rate history.",
 
@@ -1237,7 +1341,7 @@ const DEFAULT_STATE = {
     legendStatusPills: "Status pills are colored by meaning (green = good/done, amber = in progress, red = blocked/lost) — the same convention across every tab.",
     legendKpiNote: "KPI tiles at the top of each tab recompute automatically from that tab's table rows — edit the rows, not the tiles.",
 
-    navExternalTitle: "External", navExternalDesc: "Etimad tender pipeline + industry/press news tracking.", navExternalOwner: "Firas",
+    navExternalTitle: "External", navExternalDesc: "Etimad opportunity pipeline + industry/press news tracking.", navExternalOwner: "Firas",
     navInternalTitle: "Internal Performance", navInternalDesc: "RFP pipeline — submitted, value, stage, next step.", navInternalOwner: "Firas",
     navProjectsTitle: "Projects & Prototypes", navProjectsDesc: "Live projects in operations + the prototypes tracker.", navProjectsOwner: "Sameer / Mohammed",
     navMarketingTitle: "Marketing", navMarketingDesc: "Campaigns, brand, and external communications tracking.", navMarketingOwner: "Faisal",
@@ -1265,7 +1369,7 @@ const DEFAULT_STATE = {
     kpiPrototypesLabel: "Prototypes Tracked", kpiPrototypesSub: "in the Makers + on shelf",
     kpiOpenTasksLabel: "Open Tasks", kpiOpenTasksSub: "not yet marked Done",
 
-    kpiExtOpenLabel: "Open Tenders Tracked", kpiExtOpenSub: "current baseline",
+    kpiExtOpenLabel: "Open Opportunities Tracked", kpiExtOpenSub: "current baseline",
     kpiExtMissingLabel: "Missing Fit", kpiExtMissingSub: "need enrichment",
     kpiExtTopCatLabel: "Largest Category",
 
@@ -1293,7 +1397,7 @@ const DEFAULT_STATE = {
     githubSyncDesc: "This dashboard stores its data as a single JSON file in a private GitHub repo you control. Paste a personal access token with access to that repo once — it's saved in this browser only (never sent anywhere but GitHub's API), so this browser auto-connects and auto-saves your edits from now on. Click \"Disconnect\" below to remove it from this browser.",
     syncNotConnectedMsg: "Not connected — this page shows its built-in starting content until you connect.",
 
-    addBtnTender: "+ add tender", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
+    addBtnTender: "+ add opportunity", addBtnNewsItem: "+ add item", addBtnOpportunity: "+ add opportunity",
     addBtnProject: "+ add project", addBtnPrototype: "+ add prototype", addBtnMarketing: "+ add campaign", addBtnTask: "+ add task",
     addBtnMilestone: "+ add milestone", addBtnTodo: "+ add to-do", addBtnRaciRow: "+ add row",
     addBtnSource: "+ add source", addBtnMethodNote: "+ add note", addBtnTeam: "+ add team member",
@@ -1305,7 +1409,7 @@ const DEFAULT_STATE = {
     tipChatOpen: "Ask Saud", tipChatClose: "Close", tipChatSend: "Send",
     chatFabIcon: "💬", chatHeaderIcon: "💬", chatCloseIcon: "✕", chatSendIcon: "➤",
     chatHeaderTitle: "Ask Saud", chatHeaderSub: "Grounded in this dashboard's live data",
-    chatEmptyMsg: "Ask about tenders, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
+    chatEmptyMsg: "Ask about opportunities, pipeline value, projects, prototypes, or tasks — anything on this dashboard.",
 
     footerNote: "Click \"Edit\" to change anything on this page — titles, text, numbers, order, colors, table rows, even section and column headers — then \"Save to GitHub\" to make it permanent. Use the ▲▼ arrows to reorder, ⧉ to duplicate, and ✕ (twice) to delete. Without GitHub connected, edits autosave to this browser only."
   },
@@ -1383,7 +1487,7 @@ const TITLES_AR = {
   h1: "لوحة متابعة مدوام",
   subtitle: "وكيل الذكاء الإبداعي — أين نقف، وما الذي ثبت، وما الخطوة التالية.",
   ownerLine: "المالك: الحارث هندي",
-  sectionExternal: "اعتماد — المنافسات المطروحة",
+  sectionExternal: "اعتماد — الفرص المطروحة",
   sectionNews: "الأخبار — متابعة التغطية",
   sectionInternal: "الأداء الداخلي — طلبات العروض والفرص",
   sectionProbTable: "احتمالية الفوز حسب المرحلة",
@@ -1404,24 +1508,24 @@ const TITLES_AR = {
   pipelineChartEmpty: "لا توجد فرص مسجلة بعد — أضف صفوفًا في الأداء الداخلي لعرض هذا الرسم.",
   globalSearchPlaceholder: "🔎 ابحث في كل شيء...",
   globalSearchEmpty: "لا توجد نتائج",
-  externalOwnerLine: "المسؤول: فراس · منافسات اعتماد، مع التركيز على السياحة والمعارض.",
+  externalOwnerLine: "المسؤول: فراس · فرص اعتماد، مع التركيز على السياحة والمعارض.",
   internalOwnerLine: "المسؤول: فراس · أرقام القيمة والمرحلة توضيحية حتى تُستبدل بفرص حقيقية.",
   projectsOwnerLine: "المسؤول: سمير · متابعة الحالة المالية والتشغيلية للمشاريع القائمة.",
   prototypesOwnerLine: "المسؤول: محمد · «القيمة» درجة مؤقتة — تُعاد صياغتها عند اعتماد طريقة تقييم فعلية.",
   marketingOwnerLine: "المسؤول: فيصل المدني · مدير التسويق — الحملات والهوية والتواصل الخارجي لمبادرات سعود.",
-  externalFooterNote: "التصنيف يُحدَّد لكل صف، ويُقترح تلقائيًا من كلمات عنوان المنافسة العربي — يمكنك تعديله في وضع التحرير.",
+  externalFooterNote: "التصنيف يُحدَّد لكل صف، ويُقترح تلقائيًا من كلمات عنوان الفرصة العربي — يمكنك تعديله في وضع التحرير.",
   internalFooterNote: "القيمة المرجّحة = القيمة × احتمالية الفوز لمرحلة الفرصة، من جدول الاحتمالات أدناه.",
   probNote: "احتمالات مؤقتة — تُستبدل بأرقام فعلية عند توفر عدد كافٍ من الفرص المغلقة لحساب نسبة الفوز.",
   legendPlaceholder: "التظليل الكهرماني — بيانات مؤقتة أو مثال، ما زالت تحتاج قيمة حقيقية.",
   legendStatusPills: "شارات الحالة ملوّنة حسب معناها (الأخضر = منجز، الكهرماني = قيد التنفيذ، الأحمر = متوقف/خاسر) — بنفس الأسلوب في كل الصفحات.",
   legendKpiNote: "مؤشرات الأداء أعلى كل صفحة تُحسب تلقائيًا من صفوف الجدول — عدّل الصفوف لا المؤشرات.",
-  navExternalTitle: "اعتماد", navExternalDesc: "منافسات اعتماد ومتابعة أخبار القطاع والإعلام.", navExternalOwner: "فراس",
+  navExternalTitle: "اعتماد", navExternalDesc: "فرص اعتماد ومتابعة أخبار القطاع والإعلام.", navExternalOwner: "فراس",
   navInternalTitle: "الأداء الداخلي", navInternalDesc: "طلبات العروض — ما قُدِّم، القيمة، المرحلة، الخطوة التالية.", navInternalOwner: "فراس",
   navProjectsTitle: "المشاريع والنماذج الأولية", navProjectsDesc: "المشاريع القائمة ومتابعة النماذج الأولية.", navProjectsOwner: "سمير / محمد",
   navMarketingTitle: "التسويق", navMarketingDesc: "متابعة الحملات والهوية والتواصل الخارجي.", navMarketingOwner: "فيصل",
   navTasksTitle: "المهام والخطوات التالية", navTasksDesc: "المهام الدورية، مراحل الشهر القادم، قائمة المهام.", navTasksOwner: "الجميع",
   navNotesTitle: "ملاحظات ودليل", navNotesDesc: "الملكية، مصادر البيانات، المنهجية.", navNotesOwner: "—",
-  colExtRn: "الرقم المرجعي", colExtName: "اسم المنافسة", colExtAgency: "الجهة", colExtFit: "الملاءمة", colExtCategory: "التصنيف", colExtDeadline: "آخر موعد للعروض", colExtNotes: "ملاحظات",
+  colExtRn: "الرقم المرجعي", colExtName: "اسم الفرصة", colExtAgency: "الجهة", colExtFit: "الملاءمة", colExtCategory: "التصنيف", colExtDeadline: "آخر موعد للعروض", colExtNotes: "ملاحظات",
   colNewsDate: "التاريخ", colNewsSource: "المصدر", colNewsHeadline: "العنوان", colNewsRelevance: "الأهمية لمدوام", colNewsLink: "الرابط", colNewsNotes: "ملاحظات",
   colIntName: "الفرصة", colIntClient: "العميل / الجهة", colIntValue: "القيمة (ر.س)", colIntStage: "المرحلة", colIntSubDate: "تاريخ التقديم", colIntNext: "الخطوة التالية", colIntOwner: "المسؤول", colIntWeighted: "القيمة المرجّحة (ر.س)",
   colProbStage: "المرحلة", colProbWin: "احتمالية الفوز",
@@ -1439,7 +1543,7 @@ const TITLES_AR = {
   kpiProjectsLabel: "المشاريع المتابَعة", kpiProjectsSub: "تشمل المغلقة",
   kpiPrototypesLabel: "النماذج الأولية", kpiPrototypesSub: "قيد التطوير + المؤجلة",
   kpiOpenTasksLabel: "المهام المفتوحة", kpiOpenTasksSub: "لم تُنجز بعد",
-  kpiExtOpenLabel: "المنافسات المتابَعة", kpiExtOpenSub: "القائمة الحالية",
+  kpiExtOpenLabel: "الفرص المتابَعة", kpiExtOpenSub: "القائمة الحالية",
   kpiExtMissingLabel: "دون تقييم ملاءمة", kpiExtMissingSub: "تحتاج استكمال",
   kpiExtTopCatLabel: "التصنيف الأكبر",
   kpiIntLoggedLabel: "الفرص المسجّلة", kpiIntLoggedSub: "كل المراحل",
@@ -1461,7 +1565,7 @@ const TITLES_AR = {
   githubSyncHeading: "مزامنة GitHub — تجعل التعديلات دائمة وتحفظ سجلًا كاملًا لكل تغيير.",
   githubSyncDesc: "تحفظ هذه اللوحة بياناتها في ملف JSON داخل مستودع GitHub خاص تملكه. الصق رمز وصول للمستودع مرة واحدة — يُحفظ في هذا المتصفح فقط ولا يُرسل إلا إلى GitHub، فتتصل اللوحة وتحفظ تعديلاتك تلقائيًا. اضغط «Disconnect» لإزالته من هذا المتصفح.",
   syncNotConnectedMsg: "غير متصل — تعرض الصفحة محتواها الافتراضي حتى يتم الاتصال.",
-  addBtnTender: "+ إضافة منافسة", addBtnNewsItem: "+ إضافة خبر", addBtnOpportunity: "+ إضافة فرصة",
+  addBtnTender: "+ إضافة فرصة", addBtnNewsItem: "+ إضافة خبر", addBtnOpportunity: "+ إضافة فرصة",
   addBtnProject: "+ إضافة مشروع", addBtnPrototype: "+ إضافة نموذج", addBtnMarketing: "+ إضافة حملة", addBtnTask: "+ إضافة مهمة",
   addBtnMilestone: "+ إضافة مرحلة", addBtnTodo: "+ إضافة بند", addBtnRaciRow: "+ إضافة صف",
   addBtnSource: "+ إضافة مصدر", addBtnMethodNote: "+ إضافة ملاحظة", addBtnTeam: "+ إضافة عضو",
@@ -1470,7 +1574,7 @@ const TITLES_AR = {
   iconMoveUpTip: "تحريك لأعلى", iconMoveDownTip: "تحريك لأسفل", iconDuplicateTip: "تكرار",
   tipChatOpen: "اسأل سعود", tipChatClose: "إغلاق", tipChatSend: "إرسال",
   chatHeaderTitle: "اسأل سعود", chatHeaderSub: "يعتمد على بيانات اللوحة المباشرة",
-  chatEmptyMsg: "اسأل عن المنافسات، قيمة الفرص، المشاريع، النماذج، أو المهام — أي شيء في هذه اللوحة.",
+  chatEmptyMsg: "اسأل عن الفرص، قيمة الفرص، المشاريع، النماذج، أو المهام — أي شيء في هذه اللوحة.",
   footerNote: "اضغط «تحرير» لتعديل أي شيء في الصفحة — العناوين والنصوص والأرقام والترتيب والصفوف — ثم «حفظ في GitHub». استخدم ▲▼ لإعادة الترتيب، و⧉ للتكرار، و✕ (مرتين) للحذف.",
   tabProgram: "برنامج سعود",
   sectionPhases: "تقدّم المراحل",
@@ -1482,9 +1586,9 @@ const TITLES_AR = {
   colCap: "القدرة", colOwner: "المسؤول", colTier: "المستوى", colStatus: "الحالة",
   addBtnPhase: "+ إضافة مرحلة", addBtnCapTeam: "+ إضافة فريق", addBtnCapability: "+ إضافة قدرة",
   addBtnGap: "+ إضافة فجوة", addBtnProgramStep: "+ إضافة خطوة",
-  sectionExtExcluded: "المنافسات المستبعدة",
-  extExcludedSub: "منافسات تم استبعادها مع السبب — محفوظة حتى لا يُعاد فحصها.",
-  colExclReason: "سبب الاستبعاد", addBtnExcluded: "+ إضافة منافسة مستبعدة",
+  sectionExtExcluded: "الفرص المنتهية",
+  extExcludedSub: "الفرص التي انتهى موعد تقديمها تنتقل هنا تلقائيًا، ويمكنك أيضًا نقل ما تم استبعاده.",
+  colExclReason: "الحالة / السبب", addBtnExcluded: "+ إضافة فرصة منتهية",
   emptyRowMsg: "لا يوجد شيء بعد — اضغط «✎ تحرير» ثم «+ إضافة» لتسجيل أول بند.",
   emptySearchMsg: "لا توجد نتائج.",
   programNavDesc: "المراحل، مصفوفة القدرات، الفجوات المعروفة، والخطوات التالية لسعود.",
@@ -1498,7 +1602,7 @@ const TITLES_AR = {
 
 /* fixed UI phrases that live in code rather than in titles */
 const UI_AR = {
-  "Workspace":"مساحة العمل", "SAR":"ر.س", "tender":"منافسة", "tenders":"منافسات",
+  "Workspace":"مساحة العمل", "SAR":"ر.س", "tender":"فرصة", "tenders":"فرص",
   "capabilities":"قدرات", "Tier":"المستوى", "Details ▾":"التفاصيل ▾", "Details ▴":"التفاصيل ▴",
   "Type":"النوع", "Inquiries":"الاستفسارات", "Expected award":"الترسية المتوقعة", "Project start":"بداية المشروع",
   "Submission":"طريقة التقديم", "Place":"المكان", "Document fee":"قيمة الوثائق", "Partners":"الشركاء", "Scope":"النطاق",
@@ -1509,13 +1613,13 @@ const UI_AR = {
   "Added":"تمت الإضافة", "Removed":"تم الحذف", "Duplicated":"تم التكرار", "Undone":"تم التراجع",
   "Date updated":"تم تحديث التاريخ", "Saved to GitHub":"تم الحفظ في GitHub", "Saved locally":"محفوظ محليًا",
   "Excel exported":"تم تصدير Excel", "Draft discarded":"تم حذف المسودة", "GitHub sync disconnected":"تم قطع مزامنة GitHub",
-  "🔎 Search tenders, projects, tasks...":"🔎 ابحث في المنافسات والمشاريع والمهام...",
-  "🔎 Search competition name, agency, or RN...":"🔎 ابحث باسم المنافسة أو الجهة أو الرقم...",
-  "Ask about tenders, pipeline, projects…":"اسأل عن المنافسات والفرص والمشاريع…",
+  "🔎 Search tenders, projects, tasks...":"🔎 ابحث في الفرص والمشاريع والمهام...",
+  "🔎 Search competition name, agency, or RN...":"🔎 ابحث باسم الفرصة أو الجهة أو الرقم...",
+  "Ask about tenders, pipeline, projects…":"اسأل عن الفرص والفرص والمشاريع…",
   "Phase":"المرحلة",
   "Translating content…":"جارٍ ترجمة المحتوى…",
-  "Tender":"منافسة", "Opportunity":"فرصة", "Project":"مشروع", "Prototype":"نموذج أولي", "Campaign":"حملة",
-  "Task":"مهمة", "Milestone":"مرحلة", "To-do":"بند", "Capability":"قدرة", "Excluded tender":"منافسة مستبعدة",
+  "Tender":"فرصة", "Opportunity":"فرصة", "Project":"مشروع", "Prototype":"نموذج أولي", "Campaign":"حملة",
+  "Task":"مهمة", "Milestone":"مرحلة", "To-do":"بند", "Capability":"قدرة", "Excluded tender":"فرصة منتهية",
   "Disconnect":"قطع الاتصال", "Connecting...":"جارٍ الاتصال...", "Saving...":"جارٍ الحفظ...",
   "Connected and loaded from GitHub. Edits now auto-save to GitHub a couple seconds after you stop typing.":"تم الاتصال والتحميل من GitHub. تُحفظ التعديلات تلقائيًا بعد ثوانٍ من التوقف عن الكتابة.",
   "Fill in the token, repo owner, and repo name first.":"أدخل الرمز واسم مالك المستودع واسم المستودع أولًا.",
@@ -1538,7 +1642,19 @@ const UI_AR = {
   "Sound on":"الصوت مفعّل", "Sound off":"الصوت متوقف", "Listen":"استماع", "Stop":"إيقاف", "Ask Saud by voice":"اسأل سعود بصوتك",
   "Voice input isn't supported in this browser":"الإدخال الصوتي غير مدعوم في هذا المتصفح", "Couldn't hear you — try again":"لم أسمعك — حاول مرة أخرى",
   "Listening…":"أستمع…", "Drag to spin · click a node":"اسحب للتدوير · انقر على نقطة", "LIVE":"مباشر", "Pipeline":"خط المبيعات",
-  "opportunities":"فرص", "Etimad":"اعتماد", "active tenders":"منافسات نشطة", "excluded":"مستبعدة", "News":"أخبار", "Open to-dos":"مهام مفتوحة",
+  "opportunities":"فرص",
+  "Customize":"تخصيص", "All months":"كل الأشهر", "Expired opportunity":"فرصة منتهية", "Expired — submission deadline passed":"منتهية — انتهى موعد التقديم", "Search or ask Saud…":"ابحث أو اسأل سعود…", "Comment":"تعليق", "Comment on anything or ask Saud about it":"علّق على أي عنصر أو اسأل سعود عنه",
+  "Comment mode — click any element to comment or ask Saud · Esc to exit":"وضع التعليق — انقر على أي عنصر للتعليق أو لسؤال سعود · Esc للخروج",
+  "This element":"هذا العنصر", "Write a comment or a question…":"اكتب تعليقًا أو سؤالًا…", "Your name":"اسمك", "Reply…":"ردّ…", "Reply":"ردّ",
+  "Resolve":"تم الحل", "Reopen":"إعادة فتح", "Resolved":"محلول", "Delete":"حذف", "edited":"معدّل", "element not visible":"العنصر غير ظاهر",
+  "As admin you can click any message to edit it — changes save automatically.":"بصفتك المسؤول يمكنك النقر على أي رسالة لتعديلها — تُحفظ التغييرات تلقائيًا.",
+  "Comment updated":"تم تحديث التعليق", "Comment deleted":"تم حذف التعليق", "Saud is thinking…":"سعود يفكر…", "replies":"ردود",
+  "No comments yet — press 💬 Comment at the top, then click anything on the page.":"لا توجد تعليقات بعد — اضغط 💬 تعليق في الأعلى ثم انقر على أي عنصر في الصفحة.",
+  "Display & experience":"العرض والتجربة", "Motion & effects":"الحركة والمؤثرات", "Animations, 3D effects, cursor trail and background. Turn off for a calmer, faster dashboard.":"الحركات والمؤثرات ثلاثية الأبعاد وأثر المؤشر والخلفية. أوقفها للوحة أهدأ وأسرع.",
+  "Sound":"الصوت", "Soft interface sounds on hover, click and page change.":"أصوات خفيفة عند المرور والنقر وتغيير الصفحة.",
+  "Full screen, no menus. Move between pages with the keyboard arrows or the dots at the bottom.":"ملء الشاشة بدون قوائم. تنقّل بين الصفحات بأسهم لوحة المفاتيح أو النقاط في الأسفل.",
+  "Export":"تصدير", "Download the dashboard as slides, or print it.":"نزّل اللوحة كشرائح أو اطبعها.", "Theme":"المظهر",
+  "Data & GitHub sync":"البيانات ومزامنة GitHub", "Comments":"التعليقات", "Show resolved comments on the page":"إظهار التعليقات المحلولة على الصفحة", "Etimad":"اعتماد", "active tenders":"فرص نشطة", "excluded":"منتهية", "News":"أخبار", "Open to-dos":"مهام مفتوحة",
   "Command center":"مركز الأوامر", "Notifications":"التنبيهات", "All clear":"لا توجد تنبيهات", "Due today":"مستحق اليوم", "Overdue":"متأخر",
   "Critical gap":"فجوة حرجة", "No opportunities logged in the pipeline yet":"لا توجد فرص مسجلة في خط المبيعات بعد",
   "Not synced — changes stay in this browser":"غير متزامن — التعديلات تبقى في هذا المتصفح فقط", "Quick add":"إضافة سريعة", "Title":"العنوان",
@@ -1569,13 +1685,13 @@ function T(){
   if(LANG !== "ar") return base;
   return Object.assign({}, base, TITLES_AR, (state && state.titlesAr) || {});
 }
-function L(s){ return LANG === "ar" && Object.prototype.hasOwnProperty.call(UI_AR, s) ? UI_AR[s] : s; }
+function L(s){ if(LANG === "ar") return Object.prototype.hasOwnProperty.call(UI_AR, s) ? UI_AR[s] : s; return (typeof EN_TERMS !== "undefined" && EN_TERMS[s]) || s; }
 function disp(v){ if(LANG === "ar" && Object.prototype.hasOwnProperty.call(ENUM_AR, v)) return ENUM_AR[v]; return (typeof tx === "function") ? tx(v) : v; }
 function dateLocale(){ return LANG === "ar" ? "ar-u-ca-gregory-nu-latn" : undefined; }
 function applyLangChrome(){
   const html = document.documentElement;
   html.lang = LANG; html.dir = LANG === "ar" ? "rtl" : "ltr";
-  const btn = document.getElementById("langToggle"); if(btn) btn.textContent = LANG === "ar" ? "English" : "عربي";
+  const btn = document.getElementById("langToggle"); if(btn) btn.innerHTML = `<span class="${LANG==="en"?"on":""}">EN</span><span class="${LANG==="ar"?"on":""}">ع</span>`;
   const nl = document.getElementById("navLabel"); if(nl) nl.textContent = L("Workspace");
   const gs = document.getElementById("globalSearch"); if(gs) gs.placeholder = L("🔎 Search tenders, projects, tasks...");
   const es = document.getElementById("externalSearch"); if(es) es.placeholder = L("🔎 Search competition name, agency, or RN...");
@@ -1600,7 +1716,7 @@ function toggleLang(){
    and filled in automatically through the Saud worker (Claude), then saved with the data —
    so each new entry is translated once and everyone sees both languages. While editing,
    the original text is shown so edits always change the source, never a translation. */
-const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity"]);
+const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity","comments","_v14terms"]);
 const TR_SKIP_FIELDS = new Set(["color","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
 const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
 function needsTr(s, lang){
@@ -1802,8 +1918,8 @@ function renderHero(){
   if(sub){
     const up = upcomingItems(7).length, opps = (state.internal||[]).length, tenders = (state.external||[]).length;
     sub.textContent = LANG === "ar"
-      ? `${tenders} منافسة نشطة · ${opps} فرصة في خط المبيعات · ${up} موعد خلال 7 أيام`
-      : `${tenders} active tenders · ${opps} opportunities in the pipeline · ${up} due in the next 7 days`;
+      ? `${tenders} فرصة نشطة · ${opps} فرصة في خط المبيعات · ${up} موعد خلال 7 أيام`
+      : `${tenders} active opportunities · ${opps} opportunities in the pipeline · ${up} due in the next 7 days`;
   }
   updateSyncPill();
   const btn = document.getElementById("briefBtn"); if(btn && !btn.disabled) btn.innerHTML = "✨ " + escapeHtml(L("Brief me"));
@@ -1956,15 +2072,15 @@ function renderInternalBoard(){
 let __cmdkItems = [], __cmdkSel = 0;
 function cmdkCommands(){
   const t = T();
-  const pages = [["overview","tabOverview","◫"],["program","tabProgram","◎"],["external","tabExternal","▤"],["internal","tabInternal","▥"],["projects","tabProjects","◈"],["marketing","tabMarketing","◉"],["tasks","tabTasks","☑"],["notes","tabNotes","❏"]]
-    .map(([p,k,ic])=>({ group:L("Go to"), label:t[k]||p, ic, run:()=>switchPage(p) }));
+  const pages = [["overview","tabOverview","◫"],["program","tabProgram","◎"],["external","tabExternal","▤"],["internal","tabInternal","▥"],["projects","tabProjects","◈"],["marketing","tabMarketing","◉"],["tasks","tabTasks","☑"],["customize","tabCustomize","⚙"]]
+    .map(([p,k,ic])=>({ group:L("Go to"), label:t[k]||(p==="customize"?L("Customize"):p), ic, run:()=>switchPage(p) }));
   const actions = [
     { label:L("Switch language"), ic:"🌐", run:toggleLang },
     { label:L("Brief me"), ic:"✨", run:()=>{ switchPage("overview"); briefMe(); } },
     { label:L("Ask Saud"), ic:"💬", run:()=>{ const f=document.getElementById("saud-chat-fab"); if(f) f.click(); } },
     { label:t.btnEdit||"Edit", ic:"✎", run:()=>document.getElementById("toggleEdit").click() },
-    { label:t.btnTheme||"Theme", ic:"🎨", run:()=>document.getElementById("themePanel").classList.toggle("open") },
-    { label:t.btnGithubSync||"GitHub sync", ic:"⇄", run:()=>document.getElementById("syncPanel").classList.toggle("open") },
+    { label:t.btnTheme||"Theme", ic:"🎨", run:()=>switchPage("customize") },
+    { label:t.btnGithubSync||"GitHub sync", ic:"⇄", run:()=>switchPage("customize") },
     { label:L("Pipeline board"), ic:"▦", run:()=>{ switchPage("internal"); setInternalView("board"); } },
     { label:t.btnExportPptx||"Export PPTX", ic:"⬇", run:()=>exportPPTX() },
     { label:t.btnExportExcel||"Export Excel", ic:"⬇", run:()=>{ switchPage("external"); exportExternalExcel(); } },
@@ -2076,7 +2192,7 @@ function renderV9(){
 
 /* ======================= v10: more immersive + interactive ======================= */
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const PAGE_ORDER = ["overview","program","external","internal","projects","marketing","tasks","notes"];
+const PAGE_ORDER = ["overview","program","external","internal","projects","marketing","tasks"];
 function currentPage(){ const a = document.querySelector(".page.active"); return a ? a.id.replace("page-","") : "overview"; }
 
 /* live countdowns on anything due within 7 days (ticks with the clock) */
@@ -2263,7 +2379,7 @@ function openDrawer(section, i){
 function closeDrawer(){ const d = document.getElementById("drawer"); if(d && d.classList.contains("show")){ d.classList.remove("show"); if(typeof sfx === "function") sfx("close"); } }
 function findIndex(section, title){ return (state[section]||[]).findIndex(r=>rowLabel(r) === title); }
 document.addEventListener("click", e=>{
-  if(editing) return;
+  if(editing || (typeof CMT_MODE !== "undefined" && CMT_MODE)) return;
   const ag = e.target.closest(".agenda-item[data-sec]");
   if(ag){ e.preventDefault(); e.stopPropagation(); openDrawer(ag.dataset.sec, +ag.dataset.idx); return; }
   const tl = e.target.closest(".tl-dot[data-sec]");
@@ -2312,7 +2428,7 @@ function renderBell(){
     `<div class="bp-item ${a.sev}" data-k="${k}"><span class="bp-ic">${a.ic}</span><div><div>${escapeHtml(a.text)}</div>${a.sub?`<small>${escapeHtml(a.sub)}</small>`:""}</div></div>`).join("")
     : `<div class="ov-note" style="padding:14px">${escapeHtml(L("All clear"))}</div>`);
   p.querySelectorAll(".bp-item").forEach(el=>el.onclick = ()=>{ const a = list[+el.dataset.k]; p.classList.remove("show");
-    if(a.sec && a.idx >= 0) openDrawer(a.sec, a.idx); else if(a.page) switchPage(a.page); else document.getElementById("syncPanel").classList.add("open"); });
+    if(a.sec && a.idx >= 0) openDrawer(a.sec, a.idx); else if(a.page) switchPage(a.page); else switchPage("customize"); });
 }
 function toggleBell(e){ if(e) e.stopPropagation(); const p = document.getElementById("bellPanel"); renderBell(); p.classList.toggle("show"); }
 document.addEventListener("click", e=>{ const p = document.getElementById("bellPanel"); if(p && p.classList.contains("show") && !e.target.closest("#bellPanel, #bellBtn")) p.classList.remove("show"); });
@@ -2565,7 +2681,7 @@ function pageFx(page){
   sfx("page");
   if(!fxOn()) return;
   const w = document.getElementById("pageWipe"); if(w){ w.classList.remove("go"); void w.offsetWidth; w.classList.add("go"); }
-  const pt = document.getElementById("pageTitle"); if(pt){ pt.classList.remove("glitch"); void pt.offsetWidth; pt.dataset.t = pt.textContent; pt.classList.add("glitch"); }
+  const pt = document.getElementById("pageTitle"); if(pt){ pt.classList.remove("glitch"); void pt.offsetWidth; pt.dataset.t = pt.textContent; pt.classList.remove("glitch"); }
   const a = document.querySelector(".page.active");
   if(a && document.body.classList.contains("present")){ a.classList.remove("slide-n","slide-p"); void a.offsetWidth; a.classList.add(dir > 0 ? "slide-n" : "slide-p"); }
 }
@@ -2593,6 +2709,301 @@ function renderV12(){
   const mic = document.getElementById("micBtn"); if(mic){ mic.title = L("Ask Saud by voice"); mic.style.display = SR ? "" : "none"; }
   const cl = document.getElementById("coreLabel"); if(cl) cl.textContent = L("Drag to spin · click a node");
 }
+
+/* ======================= v13: comments on any element + sidebar search + Customize tab ======================= */
+
+/* ---------- who am I / am I the admin ---------- */
+function isAdmin(){ return !READONLY && typeof gh !== "undefined" && !!gh.connected; }
+function myName(){
+  let n = ""; try{ n = localStorage.getItem("saudCommenter") || ""; }catch(e){}
+  if(!n && isAdmin()) n = ((T().ownerLine||"").split(":").pop()||"").trim() || "Admin";
+  return n;
+}
+function setMyName(n){ try{ localStorage.setItem("saudCommenter", n); }catch(e){} }
+function cmtList(){ state.comments = Array.isArray(state.comments) ? state.comments : []; return state.comments; }
+function cmtSave(){ saveLocalDraft(); renderCommentPins(); renderCommentsPanel(); updateCmtBadge(); }
+
+/* ---------- stable anchor for an element ---------- */
+function cmtSelector(el){
+  const esc = s => (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/"/g, '\\"');
+  const parts = [];
+  let cur = el, depth = 0;
+  while(cur && cur.nodeType === 1 && depth < 10){
+    if(cur.dataset && cur.dataset.bind){ parts.unshift(`[data-bind="${cur.dataset.bind.replace(/"/g,'\\"')}"]`); break; }
+    if(cur.id && !/^(app|sidebar)$/.test(cur.id)){ parts.unshift("#" + esc(cur.id)); break; }
+    const tag = cur.tagName.toLowerCase(); let i = 1, sib = cur;
+    while((sib = sib.previousElementSibling)) if(sib.tagName === cur.tagName) i++;
+    parts.unshift(`${tag}:nth-of-type(${i})`);
+    cur = cur.parentElement; depth++;
+  }
+  return parts.join(" > ");
+}
+function cmtFind(c){ try{ const el = document.querySelector(c.sel); return el && el.offsetParent !== null ? el : null; }catch(e){ return null; } }
+
+/* ---------- comment mode: hover-highlight, click to comment ---------- */
+let CMT_MODE = false;
+function toggleCommentMode(on){
+  CMT_MODE = typeof on === "boolean" ? on : !CMT_MODE;
+  document.body.classList.toggle("commenting", CMT_MODE);
+  const b = document.getElementById("cmtBtn"); if(b) b.classList.toggle("on", CMT_MODE);
+  const h = document.getElementById("cmtHover"); if(h) h.style.opacity = "0";
+  document.body.dataset.cmtHint = "💬 " + L("Comment mode — click any element to comment or ask Saud · Esc to exit");
+}
+function cmtTargetOk(t){ return t && t.closest && t.closest(".main") && !t.closest("#cmtPop, .cmt-pin, #cmtBtn, .editbar, #cmtHover"); }
+document.addEventListener("mousemove", e=>{
+  if(!CMT_MODE) return; const h = document.getElementById("cmtHover"); if(!h) return;
+  const t = e.target; if(!cmtTargetOk(t)){ h.style.opacity = "0"; return; }
+  const r = t.getBoundingClientRect(); Object.assign(h.style, { opacity:"1", left:(r.left-4)+"px", top:(r.top-4)+"px", width:(r.width+8)+"px", height:(r.height+8)+"px" });
+}, { passive:true });
+document.addEventListener("click", e=>{
+  if(!CMT_MODE || !cmtTargetOk(e.target)) return;
+  e.preventDefault(); e.stopPropagation();
+  openComposer(e.target);
+}, true);
+
+/* ---------- popover (composer + thread) ---------- */
+function placePop(pop, rect){
+  const W = Math.min(380, innerWidth - 24); pop.style.width = W + "px";
+  let x = rect.left + rect.width/2 - W/2; x = Math.max(12, Math.min(innerWidth - W - 12, x));
+  let y = rect.bottom + 10; if(y + 320 > innerHeight) y = Math.max(12, rect.top - 330);
+  pop.style.left = x + "px"; pop.style.top = y + "px"; pop.classList.add("show");
+}
+function closePop(){ const p = document.getElementById("cmtPop"); if(p) p.classList.remove("show"); }
+function snippetOf(el){ return (el.innerText || el.getAttribute("aria-label") || el.title || el.tagName).replace(/\s+/g," ").trim().slice(0,120); }
+function nameField(){ return myName() ? "" : `<input class="cmt-name" placeholder="${escapeHtml(L("Your name"))}">`; }
+function openComposer(el){
+  const pop = document.getElementById("cmtPop"); if(!pop) return;
+  const snip = snippetOf(el);
+  pop.innerHTML = `<div class="cmt-ctx">💬 ${escapeHtml(snip || L("This element"))}</div>${nameField()}
+    <textarea class="cmt-input" rows="3" placeholder="${escapeHtml(L("Write a comment or a question…"))}"></textarea>
+    <div class="cmt-row"><button class="editbtn secondary" data-a="cancel">${escapeHtml(L("Cancel"))}</button>
+      <button class="editbtn secondary" data-a="ask">✨ ${escapeHtml(L("Ask Saud"))}</button>
+      <button class="editbtn" data-a="post">${escapeHtml(L("Comment"))}</button></div>`;
+  placePop(pop, el.getBoundingClientRect());
+  const ta = pop.querySelector(".cmt-input"); setTimeout(()=>ta.focus(), 30);
+  pop.querySelector('[data-a="cancel"]').onclick = closePop;
+  const create = ()=>{
+    const text = ta.value.trim(); if(!text){ ta.focus(); return null; }
+    const nf = pop.querySelector(".cmt-name"); if(nf){ if(!nf.value.trim()){ nf.focus(); return null; } setMyName(nf.value.trim()); }
+    const c = { id: "c" + Date.now().toString(36), page: currentPage(), sel: cmtSelector(el), snippet: snip, text, author: myName(), at: new Date().toISOString(), resolved:false, replies:[] };
+    cmtList().push(c); logActivity("add", "comments", text); cmtSave(); sfx && sfx("pop");
+    return c;
+  };
+  pop.querySelector('[data-a="post"]').onclick = ()=>{ const c = create(); if(c){ toggleCommentMode(false); openThread(c.id); } };
+  pop.querySelector('[data-a="ask"]').onclick = ()=>{ const c = create(); if(c){ toggleCommentMode(false); openThread(c.id); askSaudOnComment(c.id, c.text); } };
+}
+function cmtTime(iso){ return relTime(iso); }
+function openThread(id){
+  const c = cmtList().find(x=>x.id === id); const pop = document.getElementById("cmtPop"); if(!c || !pop) return;
+  if(c.page && c.page !== currentPage()) switchPage(c.page);
+  setTimeout(()=>{
+    const el = cmtFind(c);
+    const admin = isAdmin(), mine = c.author && c.author === myName();
+    const rep = (c.replies||[]).map((r,i)=>`<div class="cmt-msg ${r.ai?"ai":""}"><div class="cmt-meta"><b>${escapeHtml(r.ai ? "Saud ✨" : (r.author||"—"))}</b> · ${escapeHtml(cmtTime(r.at))}
+        ${admin && !r.ai ? `<button class="cmt-x" data-del="${i}" title="${escapeHtml(L("Delete"))}">✕</button>` : ""}${admin && r.ai ? `<button class="cmt-x" data-del="${i}" title="${escapeHtml(L("Delete"))}">✕</button>` : ""}</div>
+        <div class="cmt-text" ${admin ? `contenteditable="true" data-ri="${i}"` : ""}>${escapeHtml(r.text)}</div></div>`).join("");
+    pop.innerHTML = `<div class="cmt-ctx">💬 ${escapeHtml(c.snippet || "")}${el ? "" : ` <i>(${escapeHtml(L("element not visible"))})</i>`}</div>
+      <div class="cmt-msg"><div class="cmt-meta"><b>${escapeHtml(c.author||"—")}</b> · ${escapeHtml(cmtTime(c.at))}${c.edited ? " · " + escapeHtml(L("edited")) : ""}${c.resolved ? ` · <span class="cmt-res">${escapeHtml(L("Resolved"))}</span>` : ""}</div>
+        <div class="cmt-text main-text" ${admin || mine ? 'contenteditable="true"' : ""}>${escapeHtml(c.text)}</div></div>
+      ${rep}
+      ${nameField()}<textarea class="cmt-input" rows="2" placeholder="${escapeHtml(L("Reply…"))}"></textarea>
+      <div class="cmt-row">
+        ${admin ? `<button class="editbtn secondary" data-a="del">🗑 ${escapeHtml(L("Delete"))}</button><button class="editbtn secondary" data-a="res">${c.resolved ? "↺ " + escapeHtml(L("Reopen")) : "✓ " + escapeHtml(L("Resolve"))}</button>` : ""}
+        <button class="editbtn secondary" data-a="ask">✨ ${escapeHtml(L("Ask Saud"))}</button>
+        <button class="editbtn" data-a="reply">${escapeHtml(L("Reply"))}</button></div>
+      ${admin ? `<div class="cmt-hint">✎ ${escapeHtml(L("As admin you can click any message to edit it — changes save automatically."))}</div>` : ""}`;
+    placePop(pop, el ? el.getBoundingClientRect() : { left:innerWidth/2-1, width:2, top:120, bottom:140 });
+    if(el){ el.classList.remove("cmt-flash"); void el.offsetWidth; el.classList.add("cmt-flash"); }
+    // live edit (admin / author)
+    const mt = pop.querySelector(".main-text"); if(mt && mt.isContentEditable) mt.addEventListener("blur", ()=>{ const v = mt.innerText.trim(); if(v && v !== c.text){ c.text = v; c.edited = new Date().toISOString(); cmtSave(); showToast(L("Comment updated")); } });
+    pop.querySelectorAll("[data-ri]").forEach(t=>t.addEventListener("blur", ()=>{ const r = c.replies[+t.dataset.ri]; const v = t.innerText.trim(); if(r && v && v !== r.text){ r.text = v; cmtSave(); showToast(L("Comment updated")); } }));
+    pop.querySelectorAll("[data-del]").forEach(b=>b.onclick = ()=>{ c.replies.splice(+b.dataset.del, 1); cmtSave(); openThread(c.id); });
+    const ta = pop.querySelector(".cmt-input");
+    const who = ()=>{ const nf = pop.querySelector(".cmt-name"); if(nf){ if(!nf.value.trim()){ nf.focus(); return false; } setMyName(nf.value.trim()); } return true; };
+    pop.querySelector('[data-a="reply"]').onclick = ()=>{ const t = ta.value.trim(); if(!t || !who()) return; c.replies.push({ author: myName(), text:t, at:new Date().toISOString() }); cmtSave(); openThread(c.id); };
+    pop.querySelector('[data-a="ask"]').onclick = ()=>{ const t = ta.value.trim(); if(t){ if(!who()) return; c.replies.push({ author: myName(), text:t, at:new Date().toISOString() }); cmtSave(); } askSaudOnComment(c.id, t || c.text); };
+    const del = pop.querySelector('[data-a="del"]'); if(del) del.onclick = ()=>{ const L2 = cmtList(); L2.splice(L2.indexOf(c), 1); cmtSave(); closePop(); showToast(L("Comment deleted")); };
+    const res = pop.querySelector('[data-a="res"]'); if(res) res.onclick = ()=>{ c.resolved = !c.resolved; cmtSave(); openThread(c.id); };
+  }, c.page && c.page !== currentPage() ? 450 : 0);
+}
+async function askSaudOnComment(id, question){
+  const c = cmtList().find(x=>x.id === id); if(!c) return;
+  const el = cmtFind(c);
+  const sec = el && el.closest("section"); const secText = sec ? sec.innerText.replace(/\s+/g," ").slice(0,2500) : "";
+  const pending = { ai:true, text: L("Saud is thinking…"), at:new Date().toISOString(), pending:true }; c.replies.push(pending); openThread(id);
+  if(typeof CORE !== "undefined") CORE.busy = true;
+  try{
+    const prompt = `You are Saud, Midwam's intelligence agent, answering a comment pinned on the Midwam dashboard. Reply in ${LANG === "ar" ? "Arabic (Modern Standard)" : "English"}, max 5 short sentences, specific and practical.\n` +
+      `The comment is attached to this element: "${c.snippet}".\nSurrounding section on the "${currentPage()}" page: ${secText}\nQuestion: ${question}`;
+    const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ messages:[{ role:"user", content:prompt }], context:{} }) });
+    const data = await res.json();
+    pending.text = ((data && data.content && data.content[0] && data.content[0].text) || L("Couldn't reach Saud right now — try again in a moment.")).replace(/\*\*/g,"").trim();
+  }catch(e){ pending.text = L("Couldn't reach Saud right now — try again in a moment."); }
+  delete pending.pending; pending.at = new Date().toISOString();
+  if(typeof CORE !== "undefined") CORE.busy = false;
+  cmtSave(); if(document.getElementById("cmtPop").classList.contains("show")) openThread(id); sfx && sfx("done");
+}
+
+/* ---------- pins on the page ---------- */
+function renderCommentPins(){
+  const layer = document.getElementById("cmtLayer"); if(!layer) return;
+  const page = currentPage(); const showRes = document.body.classList.contains("cmt-show-resolved");
+  let n = 0; let html = "";
+  cmtList().forEach((c,i)=>{
+    if(c.page !== page || (c.resolved && !showRes)) return;
+    const el = cmtFind(c); if(!el) return; n++;
+    const r = el.getBoundingClientRect(); const x = r.right + scrollX - 10, y = r.top + scrollY - 12;
+    const ai = (c.replies||[]).some(x=>x.ai);
+    html += `<button class="cmt-pin ${c.resolved?"res":""} ${ai?"ai":""}" style="left:${x}px; top:${y}px" data-id="${c.id}" title="${escapeHtml(c.text)}">${i+1}${(c.replies||[]).length ? `<small>${c.replies.length}</small>` : ""}</button>`;
+  });
+  layer.innerHTML = html;
+  layer.querySelectorAll(".cmt-pin").forEach(p=>p.onclick = e=>{ e.stopPropagation(); openThread(p.dataset.id); });
+}
+addEventListener("resize", ()=>renderCommentPins());
+setInterval(()=>{ if(!document.hidden) renderCommentPins(); }, 2000);
+document.addEventListener("click", e=>{ const p = document.getElementById("cmtPop"); if(p && p.classList.contains("show") && !e.target.closest("#cmtPop, .cmt-pin, .cu-cmt") && !CMT_MODE) closePop(); });
+document.addEventListener("keydown", e=>{ if(e.key === "Escape"){ closePop(); if(CMT_MODE) toggleCommentMode(false); } });
+function updateCmtBadge(){ const b = document.getElementById("cmtBtn"); if(!b) return; const open = cmtList().filter(c=>!c.resolved).length; const s = b.querySelector(".bell-n"); if(s) s.textContent = open || ""; b.classList.toggle("has", !!open); }
+
+/* ---------- all comments (Customize tab) ---------- */
+const PAGE_NAME_KEY = { overview:"tabOverview", program:"tabProgram", external:"tabExternal", internal:"tabInternal", projects:"tabProjects", marketing:"tabMarketing", tasks:"tabTasks", customize:"tabCustomize" };
+function renderCommentsPanel(){
+  const el = document.getElementById("cuComments"); if(!el) return;
+  const t = T(); const list = cmtList().slice().reverse();
+  el.innerHTML = list.length ? list.map(c=>`<div class="cu-cmt ${c.resolved?"res":""}" data-id="${c.id}">
+      <div class="cu-cmt-top"><b>${escapeHtml(c.author||"—")}</b><span>${escapeHtml(t[PAGE_NAME_KEY[c.page]] || (c.page === "customize" ? L("Customize") : c.page))}</span><span>${escapeHtml(cmtTime(c.at))}</span>${c.resolved ? `<span class="cmt-res">${escapeHtml(L("Resolved"))}</span>` : ""}</div>
+      <div class="cu-cmt-text">${escapeHtml(c.text)}</div><div class="cu-cmt-ctx">↳ ${escapeHtml(c.snippet||"")} · ${(c.replies||[]).length} ${escapeHtml(L("replies"))}</div></div>`).join("")
+    : `<div class="ov-note">${escapeHtml(L("No comments yet — press 💬 Comment at the top, then click anything on the page."))}</div>`;
+  el.querySelectorAll(".cu-cmt").forEach(d=>d.onclick = ()=>openThread(d.dataset.id));
+}
+
+/* ---------- sidebar search (replaces the command center) ---------- */
+let __sbItems = [], __sbSel = 0;
+function renderSbSearch(){
+  const inp = document.getElementById("sbSearch"), box = document.getElementById("sbResults"); if(!inp || !box) return;
+  const raw = inp.value.trim(), q = raw.toLowerCase();
+  if(!q){ box.classList.remove("show"); box.innerHTML = ""; return; }
+  let items = cmdkCommands().filter(c=>c.label.toLowerCase().includes(q));
+  items = items.concat(globalSearch(q).slice(0,8).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) })));
+  items.push({ group:L("Ask Saud"), label:(LANG==="ar" ? "اسأل سعود: " : "Ask Saud: ") + raw, ic:"💬", run:()=>askSaud(raw) });
+  __sbItems = items; __sbSel = 0;
+  let html = "", g = "";
+  items.forEach((c,i)=>{ if(c.group !== g){ html += `<div class="cmdk-group">${escapeHtml(c.group)}</div>`; g = c.group; }
+    html += `<div class="cmdk-item${i===0?" on":""}" data-i="${i}"><span class="ic">${c.ic}</span><span>${escapeHtml(c.label)}</span>${c.sub?`<span class="sub">${escapeHtml(c.sub)}</span>`:""}</div>`; });
+  box.innerHTML = html; box.classList.add("show");
+  box.querySelectorAll(".cmdk-item").forEach(d=>{ d.onmousemove = ()=>sbSelect(+d.dataset.i); d.onclick = ()=>sbRun(+d.dataset.i); });
+}
+function sbSelect(i){ __sbSel = Math.max(0, Math.min(__sbItems.length-1, i)); document.querySelectorAll("#sbResults .cmdk-item").forEach(d=>d.classList.toggle("on", +d.dataset.i === __sbSel)); const on = document.querySelector("#sbResults .cmdk-item.on"); if(on) on.scrollIntoView({ block:"nearest" }); }
+function sbRun(i){ const c = __sbItems[i]; const inp = document.getElementById("sbSearch"); document.getElementById("sbResults").classList.remove("show"); if(inp){ inp.value = ""; inp.blur(); } if(c) setTimeout(c.run, 20); }
+(function wireSb(){
+  const inp = document.getElementById("sbSearch"); if(!inp) return;
+  inp.addEventListener("input", renderSbSearch);
+  inp.addEventListener("focus", ()=>{ if(inp.value.trim()) renderSbSearch(); });
+  inp.addEventListener("keydown", e=>{
+    if(e.key === "ArrowDown"){ e.preventDefault(); sbSelect(__sbSel+1); }
+    else if(e.key === "ArrowUp"){ e.preventDefault(); sbSelect(__sbSel-1); }
+    else if(e.key === "Enter"){ e.preventDefault(); sbRun(__sbSel); }
+    else if(e.key === "Escape"){ inp.value = ""; renderSbSearch(); inp.blur(); }
+  });
+  document.addEventListener("click", e=>{ if(!e.target.closest(".sb-search")){ const b = document.getElementById("sbResults"); if(b) b.classList.remove("show"); } });
+})();
+
+/* ---------- glue ---------- */
+function renderV13(){
+  document.querySelectorAll("[data-l]").forEach(e=>{ e.textContent = L(e.dataset.l); });
+  document.querySelectorAll("[data-lp]").forEach(e=>{ e.placeholder = L(e.dataset.lp); });
+  const lb = document.getElementById("langToggle"); if(lb) lb.innerHTML = `<span class="${LANG==="en"?"on":""}">EN</span><span class="${LANG==="ar"?"on":""}">ع</span>`;
+  const cb = document.getElementById("cmtBtn"); if(cb){ cb.querySelector(".cl").textContent = L("Comment"); cb.title = L("Comment on anything or ask Saud about it"); }
+  ["themePanel","syncPanel"].forEach(id=>{ const p = document.getElementById(id); if(p && !READONLY) p.classList.add("open"); });
+  const sr = document.getElementById("cuShowRes"); if(sr) sr.checked = document.body.classList.contains("cmt-show-resolved");
+  updateCmtBadge(); renderCommentsPanel(); renderCommentPins();
+}
+
+/* ======================= v14: Etimad "opportunities", month filter, auto-expire ======================= */
+/* English wording: tenders are now called opportunities; the excluded list is "expired opportunities" */
+const EN_TERMS = { "Tender":"Opportunity", "tender":"opportunity", "tenders":"opportunities", "Excluded tender":"Expired opportunity",
+  "active tenders":"active opportunities", "excluded":"expired", "🔎 Search competition name, agency, or RN...":"🔎 Search opportunity name, agency, or RN...",
+  "🔎 Search tenders, projects, tasks...":"🔎 Search opportunities, projects, tasks...", "Ask about tenders, pipeline, projects…":"Ask about opportunities, pipeline, projects…" };
+function termEN(s){ return String(s).replace(/Tenders/g,"Opportunities").replace(/tenders/g,"opportunities").replace(/Tender/g,"Opportunity").replace(/tender/g,"opportunity").replace(/Competition name/g,"Opportunity name").replace(/competition name/g,"opportunity name"); }
+function termAR(s){ return String(s).replace(/المنافسات/g,"الفرص").replace(/منافسات/g,"فرص").replace(/المنافسة/g,"الفرصة").replace(/منافسة/g,"فرصة")
+  .replace(/المستبعدة/g,"المنتهية").replace(/مستبعدة/g,"منتهية").replace(/سبب الاستبعاد/g,"الحالة / السبب").replace(/تم استبعادها/g,"انتهى موعدها أو استُبعدت"); }
+function migrateV14(){
+  if(state._v14terms) return;
+  const t = state.titles || {};
+  Object.keys(t).forEach(k=>{ if(typeof t[k] === "string") t[k] = termEN(t[k]); });
+  t.sectionExtExcluded = "Expired opportunities";
+  t.extExcludedSub = "Opportunities whose submission deadline has passed move here automatically. You can also move ones you've ruled out.";
+  t.colExclReason = "Status / reason"; t.addBtnExcluded = "+ add expired opportunity";
+  const a = state.titlesAr || {}; Object.keys(a).forEach(k=>{ if(typeof a[k] === "string") a[k] = termAR(a[k]); });
+  delete a.sectionExtExcluded; delete a.extExcludedSub; delete a.colExclReason; delete a.addBtnExcluded;
+  state._v14terms = true;
+}
+
+/* ---------- auto-expire: active opportunities past their deadline move to "expired" ---------- */
+function expireOpportunities(){
+  if(editing || READONLY || !Array.isArray(state.external)) return 0;
+  const now = Date.now(); const moved = [];
+  state.external = state.external.filter(r=>{
+    const d = dueTarget(r.bidDeadline);
+    if(d && d.getTime() < now){ moved.push(r); return false; }
+    return true;
+  });
+  if(!moved.length) return 0;
+  state.externalExcluded = Array.isArray(state.externalExcluded) ? state.externalExcluded : [];
+  moved.forEach(r=>{
+    state.externalExcluded.unshift(Object.assign({}, r, { deadline: r.bidDeadline, reason: "Expired — submission deadline passed", expiredAuto:true, expiredAt: new Date().toISOString() }));
+    logActivity("move", "externalExcluded", r.name, { to:"Expired" });
+  });
+  return moved.length;
+}
+let __expiring = false;
+function runExpiry(){
+  if(__expiring) return; const n = expireOpportunities();
+  if(n){ __expiring = true; try{ renderAll(); } finally { __expiring = false; }
+    showToast(LANG === "ar" ? `انتقلت ${n} فرصة إلى الفرص المنتهية` : `${n} opportunit${n===1?"y":"ies"} moved to Expired`); }
+}
+setInterval(()=>{ if(!document.hidden) runExpiry(); }, 60000);
+
+/* ---------- filter by month ---------- */
+let EXT_MONTH = ""; try{ EXT_MONTH = sessionStorage.getItem("saudExtMonth") || ""; }catch(e){}
+function monthKey(s){ const d = parseDeadline(s); return d ? d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") : ""; }
+function monthLabel(k){ const [y,m] = k.split("-"); return new Date(+y, +m-1, 1).toLocaleDateString(dateLocale(), { month:"long", year:"numeric" }); }
+function renderMonthFilter(){
+  const sel = document.getElementById("extMonth"); if(!sel) return;
+  const counts = {};
+  (state.external||[]).forEach(r=>{ const k = monthKey(r.bidDeadline); if(k) counts[k] = (counts[k]||0) + 1; });
+  (state.externalExcluded||[]).forEach(r=>{ const k = monthKey(r.deadline || r.bidDeadline); if(k) counts[k] = (counts[k]||0) + 1; });
+  const keys = Object.keys(counts).sort().reverse();
+  if(EXT_MONTH && !counts[EXT_MONTH]) EXT_MONTH = "";
+  sel.innerHTML = `<option value="">📅 ${escapeHtml(L("All months"))}</option>` + keys.map(k=>`<option value="${k}" ${k===EXT_MONTH?"selected":""}>${escapeHtml(monthLabel(k))} (${counts[k]})</option>`).join("");
+  sel.value = EXT_MONTH;
+}
+function filterRowsByMonth(bodyId, field){
+  const body = document.getElementById(bodyId); if(!body) return [0,0];
+  let shown = 0, total = 0, lastHidden = false;
+  body.querySelectorAll(":scope > tr").forEach(tr=>{
+    const cell = tr.querySelector(`[data-bind$=".${field}"]`);
+    if(!cell){ if(lastHidden) tr.style.display = "none"; return; }
+    total++;
+    const m = cell.dataset.bind.match(/^(\w+)\.(\d+)\./); const row = m && state[m[1]] && state[m[1]][+m[2]];
+    const k = row ? monthKey(row[field] || row.bidDeadline) : monthKey(cell.textContent);
+    const hide = !!EXT_MONTH && k !== EXT_MONTH;
+    if(hide) tr.style.display = "none"; else if(tr.style.display === "none") tr.style.display = "";
+    lastHidden = hide; if(!hide) shown++;
+  });
+  return [shown, total];
+}
+function applyMonthFilter(){
+  const a = filterRowsByMonth("externalBody", "bidDeadline"), b = filterRowsByMonth("externalExcludedBody", "deadline");
+  const note = document.getElementById("extMonthNote");
+  if(note) note.textContent = EXT_MONTH ? (LANG === "ar" ? `${monthLabel(EXT_MONTH)}: ${a[0]} نشطة · ${b[0]} منتهية` : `${monthLabel(EXT_MONTH)}: ${a[0]} active · ${b[0]} expired`) : "";
+}
+function setExtMonth(v){ EXT_MONTH = v || ""; try{ sessionStorage.setItem("saudExtMonth", EXT_MONTH); }catch(e){} applyMonthFilter(); }
+// re-apply the month filter whenever either table re-renders
+const __renderExternal0 = renderExternal; renderExternal = function(){ __renderExternal0(); try{ applyMonthFilter(); }catch(e){} };
+const __renderExcl0 = renderExternalExcluded; renderExternalExcluded = function(){ __renderExcl0(); try{ applyMonthFilter(); }catch(e){} };
+
+function renderV14(){ RENDER_FN.externalExcluded = renderExternalExcluded; renderMonthFilter(); applyMonthFilter(); setTimeout(runExpiry, 0); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
@@ -2798,6 +3209,7 @@ function migrateState(){
     state._migratedV2 = true;
   }
   migrateV3();
+  if(typeof migrateV14 === "function") migrateV14();
 }
 
 /* ---------- v3: restore the previous dashboard's work + clean placeholders ---------- */
@@ -2812,9 +3224,9 @@ const V3_TITLE_DEFAULTS = {
   colCap: "Capability", colOwner: "Owner", colTier: "Tier", colStatus: "Status",
   addBtnPhase: "+ add phase", addBtnCapTeam: "+ add team", addBtnCapability: "+ add capability",
   addBtnGap: "+ add gap", addBtnProgramStep: "+ add step",
-  sectionExtExcluded: "Excluded tenders",
+  sectionExtExcluded: "Expired opportunities",
   extExcludedSub: "Listings screened out of the pipeline, with the reason — kept so nobody re-checks them.",
-  colExclReason: "Reason excluded", addBtnExcluded: "+ add excluded tender",
+  colExclReason: "Status / reason", addBtnExcluded: "+ add expired opportunity",
   emptyRowMsg: "Nothing logged yet — click ✎ Edit, then “+ add” to log the first entry.",
   emptySearchMsg: "No matches.",
   programNavDesc: "Phases, capability matrix, known gaps, and next steps for Saud.",
@@ -3161,6 +3573,8 @@ function renderAll(){
   renderV10();
   renderV11();
   renderV12();
+  renderV13();
+  renderV14();
   saveLocalDraft();
   scheduleTranslate();
 }
@@ -3317,8 +3731,7 @@ function renderOverviewNav(){
     { page:"internal", tKey:"navInternalTitle", dKey:"navInternalDesc", oKey:"navInternalOwner" },
     { page:"projects", tKey:"navProjectsTitle", dKey:"navProjectsDesc", oKey:"navProjectsOwner" },
     { page:"marketing", tKey:"navMarketingTitle", dKey:"navMarketingDesc", oKey:"navMarketingOwner" },
-    { page:"tasks", tKey:"navTasksTitle", dKey:"navTasksDesc", oKey:"navTasksOwner" },
-    { page:"notes", tKey:"navNotesTitle", dKey:"navNotesDesc", oKey:"navNotesOwner" }
+    { page:"tasks", tKey:"navTasksTitle", dKey:"navTasksDesc", oKey:"navTasksOwner" }
   ];
   nav.forEach(n=>{
     const btn = document.createElement("button");

@@ -1048,8 +1048,6 @@
   .geo-item:hover{background:color-mix(in srgb, var(--c) 7%, transparent);}
   .geo-item-k{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--c);} .geo-item-t{font-size:13px; color:var(--cream); line-height:1.35; margin:2px 0;}
   .geo-item-s{font-size:11px; color:var(--muted);}
-  .geo-move{display:inline-flex; gap:4px; align-items:center; margin-top:6px; font-size:11px; color:var(--muted);}
-  .geo-move select{background:var(--night); color:var(--sand); border:1px solid var(--border); border-radius:6px; font-size:11px; padding:2px 4px; font-family:inherit;}
   .geo-foot{font-size:10.5px; color:var(--muted); margin-top:8px;} .geo-foot span{opacity:.7;}
   body.calm .geo-arc, body.calm .geo-ring, body.calm .geo-scan, body.calm .geo-beam{animation:none !important;}
   @media (max-width:900px){ .geo-wrap{grid-template-columns:1fr;} }
@@ -3489,7 +3487,6 @@ function geoMatchers(){
   GEO_RX.sort((a,b)=>b.len - a.len); return GEO_RX;
 }
 function geoCityOf(r){
-  if(r.city && GEO_CITIES[r.city]) return { key:r.city, guess:false };
   const order = [r.place, r.location, r.venue, r.agency, r.client, r.name];
   for(const txt of order){ if(!txt) continue; const s = String(txt), sl = s.toLowerCase();
     const m = geoMatchers().find(x=>x.re.test(x.ar ? s : sl));
@@ -3595,16 +3592,12 @@ function renderGeoPanel(){
     return;
   }
   const c = groups.find(g=>g.key === GEO.city) || { items:[] };
-  const opts = Object.entries(GEO_CITIES).map(([k,v])=>[k, LANG === "ar" ? v[1] : v[0]]).sort((a,b)=>a[1].localeCompare(b[1]));
   panel.innerHTML = `<div class="geo-ph"><button class="geo-back" id="geoBack">←</button><b>${escapeHtml(geoName(GEO.city))}</b><span>${c.items.length} ${escapeHtml(L(c.items.length === 1 ? "item" : "items"))}</span></div>` +
     c.items.map(x=>{ const col = x.layer === "expired" ? "var(--geo-past)" : x.days == null ? "var(--good)" : x.days <= 1 ? "var(--critical)" : x.days <= 3 ? "#ff7a45" : x.days <= 7 ? "var(--warning)" : "var(--good)";
       return `<div class="geo-item" data-sec="${x.sec}" data-idx="${x.idx}" style="--c:${col}"><div class="geo-item-k">${escapeHtml(L(x.kind))}${x.guess ? ` <span title="${escapeHtml(L("Estimated location"))}">≈</span>` : ""}</div>
-        <div class="geo-item-t">${escapeHtml(tx(x.title))}</div><div class="geo-item-s">${escapeHtml(tx(x.r.agency || x.r.client || ""))}${x.due ? ` · <span ${x.layer !== "expired" ? `data-due="${escapeHtml(x.due)}"` : ""}>${escapeHtml(x.due)}</span>` : ""}</div>
-        ${isAdmin() ? `<label class="geo-move">📍 <select data-move="${x.sec}:${x.idx}">${opts.map(([k,n])=>`<option value="${k}" ${k === x.city ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}</select></label>` : ""}</div>`; }).join("");
+        <div class="geo-item-t">${escapeHtml(tx(x.title))}</div><div class="geo-item-s">${escapeHtml(tx(x.r.agency || x.r.client || ""))}${x.due ? ` · <span ${x.layer !== "expired" ? `data-due="${escapeHtml(x.due)}"` : ""}>${escapeHtml(x.due)}</span>` : ""}</div></div>`; }).join("");
   panel.querySelector("#geoBack").onclick = ()=>geoZoom(null);
-  panel.querySelectorAll(".geo-item").forEach(el=>el.addEventListener("click", e=>{ if(e.target.closest(".geo-move")) return; openDrawer(el.dataset.sec, +el.dataset.idx); }));
-  panel.querySelectorAll("[data-move]").forEach(s=>s.addEventListener("change", ()=>{ const [sec, i] = s.dataset.move.split(":"); const row = (state[sec]||[])[+i]; if(!row) return;
-    row.city = s.value; saveLocalDraft(); showToast((LANG === "ar" ? "نُقلت إلى " : "Moved to ") + geoName(s.value)); renderGeoMap(); }));
+  panel.querySelectorAll(".geo-item").forEach(el=>el.addEventListener("click", ()=>openDrawer(el.dataset.sec, +el.dataset.idx)));
   if(typeof tickCountdowns === "function") tickCountdowns();
 }
 function renderGeoMap(){

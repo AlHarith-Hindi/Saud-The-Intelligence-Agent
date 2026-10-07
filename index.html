@@ -2024,16 +2024,50 @@ function animateCounters(){
 }
 
 /* ---------- AI daily brief (Saud) — generated in BOTH languages, follows the language switch ---------- */
-function loadBrief(){ try{ const b = JSON.parse(localStorage.getItem("saudBrief")||"null"); return b && b.en && b.ar ? b : null; }catch(e){ return null; } }
+function loadBrief(){
+  try{
+    const b = JSON.parse(localStorage.getItem("saudBrief")||"null"); if(!b || !Array.isArray(b.en)) return null;
+    // v19: repair a brief that was stored as raw JSON text (reply wrapped in ```json or with stray quotes)
+    const raw = b.en.concat(b.ar||[]).some(x=>/^\s*(```|\{|"(en|ar)"\s*:|\[|\]|\})/.test(String(x)));
+    if(raw){ const p = parseBriefReply(b.en.join("\n")); if(p){ p.at = b.at; if(!p.ar){ p.ar = p.en; p.arPending = true; } saveBrief(p); return p; } }
+    if(!Array.isArray(b.ar) || !b.ar.length){ b.ar = b.en; b.arPending = true; }
+    return b;
+  }catch(e){ return null; }
+}
 function saveBrief(b){ try{ localStorage.setItem("saudBrief", JSON.stringify(b)); }catch(e){} }
 function parseBriefReply(text){
-  const s = String(text||""); const a = s.indexOf("{"), z = s.lastIndexOf("}");
-  if(a >= 0 && z > a){ try{ const o = JSON.parse(s.slice(a, z+1)); if(Array.isArray(o.en) && Array.isArray(o.ar) && o.en.length && o.ar.length) return { en:o.en.map(String), ar:o.ar.map(String) }; }catch(e){} }
+  const s = String(text||"").replace(/```(?:json)?/gi, "").trim(); const a = s.indexOf("{"), z = s.lastIndexOf("}");
+  if(a >= 0 && z > a){ try{ const o = JSON.parse(s.slice(a, z+1)); if(Array.isArray(o.en) && o.en.length) return { en:o.en.map(String), ar:(Array.isArray(o.ar) && o.ar.length) ? o.ar.map(String) : null }; }catch(e){} }
+  // tolerant fallback: one bullet per line inside "en": [ … ] / "ar": [ … ] (survives unescaped quotes or a cut-off reply)
+  const out = { en:[], ar:[] }; let cur = null;
+  s.split(/\n/).forEach(line=>{
+    const t = line.trim().replace(/^[{,]\s*/, ""); const k = t.match(/^"?(en|ar)"?\s*:\s*\[\s*(.*)$/i);
+    if(k){ cur = k[1].toLowerCase(); const rest = k[2].trim(); if(!rest) return;
+      const closed = /\]\s*[,}]*\s*$/.test(rest); const body = rest.replace(/\]\s*[,}]*\s*$/, "").trim().replace(/^"/, "").replace(/",?$/, "");
+      if(body) body.split(/"\s*,\s*"/).forEach(x=>{ x = x.trim(); if(x) out[cur].push(x.replace(/\\"/g,'"')); });
+      if(closed) cur = null; return; }
+    if(!cur) return;
+    if(/^\]/.test(t)){ cur = null; return; }
+    const m = t.match(/^"(.*)"\s*,?\s*(\]\s*,?)?$/); if(m){ out[cur].push(m[1].replace(/\\"/g,'"').trim()); if(m[2]) cur = null; }
+  });
+  if(out.en.length) return { en: out.en, ar: out.ar.length ? out.ar : null };
   return null;
+}
+let BRIEF_TR_AT = null;
+async function translateBriefAr(b){
+  if(!b || !b.en || BRIEF_TR_AT === b.at) return; BRIEF_TR_AT = b.at;
+  try{
+    const prompt = `Translate these dashboard brief bullets into professional Modern Standard Arabic. Keep names, numbers and dates. Names in Arabic script: Firas → فراس, Mohammed Alsanea → محمد الصنيع, Sameer → سمير, Faisal → فيصل, Al-Harith → الحارث, Midwam → مدوام. Reply with ONLY the translated bullets, one per line, no numbering, no JSON, no markdown.\n` + b.en.join("\n");
+    const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ messages:[{ role:"user", content:prompt }], context:{} }) });
+    const data = await res.json(); const text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    const lines = text.replace(/```\w*/g,"").split(/\n+/).map(l=>l.replace(/^\s*[-•*\d.)]+\s*/, "").trim()).filter(Boolean);
+    if(lines.length){ const cur = loadBrief(); if(cur && cur.at === b.at){ cur.ar = lines; delete cur.arPending; saveBrief(cur); const box = document.getElementById("briefBox"); if(box) box.dataset.at = ""; renderBrief(false); } }
+  }catch(e){}
 }
 function renderBrief(animate){
   const box = document.getElementById("briefBox"); if(!box) return;
   const b = loadBrief(); if(!b){ box.classList.remove("show"); return; }
+  if(b.arPending && LANG === "ar") translateBriefAr(b);
   if(!animate && box.dataset.lang === LANG && box.dataset.at === b.at) return;   // already showing this brief in this language
   const list = (LANG === "ar" ? b.ar : b.en).map(x=>String(x).replace(/^\s*[-•*\d.)]+\s*/, "").replace(/\*\*/g,"").trim()).filter(Boolean);
   const at = new Date(b.at);
@@ -2073,15 +2107,16 @@ async function briefMe(){
   const prompt = `You are Saud, Midwam's intelligence agent. Write today's executive brief for the dashboard owner as exactly 4 short bullet points: ` +
     `1) what needs attention first (deadlines within 7 days), 2) pipeline/tenders status, 3) Saud program progress or risk (use program.averageProgressPct as the overall progress figure), 4) one concrete recommended action today. ` +
     `Be specific with names and dates from the data. Write it twice: in English, and in professional Modern Standard Arabic (same meaning; names in Arabic script: Firas → فراس, Mohammed Alsanea → محمد الصنيع, Sameer → سمير, Faisal → فيصل, Al-Harith → الحارث; Midwam → مدوام). ` +
-    `Reply with ONLY this JSON, no markdown: {"en":["…","…","…","…"],"ar":["…","…","…","…"]}\nDATA:\n` + JSON.stringify(ctx);
+    `Never put double quotes inside the bullet text (use « » or single quotes instead). Reply with ONLY this JSON, no markdown, no code fences: {"en":["…","…","…","…"],"ar":["…","…","…","…"]}\nDATA:\n` + JSON.stringify(ctx);
   try{
     const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", { method:"POST", headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ messages:[{ role:"user", content:prompt }], context:{} }) });
     const data = await res.json();
     const text = (data && data.content && data.content[0] && data.content[0].text) || "";
     let b = parseBriefReply(text);
-    if(!b){ const lines = text.split(/\n+/).map(l=>l.trim()).filter(Boolean); if(!lines.length) throw new Error("empty"); b = { en:lines, ar:lines }; }
-    b.at = new Date().toISOString(); saveBrief(b);
+    if(!b){ const lines = text.replace(/```\w*/g,"").split(/\n+/).map(l=>l.trim()).filter(l=>l && !/^[\[\]{}]/.test(l)); if(!lines.length) throw new Error("empty"); b = { en:lines, ar:null }; }
+    if(!b.ar){ b.ar = b.en; b.arPending = true; }
+    b.at = new Date().toISOString(); saveBrief(b); if(b.arPending) translateBriefAr(b);
     renderBrief(true); if(typeof sfx === "function") sfx("done");
   } catch(e){
     box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4></div><div class="ov-note">${escapeHtml(L("Couldn't reach Saud right now — try again in a moment."))}</div>`;
@@ -3287,7 +3322,14 @@ function migrateV17(){
   state.styleOverrides = styleOverrides().filter(s=>s.sel !== SEL);
   devRequests().forEach(r=>{ if(r.sel === SEL && r.status === "open"){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Section removed from the dashboard code (v17)."; } });
 }
-function renderV16(){ migrateV17(); applyStyleOverrides(); renderSaudEdits(); }
+function migrateV19(){
+  // v19: brief showed raw JSON and no Arabic — fixed in parseBriefReply/loadBrief; close the two requests from the brief box.
+  if(state._v19brief) return; state._v19brief = true;
+  devRequests().forEach(r=>{ if(r.status === "open" && /^#briefBox/.test(r.sel || "")){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Brief now reads Saud's reply properly (no raw JSON) and shows Arabic when you switch language (v19)."; } });
+  cmtList().forEach(c=>{ if(!c.resolved && /^#briefBox/.test(c.sel || "") && /^✎/.test(c.text || "") && !(c.replies||[]).some(x=>/^Claude:/.test(x.text||""))){
+    c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the brief no longer shows raw code; it shows clean bullet points, and switches to Arabic when you switch language (press ✨ Refresh brief once to get a fresh one).", at:new Date().toISOString() }); } });
+}
+function renderV16(){ migrateV17(); migrateV19(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 

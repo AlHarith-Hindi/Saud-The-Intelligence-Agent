@@ -970,18 +970,6 @@
     </section>
     <section>
       <div class="sechead">
-        <h2 data-bind="titles.sectionMatrix"></h2>
-        <button class="addbtn" onclick="addRow('matrix', {cap:'New capability', owner:'', tier:'1', status:'Framework only'})"><span data-bind="titles.addBtnCapability"></span></button>
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th data-bind="titles.colCap"></th><th data-bind="titles.colOwner"></th><th data-bind="titles.colTier"></th><th data-bind="titles.colStatus"></th><th class="actions"></th></tr></thead>
-          <tbody id="matrixBody"></tbody>
-        </table>
-      </div>
-    </section>
-    <section>
-      <div class="sechead">
         <h2 data-bind="titles.sectionGaps"></h2>
         <button class="addbtn" onclick="addRow('gaps', {text:'New gap', sev:'warning'})"><span data-bind="titles.addBtnGap"></span></button>
       </div>
@@ -3138,7 +3126,15 @@ function renderSaudEdits(){
   el.querySelectorAll("[data-undo-style]").forEach(b=>b.onclick = ()=>{ const L2 = styleOverrides(); const i = L2.findIndex(s=>s.id === b.dataset.undoStyle); if(i>=0){ L2.splice(i,1); applyStyleOverrides(); saveLocalDraft(); renderSaudEdits(); } });
   el.querySelectorAll("[data-del-req]").forEach(b=>b.onclick = ()=>{ const L2 = devRequests(); const i = L2.findIndex(s=>s.id === b.dataset.delReq); if(i>=0){ L2.splice(i,1); saveLocalDraft(); renderSaudEdits(); } });
 }
-function renderV16(){ applyStyleOverrides(); renderSaudEdits(); }
+function migrateV17(){
+  // v17: the Capability & status matrix section was removed from the code (request from Edit with Saud),
+  // so drop the temporary CSS that hid it (its nth-of-type selector would now hide "Known gaps") and close the request.
+  if(state._v17matrix) return; state._v17matrix = true;
+  const SEL = "#page-program > section:nth-of-type(3)";
+  state.styleOverrides = styleOverrides().filter(s=>s.sel !== SEL);
+  devRequests().forEach(r=>{ if(r.sel === SEL && r.status === "open"){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Section removed from the dashboard code (v17)."; } });
+}
+function renderV16(){ migrateV17(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
@@ -4341,7 +4337,6 @@ function switchPage(page){
 
 /* ---------- global search across all sections ---------- */
 const GLOBAL_SEARCH_SOURCES = [
-  { section:"matrix",     page:"program",   kind:"Capability",  fields:["cap","owner","status"],     label:r=>r.cap,        sub:r=>r.owner },
   { section:"externalExcluded", page:"external", kind:"Excluded tender", fields:["name","agency","rn"], label:r=>r.name, sub:r=>r.reason },
   { section:"external",   page:"external",  kind:"Tender",      fields:["name","agency","rn"],       label:r=>r.name,       sub:r=>r.agency },
   { section:"internal",   page:"internal",  kind:"Opportunity", fields:["name","client","owner"],    label:r=>r.name,       sub:r=>r.client },

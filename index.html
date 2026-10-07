@@ -813,6 +813,17 @@
   .ed-live{font-size:12px; font-weight:700; color:var(--copper); letter-spacing:.04em; margin-inline-end:4px;}
   #editDock .editbtn{padding:7px 14px; border-radius:999px;}
   body.present #editDock{display:none !important;}
+  /* v16: edit with Saud */
+  .ep-go{background:linear-gradient(120deg, var(--copper), var(--accent2)) !important; border:none !important;}
+  .ep-sum{font-size:13.5px; color:var(--cream); margin:4px 0 10px; line-height:1.5;}
+  .ep-block{border:1px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:8px; font-size:12px; color:var(--sand);}
+  .ep-block b{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--copper); margin-bottom:6px;}
+  .ep-block pre{margin:0; white-space:pre-wrap; font-family:var(--mono); font-size:11px; color:var(--cream); max-height:140px; overflow:auto;}
+  .ep-row{display:grid; grid-template-columns:auto 1fr auto 1fr; gap:6px; align-items:start; padding:4px 0; border-top:1px dashed var(--border);}
+  .ep-row:first-of-type{border-top:none;} .ep-row code{font-size:10px; color:var(--muted);}
+  .ep-old{color:var(--muted); text-decoration:line-through;} .ep-new{color:var(--good); font-weight:600;} .ep-arrow{color:var(--copper);}
+  .cu-sub{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+  .cu-cmt .tinybtn{margin-top:6px;}
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -1237,6 +1248,11 @@
 
     </section>
     <section>
+      <div class="sechead"><h2 data-l="Saud edits">Saud edits</h2></div>
+      <div class="subhead" data-l="Press 💬 Comment, click anything, describe the change and press ✨ Edit with Saud. Text and numbers change in your data; design changes are listed here and can be removed; anything that needs new code is queued for Claude.">Press 💬 Comment, click anything, describe the change and press ✨ Edit with Saud.</div>
+      <div id="cuSaudEdits"></div>
+    </section>
+    <section>
       <div class="sechead"><h2 data-l="Comments">Comments</h2></div>
       <label class="cu-toggle"><input type="checkbox" id="cuShowRes" onchange="document.body.classList.toggle('cmt-show-resolved', this.checked); renderCommentPins();"> <span data-l="Show resolved comments on the page">Show resolved comments on the page</span></label>
       <div id="cuComments"></div>
@@ -1654,7 +1670,12 @@ const UI_AR = {
   "Voice input isn't supported in this browser":"الإدخال الصوتي غير مدعوم في هذا المتصفح", "Couldn't hear you — try again":"لم أسمعك — حاول مرة أخرى",
   "Listening…":"أستمع…", "Drag to spin · click a node":"اسحب للتدوير · انقر على نقطة", "LIVE":"مباشر", "Pipeline":"خط المبيعات",
   "opportunities":"فرص",
-  "Customize":"تخصيص", "Editing":"وضع التحرير", "Edit":"تحرير", "Editing — open":"التحرير مفعّل", "Edit dashboard content":"تحرير محتوى اللوحة",
+  "Customize":"تخصيص", "Edit with Saud":"عدّل مع سعود", "Saud is editing…":"سعود يعدّل…", "Content":"المحتوى", "Design":"التصميم",
+  "Needs new code — will be sent to Claude":"يحتاج برمجة جديدة — سيُرسل إلى Claude", "Apply":"تطبيق", "Done":"تم", "sent to Claude as a code request.":"أُرسل إلى Claude كطلب برمجة.",
+  "Request sent to Claude":"تم إرسال الطلب إلى Claude", "Saud applied the change":"طبّق سعود التعديل", "Design changes Saud applied":"تعديلات التصميم التي طبّقها سعود",
+  "Remove":"إزالة", "Requests for Claude (need new code)":"طلبات إلى Claude (تحتاج برمجة)", "Waiting for Claude":"بانتظار Claude", "Saud edits":"تعديلات سعود",
+  "Comment, ask a question, or tell Saud what to change here…":"علّق، اسأل، أو أخبر سعود بما تريد تغييره هنا…",
+  "Press 💬 Comment, click anything, describe the change and press ✨ Edit with Saud. Text and numbers change in your data; design changes are listed here and can be removed; anything that needs new code is queued for Claude.":"اضغط 💬 تعليق، انقر على أي عنصر، اكتب التعديل ثم اضغط ✨ عدّل مع سعود. النصوص والأرقام تتغير في بياناتك، وتعديلات التصميم تظهر هنا ويمكن إزالتها، وما يحتاج برمجة جديدة يُحفظ كطلب إلى Claude.", "Editing":"وضع التحرير", "Edit":"تحرير", "Editing — open":"التحرير مفعّل", "Edit dashboard content":"تحرير محتوى اللوحة",
   "Turn on edit mode to change any text, row or number. A bar appears at the bottom with Undo, Save and Done.":"فعّل وضع التحرير لتعديل أي نص أو صف أو رقم. يظهر شريط في الأسفل فيه تراجع وحفظ وإنهاء.", "All months":"كل الأشهر", "Expired opportunity":"فرصة منتهية", "Expired — submission deadline passed":"منتهية — انتهى موعد التقديم", "Search or ask Saud…":"ابحث أو اسأل سعود…", "Comment":"تعليق", "Comment on anything or ask Saud about it":"علّق على أي عنصر أو اسأل سعود عنه",
   "Comment mode — click any element to comment or ask Saud · Esc to exit":"وضع التعليق — انقر على أي عنصر للتعليق أو لسؤال سعود · Esc للخروج",
   "This element":"هذا العنصر", "Write a comment or a question…":"اكتب تعليقًا أو سؤالًا…", "Your name":"اسمك", "Reply…":"ردّ…", "Reply":"ردّ",
@@ -1728,7 +1749,7 @@ function toggleLang(){
    and filled in automatically through the Saud worker (Claude), then saved with the data —
    so each new entry is translated once and everyone sees both languages. While editing,
    the original text is shown so edits always change the source, never a translation. */
-const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity","comments","_v14terms"]);
+const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity","comments","_v14terms","styleOverrides","devRequests"]);
 const TR_SKIP_FIELDS = new Set(["color","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
 const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
 function needsTr(s, lang){
@@ -2778,6 +2799,7 @@ function placePop(pop, rect){
   let x = rect.left + rect.width/2 - W/2; x = Math.max(12, Math.min(innerWidth - W - 12, x));
   let y = rect.bottom + 10; if(y + 320 > innerHeight) y = Math.max(12, rect.top - 330);
   pop.style.left = x + "px"; pop.style.top = y + "px"; pop.classList.add("show");
+  const h = pop.offsetHeight; if(y + h > innerHeight - 12){ pop.style.top = Math.max(12, innerHeight - h - 12) + "px"; }
 }
 function closePop(){ const p = document.getElementById("cmtPop"); if(p) p.classList.remove("show"); }
 function snippetOf(el){ return (el.innerText || el.getAttribute("aria-label") || el.title || el.tagName).replace(/\s+/g," ").trim().slice(0,120); }
@@ -2786,10 +2808,11 @@ function openComposer(el){
   const pop = document.getElementById("cmtPop"); if(!pop) return;
   const snip = snippetOf(el);
   pop.innerHTML = `<div class="cmt-ctx">💬 ${escapeHtml(snip || L("This element"))}</div>${nameField()}
-    <textarea class="cmt-input" rows="3" placeholder="${escapeHtml(L("Write a comment or a question…"))}"></textarea>
+    <textarea class="cmt-input" rows="3" placeholder="${escapeHtml(L(isAdmin() ? "Comment, ask a question, or tell Saud what to change here…" : "Write a comment or a question…"))}"></textarea>
     <div class="cmt-row"><button class="editbtn secondary" data-a="cancel">${escapeHtml(L("Cancel"))}</button>
       <button class="editbtn secondary" data-a="ask">✨ ${escapeHtml(L("Ask Saud"))}</button>
-      <button class="editbtn" data-a="post">${escapeHtml(L("Comment"))}</button></div>`;
+      <button class="editbtn" data-a="post">${escapeHtml(L("Comment"))}</button>
+      ${isAdmin() ? `<button class="editbtn ep-go" data-a="edit">✨ ${escapeHtml(L("Edit with Saud"))}</button>` : ""}</div>`;
   placePop(pop, el.getBoundingClientRect());
   const ta = pop.querySelector(".cmt-input"); setTimeout(()=>ta.focus(), 30);
   pop.querySelector('[data-a="cancel"]').onclick = closePop;
@@ -2802,6 +2825,14 @@ function openComposer(el){
   };
   pop.querySelector('[data-a="post"]').onclick = ()=>{ const c = create(); if(c){ toggleCommentMode(false); openThread(c.id); } };
   pop.querySelector('[data-a="ask"]').onclick = ()=>{ const c = create(); if(c){ toggleCommentMode(false); openThread(c.id); askSaudOnComment(c.id, c.text); } };
+  const eb = pop.querySelector('[data-a="edit"]');
+  if(eb) eb.onclick = async ()=>{
+    const text = ta.value.trim(); if(!text){ ta.focus(); return; }
+    toggleCommentMode(false);
+    pop.querySelectorAll("button").forEach(b=>b.disabled = true); eb.innerHTML = "✨ " + escapeHtml(L("Saud is editing…"));
+    try{ const res = await editWithSaud(el, text, pop); showEditPlan(pop, el, text, res); placePop(pop, el.getBoundingClientRect()); }
+    catch(e){ pop.querySelectorAll("button").forEach(b=>b.disabled = false); eb.innerHTML = "✨ " + escapeHtml(L("Edit with Saud")); showToast(L("Couldn't reach Saud right now — try again in a moment.")); }
+  };
 }
 function cmtTime(iso){ return relTime(iso); }
 function openThread(id){
@@ -3019,6 +3050,95 @@ const __renderExternal0 = renderExternal; renderExternal = function(){ __renderE
 const __renderExcl0 = renderExternalExcluded; renderExternalExcluded = function(){ __renderExcl0(); try{ applyMonthFilter(); }catch(e){} };
 
 function renderV14(){ RENDER_FN.externalExcluded = renderExternalExcluded; renderMonthFilter(); applyMonthFilter(); setTimeout(runExpiry, 0); }
+
+/* ======================= v16: pick an element → tell Saud what to change → it edits the dashboard ======================= */
+function pathGet(p){ let o = state; for(const k of p.split(".")){ if(o == null) return undefined; o = o[k]; } return o; }
+function pathSet(p, v){
+  const parts = p.split(".");
+  if(parts[0] === "titles" && LANG === "ar"){ state.titlesAr = state.titlesAr || {}; state.titlesAr[parts[1]] = v; return true; }
+  let o = state; for(let i=0;i<parts.length-1;i++){ if(o[parts[i]] == null) return false; o = o[parts[i]]; }
+  const k = parts[parts.length-1]; if(typeof o !== "object" || o === null) return false;
+  const old = o[k]; o[k] = (typeof old === "number" && v !== "" && !isNaN(+v)) ? +v : (typeof old === "boolean" ? (v === true || v === "true") : v);
+  return true;
+}
+function editablePathsFor(el){
+  const set = new Set();
+  const add = p=>{ if(!p) return; const v = pathGet(p); if(v === undefined || (typeof v === "object" && v !== null)) return; set.add(p); };
+  const own = el.closest("[data-bind]"); if(own) add(own.dataset.bind);
+  el.querySelectorAll("[data-bind]").forEach((e,i)=>{ if(i < 40) add(e.dataset.bind); });
+  // whole row: e.g. external.3.* → every field of that record
+  [...set].forEach(p=>{ const m = p.match(/^(\w+)\.(\d+)\./); if(m){ const row = state[m[1]] && state[m[1]][+m[2]];
+    if(row && typeof row === "object") Object.keys(row).forEach(k=>{ if(typeof row[k] !== "object") set.add(`${m[1]}.${m[2]}.${k}`); }); } });
+  const tr = el.closest("tr"); if(tr) tr.querySelectorAll("[data-bind]").forEach(e=>add(e.dataset.bind));
+  return [...set].slice(0, 40);
+}
+function styleOverrides(){ state.styleOverrides = Array.isArray(state.styleOverrides) ? state.styleOverrides : []; return state.styleOverrides; }
+function devRequests(){ state.devRequests = Array.isArray(state.devRequests) ? state.devRequests : []; return state.devRequests; }
+function applyStyleOverrides(){
+  let tag = document.getElementById("userCss"); if(!tag){ tag = document.createElement("style"); tag.id = "userCss"; document.head.appendChild(tag); }
+  tag.textContent = styleOverrides().map(s=>`/* ${String(s.note||"").replace(/\*\//g,"")} */\n${s.css}`).join("\n");
+}
+function safeCss(css){ return String(css||"").replace(/<\/?style[^>]*>/gi,"").replace(/@import[^;]*;?/gi,"").replace(/url\s*\(\s*['"]?\s*javascript:[^)]*\)/gi,"").replace(/expression\s*\(/gi,"").trim(); }
+
+async function editWithSaud(el, instruction, pop){
+  const sel = cmtSelector(el);
+  const paths = editablePathsFor(el);
+  const fields = {}; paths.forEach(p=>{ fields[p] = pathGet(p); });
+  const cs = getComputedStyle(el);
+  const ctx = { page: currentPage(), selector: sel, elementText: snippetOf(el), tag: el.tagName.toLowerCase(), classes: el.className && String(el.className).slice(0,120),
+    style: { fontSize: cs.fontSize, color: cs.color, background: cs.backgroundColor, fontWeight: cs.fontWeight }, editableFields: fields, language: LANG };
+  const prompt = `You are Saud, the agent that edits the Midwam dashboard directly. The admin selected an element and asked for a change.\n` +
+    `Reply with ONLY JSON (no markdown): {"summary":"one short sentence in ${LANG === "ar" ? "Arabic" : "English"} describing what you changed","data":[{"path":"<one of editableFields>","value":"<new value>"}],"css":"<CSS rules or empty>","request":"<only if the change needs new code/features you cannot do with data or CSS, describe it; else empty>"}\n` +
+    `Rules: change text/numbers/dates via "data" using ONLY paths listed in editableFields (keep the same language as the existing value unless asked). Change looks (size, colour, spacing, hide, emphasis) via "css" scoped to the selector "${sel}" or its descendants, using !important. Never invent paths. If the request is unclear, return empty data/css and explain in summary.\n` +
+    `ELEMENT: ${JSON.stringify(ctx)}\nREQUEST: ${instruction}`;
+  if(typeof CORE !== "undefined") CORE.busy = true;
+  try{
+    const res = await fetch("https://orange-queen-ead8.alhindiharith.workers.dev/", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ messages:[{ role:"user", content:prompt }], context:{} }) });
+    const data = await res.json(); const text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    const a = text.indexOf("{"), z = text.lastIndexOf("}"); const plan = JSON.parse(text.slice(a, z+1));
+    plan.data = (Array.isArray(plan.data) ? plan.data : []).filter(d=>d && paths.includes(d.path));
+    plan.css = safeCss(plan.css); plan.request = String(plan.request||"").trim();
+    return { plan, sel, paths };
+  } finally { if(typeof CORE !== "undefined") CORE.busy = false; }
+}
+function showEditPlan(pop, el, instruction, res){
+  const { plan, sel } = res;
+  const rows = plan.data.map(d=>`<div class="ep-row"><code>${escapeHtml(d.path)}</code><span class="ep-old">${escapeHtml(String(pathGet(d.path) ?? ""))}</span><span class="ep-arrow">→</span><span class="ep-new">${escapeHtml(String(d.value))}</span></div>`).join("");
+  const nothing = !plan.data.length && !plan.css && !plan.request;
+  pop.innerHTML = `<div class="cmt-ctx">✨ ${escapeHtml(snippetOf(el))}</div>
+    <div class="ep-sum">${escapeHtml(plan.summary || "")}</div>
+    ${rows ? `<div class="ep-block"><b>${escapeHtml(L("Content"))}</b>${rows}</div>` : ""}
+    ${plan.css ? `<div class="ep-block"><b>${escapeHtml(L("Design"))}</b><pre>${escapeHtml(plan.css)}</pre></div>` : ""}
+    ${plan.request ? `<div class="ep-block"><b>${escapeHtml(L("Needs new code — will be sent to Claude"))}</b><div>${escapeHtml(plan.request)}</div></div>` : ""}
+    <div class="cmt-row"><button class="editbtn secondary" data-a="cancel">${escapeHtml(L("Cancel"))}</button>
+      ${nothing ? "" : `<button class="editbtn" data-a="apply">✓ ${escapeHtml(L("Apply"))}</button>`}</div>`;
+  pop.querySelector('[data-a="cancel"]').onclick = closePop;
+  const ap = pop.querySelector('[data-a="apply"]'); if(!ap) return;
+  ap.onclick = ()=>{
+    pushHistory();
+    plan.data.forEach(d=>pathSet(d.path, d.value));
+    if(plan.css) styleOverrides().push({ id:"s"+Date.now().toString(36), sel, css:plan.css, note: instruction.slice(0,140), at:new Date().toISOString() });
+    if(plan.request) devRequests().push({ id:"r"+Date.now().toString(36), page: currentPage(), sel, snippet: snippetOf(el), text: instruction, detail: plan.request, at:new Date().toISOString(), status:"open", by: myName() });
+    cmtList().push({ id:"c"+Date.now().toString(36), page: currentPage(), sel, snippet: snippetOf(el), text: "✎ " + instruction, author: myName(), at:new Date().toISOString(), resolved: !plan.request,
+      replies:[{ ai:true, text: (plan.summary || L("Done")) + (plan.request ? " — " + L("sent to Claude as a code request.") : ""), at:new Date().toISOString() }] });
+    logActivity("edit", currentPage(), instruction);
+    applyStyleOverrides(); renderAll(); closePop(); sfx && sfx("done");
+    showToast(plan.request && !plan.data.length && !plan.css ? L("Request sent to Claude") : L("Saud applied the change"));
+  };
+}
+function renderSaudEdits(){
+  const el = document.getElementById("cuSaudEdits"); if(!el) return;
+  const st = styleOverrides(), rq = devRequests();
+  el.innerHTML = `<div class="cu-sub">${escapeHtml(L("Design changes Saud applied"))} (${st.length})</div>` +
+    (st.length ? st.slice().reverse().map(s=>`<div class="cu-cmt"><div class="cu-cmt-top"><span>${escapeHtml(relTime(s.at))}</span></div><div class="cu-cmt-text">${escapeHtml(s.note||"")}</div>
+      <div class="cu-cmt-ctx"><code>${escapeHtml(s.sel)}</code></div>${isAdmin() ? `<button class="tinybtn" data-undo-style="${s.id}">${escapeHtml(L("Remove"))}</button>` : ""}</div>`).join("") : `<div class="ov-note">—</div>`) +
+    `<div class="cu-sub" style="margin-top:14px">${escapeHtml(L("Requests for Claude (need new code)"))} (${rq.filter(r=>r.status==="open").length})</div>` +
+    (rq.length ? rq.slice().reverse().map(r=>`<div class="cu-cmt ${r.status!=="open"?"res":""}"><div class="cu-cmt-top"><b>${escapeHtml(r.by||"—")}</b><span>${escapeHtml(relTime(r.at))}</span><span class="${r.status==="open"?"":"cmt-res"}">${escapeHtml(L(r.status==="open"?"Waiting for Claude":"Done"))}</span></div>
+      <div class="cu-cmt-text">${escapeHtml(r.text)}</div><div class="cu-cmt-ctx">↳ ${escapeHtml(r.detail||"")}</div>${isAdmin() ? `<button class="tinybtn" data-del-req="${r.id}">${escapeHtml(L("Delete"))}</button>` : ""}</div>`).join("") : `<div class="ov-note">—</div>`);
+  el.querySelectorAll("[data-undo-style]").forEach(b=>b.onclick = ()=>{ const L2 = styleOverrides(); const i = L2.findIndex(s=>s.id === b.dataset.undoStyle); if(i>=0){ L2.splice(i,1); applyStyleOverrides(); saveLocalDraft(); renderSaudEdits(); } });
+  el.querySelectorAll("[data-del-req]").forEach(b=>b.onclick = ()=>{ const L2 = devRequests(); const i = L2.findIndex(s=>s.id === b.dataset.delReq); if(i>=0){ L2.splice(i,1); saveLocalDraft(); renderSaudEdits(); } });
+}
+function renderV16(){ applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
@@ -3590,6 +3710,7 @@ function renderAll(){
   renderV12();
   renderV13();
   renderV14();
+  renderV16();
   saveLocalDraft();
   scheduleTranslate();
 }

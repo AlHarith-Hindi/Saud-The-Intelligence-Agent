@@ -809,6 +809,7 @@
   #editDock{position:fixed; bottom:22px; left:50%; translate:-50% 0; z-index:9600; display:none; align-items:center; gap:8px; padding:8px 10px 8px 14px; border-radius:999px;
     background:color-mix(in srgb, var(--night2) 92%, transparent); border:1px solid var(--copper); box-shadow:0 18px 50px rgba(0,0,0,.5), 0 0 24px var(--accent-soft); backdrop-filter:blur(12px);}
   body.is-editing #editDock{display:flex; animation:rise .25s ease;}
+  body.is-editing #focusPill{bottom:140px;}
   body.readonly #editDock{display:none !important;}
   .ed-live{font-size:12px; font-weight:700; color:var(--copper); letter-spacing:.04em; margin-inline-end:4px;}
   #editDock .editbtn{padding:7px 14px; border-radius:999px;}
@@ -870,6 +871,107 @@
   .rd-left{font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--bc); white-space:nowrap;}
   @media (max-width:860px){ .rd-wrap{grid-template-columns:1fr;} .rd-scope{max-width:360px; margin:0 auto 10px;} }
   @media print{ .rd-sweep{display:none;} }
+  /* v20: fx canvas */
+  #fxCanvas{position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:100050;}
+  /* v20: speaking brief */
+  #briefBox li{transition:background .25s, color .25s, padding .25s; border-radius:8px;}
+  #briefBox li.speaking{background:linear-gradient(90deg, color-mix(in srgb, var(--copper) 18%, transparent), transparent); color:var(--cream); padding-inline-start:8px;}
+  #voiceWave{position:absolute; left:50%; bottom:6px; translate:-50% 0; display:flex; gap:3px; align-items:flex-end; height:22px; opacity:0; transition:opacity .3s; pointer-events:none;}
+  #voiceWave i{width:3px; height:4px; border-radius:2px; background:var(--copper); box-shadow:0 0 8px var(--copper);}
+  body.saud-speaking #voiceWave{opacity:1;}
+  body.saud-speaking #voiceWave i{animation:vw .5s ease-in-out infinite alternate;}
+  #voiceWave i:nth-child(2){animation-delay:.1s !important;} #voiceWave i:nth-child(3){animation-delay:.25s !important;} #voiceWave i:nth-child(4){animation-delay:.05s !important;}
+  #voiceWave i:nth-child(5){animation-delay:.3s !important;} #voiceWave i:nth-child(6){animation-delay:.15s !important;} #voiceWave i:nth-child(7){animation-delay:.2s !important;}
+  #voiceWave.kick i{height:18px !important; transition:height .08s;}
+  @keyframes vw{from{height:4px;} to{height:20px;}}
+  body.saud-speaking .core-wrap canvas{filter:drop-shadow(0 0 18px var(--copper));}
+  /* v20: missions strip */
+  .mission-strip{margin:4px 0 16px;}
+  .ms-strip-head{font-family:var(--font-display); font-weight:700; letter-spacing:.06em; color:var(--cream); margin-bottom:10px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;}
+  .ms-strip-head span{font-family:inherit; font-weight:400; letter-spacing:0; font-size:12px; color:var(--muted);}
+  .ms-cards{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px;}
+  .ms-card{display:grid; grid-template-columns:auto 1fr; grid-template-rows:1fr auto; gap:4px 12px; text-align:start; padding:12px 14px; border-radius:14px; cursor:pointer; font-family:inherit; color:inherit;
+    border:1px solid var(--border); background:linear-gradient(135deg, color-mix(in srgb, var(--copper) 9%, transparent), transparent 60%); transition:transform .2s, border-color .2s, box-shadow .2s;}
+  .ms-card:hover{transform:translateY(-3px); border-color:var(--copper); box-shadow:0 14px 34px rgba(0,0,0,.35), 0 0 0 1px var(--copper);}
+  .ms-card-ring{grid-row:1 / span 2; position:relative; width:54px; height:54px; display:grid; place-items:center;}
+  .ms-card-ring svg{position:absolute; inset:0;} .ms-card-ring b{font-family:var(--mono); font-size:12px; color:var(--cream);}
+  .ms-card-t{font-size:13px; font-weight:600; color:var(--cream); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .ms-card-a{font-size:11px; color:var(--muted); margin-top:2px;} .ms-card-c{font-family:var(--mono); font-size:12px; color:var(--copper); margin-top:4px;}
+  .ms-card-go{font-size:11.5px; font-weight:700; color:var(--copper); justify-self:end;}
+  .ms-ring-bg{fill:none; stroke:var(--border);} .ms-ring-fg{fill:none; stroke:var(--copper); stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.2,.9,.3,1); filter:drop-shadow(0 0 6px var(--copper));}
+  /* v20: mission overlay */
+  #missionOv{position:fixed; inset:0; z-index:100010; display:none; place-items:center; padding:20px; background:color-mix(in srgb, #000 62%, transparent); backdrop-filter:blur(10px);}
+  #missionOv.show{display:grid; animation:rise .25s ease;}
+  .ms-panel{position:relative; width:min(980px, 100%); max-height:calc(100vh - 40px); overflow-y:auto; padding:26px 28px; border-radius:22px;
+    background:radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--copper) 16%, var(--night2)), var(--night2) 60%); border:1px solid color-mix(in srgb, var(--copper) 45%, var(--border)); box-shadow:0 40px 120px rgba(0,0,0,.6), 0 0 60px var(--accent-soft);}
+  .ms-panel.enter{animation:msIn .45s cubic-bezier(.2,1.2,.3,1);} @keyframes msIn{from{transform:scale(.92) translateY(20px); opacity:0;}}
+  .ms-x{position:absolute; top:14px; inset-inline-end:14px; width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--sand); cursor:pointer; font-size:14px;}
+  .ms-x:hover{border-color:var(--copper); color:var(--copper);}
+  .ms-kind{font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--copper);}
+  .ms-title{font-family:var(--font-display); font-size:clamp(20px, 2.6vw, 28px); color:var(--cream); margin:6px 40px 4px 0; line-height:1.25;}
+  [dir="rtl"] .ms-title{margin:6px 0 4px 40px;}
+  .ms-agency{font-size:13px; color:var(--muted);} .ms-fit{color:var(--good); font-weight:600;}
+  .ms-body{display:grid; grid-template-columns:260px 1fr; gap:28px; margin-top:22px; align-items:start;}
+  .ms-left{display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .ms-big-ring{position:relative; width:200px; height:200px;} .ms-big-ring svg{position:absolute; inset:0;}
+  .ms-big-pct{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .ms-big-pct b{font-family:var(--font-display); font-size:48px; color:var(--cream); line-height:1;} .ms-big-pct span{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em;}
+  .ms-cd-label{font-size:11px; color:var(--muted); text-align:center;}
+  .ms-count{display:flex; gap:8px; direction:ltr;}
+  .ms-cd{min-width:52px; padding:8px 6px; border-radius:12px; border:1px solid var(--border); background:color-mix(in srgb, var(--night) 70%, transparent); text-align:center;}
+  .ms-cd b{display:block; font-family:var(--mono); font-size:22px; color:var(--cream);} .ms-cd span{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;}
+  .ms-count.urgent .ms-cd{border-color:var(--critical); box-shadow:0 0 18px color-mix(in srgb, var(--critical) 35%, transparent);} .ms-count.urgent .ms-cd b{color:var(--critical);}
+  .ms-closed{font-family:var(--mono); color:var(--critical); font-weight:700;}
+  .ms-plan{margin-top:6px;}
+  .ms-steps{display:flex; flex-direction:column; gap:8px;}
+  .ms-step{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; text-align:start; padding:12px 14px; border-radius:14px; border:1px solid var(--border); background:transparent; color:var(--sand);
+    font-family:inherit; font-size:14px; cursor:pointer; transition:all .2s; animation:rise .35s ease backwards; animation-delay:calc(var(--k) * 40ms);}
+  .ms-panel:not(.enter) .ms-step{animation:none;}
+  .ms-step:hover{border-color:var(--copper); transform:translateX(4px);} [dir="rtl"] .ms-step:hover{transform:translateX(-4px);}
+  .ms-check{width:30px; height:30px; border-radius:50%; display:grid; place-items:center; border:2px solid var(--border); font-family:var(--mono); font-size:12px; color:var(--muted); transition:all .25s;}
+  .ms-step.done{color:var(--cream); border-color:color-mix(in srgb, var(--good) 45%, var(--border)); background:color-mix(in srgb, var(--good) 7%, transparent);}
+  .ms-step.done .ms-check{background:var(--good); border-color:var(--good); color:#08120c; font-size:15px; font-weight:800; box-shadow:0 0 16px color-mix(in srgb, var(--good) 60%, transparent); animation:pop .35s cubic-bezier(.2,1.6,.4,1);}
+  .ms-step.done .ms-step-t{text-decoration:line-through; text-decoration-color:color-mix(in srgb, var(--good) 60%, transparent);}
+  @keyframes pop{0%{transform:scale(.4);} 100%{transform:scale(1);}}
+  .ms-step-due{font-size:11px; font-family:var(--mono); color:var(--copper); white-space:nowrap;} .ms-step.late .ms-step-due{color:var(--critical);}
+  .ms-done-banner{margin-top:20px; text-align:center; padding:14px; border-radius:14px; font-family:var(--font-display); font-size:18px; color:#08120c; background:linear-gradient(90deg, var(--good), var(--copper)); animation:msIn .5s ease;}
+  @media (max-width:760px){ .ms-body{grid-template-columns:1fr;} }
+  /* v20: constellation */
+  .cs-wrap{position:relative;}
+  .cs-svg{width:100%; height:auto; display:block; overflow:visible;}
+  .cs-star{fill:var(--sand); opacity:.25; animation:twinkle 4s ease-in-out infinite;} @keyframes twinkle{50%{opacity:.85;}}
+  .cs-link{stroke:color-mix(in srgb, var(--copper) 45%, transparent); stroke-width:1.2; stroke-dasharray:4 6; animation:flow 2.4s linear infinite;}
+  .cs-link.hot{stroke:var(--copper); stroke-width:2; filter:drop-shadow(0 0 4px var(--copper));} @keyframes flow{to{stroke-dashoffset:-20;}}
+  .cs-ring-link{stroke:var(--border); stroke-width:1; opacity:.6;}
+  .cs-sun{fill:var(--copper);} .cs-sun-glow{fill:var(--copper); opacity:.18; animation:sunPulse 3s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes sunPulse{50%{transform:scale(1.25); opacity:.08;}}
+  .cs-sun-t{fill:#fff; font-family:var(--font-display); font-size:10px; font-weight:700; letter-spacing:.08em;}
+  .cs-person{cursor:pointer;}
+  .cs-orbit-path{fill:none; stroke:var(--border); stroke-dasharray:2 4;}
+  .cs-orbit{animation:orbit 20s linear infinite;} @keyframes orbit{to{transform:rotate(360deg);}}
+  .cs-sat circle{fill:var(--series-blue); stroke:var(--night); stroke-width:1.5; filter:drop-shadow(0 0 4px var(--series-blue)); transition:r .15s;}
+  .cs-sat{cursor:pointer;} .cs-sat:hover circle{r:8;}
+  .cs-glow{fill:var(--copper); opacity:0; transition:opacity .25s;} .cs-node{fill:var(--night2); stroke:var(--copper); stroke-width:2; transition:all .25s;}
+  .cs-ini{fill:var(--cream); font-family:var(--font-display); font-weight:700; font-size:13px; pointer-events:none;}
+  .cs-name{fill:var(--cream); font-size:12.5px; font-weight:600;} .cs-count{fill:var(--muted); font-size:10.5px; font-family:var(--mono);}
+  .cs-person:hover .cs-glow, .cs-person.focus .cs-glow{opacity:.28;} .cs-person:hover .cs-node, .cs-person.focus .cs-node{fill:var(--copper); stroke:#fff;}
+  .cs-person.focus .cs-name{fill:var(--copper);}
+  body.calm .cs-orbit, body.calm .cs-link, body.calm .cs-star, body.calm .cs-sun-glow{animation:none !important;}
+  .cs-card{position:absolute; z-index:5; width:220px; padding:10px 12px; border-radius:12px; background:var(--night2); border:1px solid color-mix(in srgb, var(--copper) 45%, var(--border)); box-shadow:0 18px 40px rgba(0,0,0,.45);
+    opacity:0; pointer-events:none; transition:opacity .15s;}
+  .cs-card.show{opacity:1;} .cs-card b{display:block; color:var(--cream); font-size:13px;} .cs-card span{display:block; color:var(--muted); font-size:11.5px; margin-bottom:6px;}
+  .cs-card-rows div{font-size:12px; color:var(--sand); display:flex; gap:8px; align-items:center; padding:2px 0;} .cs-card-rows i{font-style:normal; font-family:var(--mono); color:var(--copper); min-width:16px;}
+  .cs-hint{font-size:11.5px; color:var(--muted); text-align:center; margin-top:4px;}
+  /* v20: person focus across the dashboard */
+  body.person-focus tbody tr:not(.p-hl){opacity:.32; transition:opacity .3s;}
+  body.person-focus .rd-item:not(.p-hl), body.person-focus .rd-blip:not(.p-hl), body.person-focus .ms-card:not(.p-hl){opacity:.35;}
+  .p-hl{box-shadow:inset 3px 0 0 var(--copper); background:color-mix(in srgb, var(--copper) 7%, transparent);}
+  [dir="rtl"] .p-hl{box-shadow:inset -3px 0 0 var(--copper);}
+  .rd-blip.p-hl{box-shadow:none; background:none;} .rd-blip.p-hl .rd-halo{opacity:.3;}
+  #focusPill{position:fixed; bottom:84px; left:50%; translate:-50% 0; z-index:9700; display:flex; gap:8px; align-items:center; padding:8px 10px 8px 16px; border-radius:999px; font-size:12.5px; color:var(--cream);
+    background:color-mix(in srgb, var(--night2) 92%, transparent); border:1px solid var(--copper); box-shadow:0 12px 34px rgba(0,0,0,.45), 0 0 20px var(--accent-soft); backdrop-filter:blur(10px); animation:rise .25s ease;}
+  #focusPill b{color:var(--copper);} #focusPill button{width:24px; height:24px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--sand); cursor:pointer;}
+  @media print{ #fxCanvas, #missionOv, #focusPill, #voiceWave{display:none !important;} }
   @media print{
     .sidebar, .editbar, .sync-panel, .edit-only, .reordergrp, .rowdel, .dupbtn, .addbtn, .toast-container, .autosave-indicator,
     thead th.actions, td.actions-cell, .row-search, .draft-banner, .tabs-nav, .teamcard-actions, .global-search-wrap, #saud-chat-fab{ display:none !important; }
@@ -964,6 +1066,7 @@
     <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
     <section class="rd-sec"><div class="sechead"><h2 id="rdTitle">Deadline radar — next 14 days</h2></div><div id="radarBox"></div></section>
+    <section class="cs-sec"><div class="sechead"><h2 id="csTitle">Team constellation</h2></div><div id="constBox"></div></section>
     <section class="tl-sec"><div class="sechead"><h2 id="tlTitle">Next 30 days — timeline</h2></div><div id="ovTimeline"></div></section>
     <div class="ov-grid">
       <section>
@@ -1043,6 +1146,7 @@
       </div>
       <div class="subhead" data-bind="titles.externalOwnerLine"></div>
       <div class="kpi-row" id="externalKpis"></div>
+      <div class="mission-strip" id="missionStrip"></div>
       <div class="ext-filters"><input type="text" class="row-search" id="externalSearch" placeholder="🔎 Search competition name, agency, or RN...">
         <select class="row-search month-sel" id="extMonth" onchange="setExtMonth(this.value)"></select><span class="month-note" id="extMonthNote"></span></div>
       <div class="table-scroll">
@@ -1705,6 +1809,13 @@ const UI_AR = {
   "Voice input isn't supported in this browser":"الإدخال الصوتي غير مدعوم في هذا المتصفح", "Couldn't hear you — try again":"لم أسمعك — حاول مرة أخرى",
   "Listening…":"أستمع…", "Drag to spin · click a node":"اسحب للتدوير · انقر على نقطة", "LIVE":"مباشر", "Pipeline":"خط المبيعات",
   "opportunities":"فرص",
+  "Team constellation":"كوكبة الفريق", "Missions":"المهام الحاسمة", "Turn an opportunity into a step-by-step bid plan":"حوّل الفرصة إلى خطة تقديم خطوة بخطوة", "Start mission":"ابدأ المهمة", "Continue":"تابع",
+  "Mission":"المهمة", "ready":"جاهز", "Ask Saud for a plan":"اطلب خطة من سعود", "Mission complete — ready to submit!":"اكتملت المهمة — جاهز للتقديم!", "days":"يوم", "hours":"ساعة", "min":"دقيقة", "sec":"ثانية", "Missed":"فات", "Due":"الموعد", "Close":"إغلاق",
+  "Buy the tender documents":"شراء وثائق المنافسة", "Read the RFP and scope":"قراءة كراسة الشروط والنطاق", "Send inquiries":"إرسال الاستفسارات", "Go / No-go decision":"قرار المشاركة", "Line up team and partners":"تجهيز الفريق والشركاء",
+  "Technical proposal":"العرض الفني", "Financial proposal":"العرض المالي", "Internal review and sign-off":"المراجعة الداخلية والاعتماد", "Submit on Etimad":"التقديم على منصة اعتماد",
+  "item":"بند", "items":"بنود", "Focusing on":"التركيز على", "Nothing assigned yet":"لا شيء مسند بعد", "Prototypes":"النماذج الأولية", "Milestones":"المراحل", "To-dos":"المهام اليومية",
+  "Click a person to light up their work across the dashboard · click a moon to open it":"انقر على شخص لإبراز أعماله في اللوحة · انقر على القمر لفتحه", "Add your team on the Notes page to see the constellation.":"أضف فريقك لعرض الكوكبة.",
+  "Voice isn't supported in this browser":"الصوت غير مدعوم في هذا المتصفح",
   "Deadline radar — next 14 days":"رادار المواعيد — 14 يومًا القادمة", "Bid deadline":"موعد تقديم العروض", "Inquiry deadline":"موعد الاستفسارات", "due within 72h":"مستحقة خلال 72 ساعة", "Clear skies — nothing due in the next 14 days.":"السماء صافية — لا مواعيد خلال 14 يومًا.", "All":"الكل", "Projects":"المشاريع", "Marketing":"التسويق", "Tasks":"المهام",
   "Customize":"تخصيص", "Edit with Saud":"عدّل مع سعود", "Saud is editing…":"سعود يعدّل…", "Content":"المحتوى", "Design":"التصميم",
   "Needs new code — will be sent to Claude":"يحتاج برمجة جديدة — سيُرسل إلى Claude", "Apply":"تطبيق", "Done":"تم", "sent to Claude as a code request.":"أُرسل إلى Claude كطلب برمجة.",
@@ -1785,7 +1896,7 @@ function toggleLang(){
    and filled in automatically through the Saud worker (Claude), then saved with the data —
    so each new entry is translated once and everyone sees both languages. While editing,
    the original text is shown so edits always change the source, never a translation. */
-const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity","comments","_v14terms","styleOverrides","devRequests"]);
+const TR_SKIP_KEYS = new Set(["titles","titlesAr","legacyV1","theme","stats","stageProbs","i18n","_migratedV2","_migratedV3","_themeV4","activity","comments","_v14terms","styleOverrides","devRequests","missions"]);
 const TR_SKIP_FIELDS = new Set(["color","sev","tier","num","pct","rn","value","done","link","prob","tierColor","statusColor"]);
 const AR_RE = /[؀-ۿ]/, LATIN_RE = /[A-Za-z]/;
 function needsTr(s, lang){
@@ -2118,6 +2229,7 @@ async function briefMe(){
     if(!b.ar){ b.ar = b.en; b.arPending = true; }
     b.at = new Date().toISOString(); saveBrief(b); if(b.arPending) translateBriefAr(b);
     renderBrief(true); if(typeof sfx === "function") sfx("done");
+    if(SOUND && !SPEAK_TOKEN) setTimeout(()=>{ if(!SPEAK_TOKEN) speakBrief(); }, 700);
   } catch(e){
     box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4></div><div class="ov-note">${escapeHtml(L("Couldn't reach Saud right now — try again in a moment."))}</div>`;
   } finally {
@@ -2473,10 +2585,12 @@ function openDrawer(section, i){
     <div class="dr-rows">${rows || `<div class="ov-note">—</div>`}</div>
     <div class="dr-actions">
       <button class="btn-ai" id="drAsk">💬 ${escapeHtml(L("Ask Saud about this"))}</button>
+      ${section === "external" ? `<button class="btn-ai" id="drMission">🚀 ${escapeHtml(L("Mission"))}</button>` : ""}
       <button class="editbtn secondary" id="drGo">↗ ${escapeHtml(L("Open in table"))}</button>
     </div>`;
   d.querySelector("#drAsk").onclick = ()=>{ closeDrawer(); askSaud((LANG==="ar" ? "حلّل هذا البند وقدّم توصية واضحة: " : "Analyze this item and give me a clear recommendation: ") + kind + " — " + title + (due ? " (" + due + ")" : "")); };
   d.querySelector("#drGo").onclick = ()=>{ closeDrawer(); goToSearchResult(section, SECTION_PAGE[section], i); };
+  const dm = d.querySelector("#drMission"); if(dm) dm.onclick = ()=>{ closeDrawer(); openMission(i); };
   d.classList.add("show"); tickCountdowns(); if(typeof sfx === "function") sfx("open");
 }
 function closeDrawer(){ const d = document.getElementById("drawer"); if(d && d.classList.contains("show")){ d.classList.remove("show"); if(typeof sfx === "function") sfx("close"); } }
@@ -2749,16 +2863,6 @@ function renderTicker(){
 }
 
 /* ---------- read the brief aloud + ask Saud by voice ---------- */
-function speakBrief(){
-  const b = loadBrief(); if(!b || !("speechSynthesis" in window)) return;
-  if(speechSynthesis.speaking){ speechSynthesis.cancel(); setSpeakBtn(false); return; }
-  const lines = (LANG === "ar" ? b.ar : b.en).map(x=>String(x).replace(/\*\*/g,""));
-  const u = new SpeechSynthesisUtterance(lines.join(". "));
-  u.lang = LANG === "ar" ? "ar-SA" : "en-US"; u.rate = LANG === "ar" ? .95 : 1.02;
-  const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.toLowerCase().startsWith(LANG === "ar" ? "ar" : "en")); if(v) u.voice = v;
-  u.onend = u.onerror = ()=>{ setSpeakBtn(false); CORE.busy = false; };
-  CORE.busy = true; setSpeakBtn(true); speechSynthesis.speak(u);
-}
 function setSpeakBtn(on){ const b = document.getElementById("briefSpeak"); if(b){ b.classList.toggle("on", on); b.textContent = on ? "■ " + L("Stop") : "🔊 " + L("Listen"); } }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let __rec = null;
@@ -2967,6 +3071,256 @@ function startRadarSweep(){
 function renderV18(){
   const t = document.getElementById("rdTitle"); if(t) t.textContent = L("Deadline radar — next 14 days");
   renderRadar();
+}
+
+/* ======================= v20: Saud speaks · Mission mode · Team constellation ======================= */
+/* ---------- shared: confetti / particle bursts ---------- */
+let FX = null;
+function fxCanvas(){
+  if(FX && FX.c.isConnected) return FX;
+  const c = document.createElement("canvas"); c.id = "fxCanvas"; document.body.appendChild(c);
+  FX = { c, g: c.getContext("2d"), parts: [], raf: 0 };
+  const fit = ()=>{ c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; }; fit(); addEventListener("resize", fit);
+  return FX;
+}
+function burst(x, y, n, opts){
+  if(REDUCED || !MOTION) return;
+  const f = fxCanvas(), o = opts || {}, cs = getComputedStyle(document.documentElement);
+  const cols = o.colors || [cs.getPropertyValue("--copper"), cs.getPropertyValue("--good"), cs.getPropertyValue("--series-blue"), "#ffd166", "#ffffff"].map(s=>s.trim()).filter(Boolean);
+  for(let i=0;i<n;i++){ const a = o.rain ? Math.PI/2 + (Math.random()-.5)*.6 : Math.random()*Math.PI*2, sp = o.rain ? 2 + Math.random()*3 : 3 + Math.random()*7;
+    f.parts.push({ x: o.rain ? Math.random()*innerWidth : x, y: o.rain ? -20 - Math.random()*innerHeight*.5 : y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - (o.rain ? 0 : 3),
+      s: 4 + Math.random()*5, r: Math.random()*6, vr: (Math.random()-.5)*.3, c: cols[i % cols.length], life: o.rain ? 260 : 90 + Math.random()*40 }); }
+  if(!f.raf) f.raf = requestAnimationFrame(fxLoop);
+}
+function fxLoop(){
+  const f = FX; if(!f) return; const g = f.g, d = devicePixelRatio;
+  g.clearRect(0, 0, f.c.width, f.c.height);
+  f.parts = f.parts.filter(p=>p.life > 0 && p.y < innerHeight + 40);
+  f.parts.forEach(p=>{ p.vy += .18; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+    g.save(); g.translate(p.x*d, p.y*d); g.rotate(p.r); g.globalAlpha = Math.min(1, p.life/30); g.fillStyle = p.c; g.fillRect(-p.s*d/2, -p.s*d/4, p.s*d, p.s*d/2); g.restore(); });
+  f.raf = f.parts.length ? requestAnimationFrame(fxLoop) : 0;
+  if(!f.raf) g.clearRect(0, 0, f.c.width, f.c.height);
+}
+
+/* ---------- 2) Saud speaks the brief: bullet-by-bullet, highlighted, with a voice wave on the core ---------- */
+let SPEAK_TOKEN = 0, SPEAK_SEQ = 0;
+function pickVoice(lang){
+  const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices().filter(v=>v.lang && v.lang.toLowerCase().startsWith(lang)) : [];
+  return vs.find(v=>/natural|neural|premium|enhanced|google/i.test(v.name)) || vs.find(v=>/sa|ae|eg/i.test(v.lang)) || vs[0] || null;
+}
+function speakBrief(){
+  const b = loadBrief(); if(!b) return;
+  if(!("speechSynthesis" in window)){ showToast(L("Voice isn't supported in this browser")); return; }
+  if(SPEAK_TOKEN){ stopSpeaking(); return; }
+  const lines = (LANG === "ar" ? b.ar : b.en).map(x=>String(x).replace(/\*\*/g,"").replace(/^\s*[-•*\d.)]+\s*/, "").trim()).filter(Boolean);
+  if(!lines.length) return;
+  const tok = ++SPEAK_SEQ; SPEAK_TOKEN = tok; setSpeakBtn(true); CORE.busy = true; document.body.classList.add("saud-speaking");
+  const wave = document.getElementById("voiceWave");
+  let i = 0;
+  const next = ()=>{
+    if(SPEAK_TOKEN !== tok) return;
+    document.querySelectorAll("#briefBox li").forEach((li,k)=>li.classList.toggle("speaking", k === i));
+    if(i >= lines.length){ stopSpeaking(); return; }
+    const u = new SpeechSynthesisUtterance(lines[i]);
+    u.lang = LANG === "ar" ? "ar-SA" : "en-US"; u.rate = LANG === "ar" ? .95 : 1.02; u.pitch = 1;
+    const v = pickVoice(LANG === "ar" ? "ar" : "en"); if(v) u.voice = v;
+    u.onboundary = ()=>{ if(wave){ wave.classList.remove("kick"); void wave.offsetWidth; wave.classList.add("kick"); } };
+    u.onend = ()=>{ i++; setTimeout(next, 180); };
+    u.onerror = ()=>{ if(SPEAK_TOKEN === tok) stopSpeaking(); };
+    speechSynthesis.speak(u);
+  };
+  try{ speechSynthesis.cancel(); }catch(e){}
+  next();
+}
+function stopSpeaking(){
+  SPEAK_TOKEN = 0; try{ speechSynthesis.cancel(); }catch(e){}
+  setSpeakBtn(false); if(typeof CORE !== "undefined") CORE.busy = false; document.body.classList.remove("saud-speaking");
+  document.querySelectorAll("#briefBox li.speaking").forEach(li=>li.classList.remove("speaking"));
+}
+function ensureVoiceWave(){
+  const w = document.querySelector(".core-wrap"); if(!w || document.getElementById("voiceWave")) return;
+  const d = document.createElement("div"); d.id = "voiceWave"; d.innerHTML = "<i></i><i></i><i></i><i></i><i></i><i></i><i></i>"; w.appendChild(d);
+}
+
+/* ---------- 3) Mission mode for an Etimad opportunity ---------- */
+const MISSION_STEPS = [
+  { id:"docs",   t:"Buy the tender documents" },
+  { id:"read",   t:"Read the RFP and scope" },
+  { id:"inq",    t:"Send inquiries", due:"inqDeadline" },
+  { id:"go",     t:"Go / No-go decision" },
+  { id:"team",   t:"Line up team and partners" },
+  { id:"tech",   t:"Technical proposal" },
+  { id:"fin",    t:"Financial proposal" },
+  { id:"review", t:"Internal review and sign-off" },
+  { id:"submit", t:"Submit on Etimad", due:"bidDeadline" }
+];
+let MISSION_I = -1, MISSION_TIMER = 0;
+function missionKey(r){ return String((r && (r.rn || r.name)) || ""); }
+function missionOf(r, create){
+  const k = missionKey(r); if(!k) return null;
+  if(!state.missions || typeof state.missions !== "object" || Array.isArray(state.missions)){ if(!create) return null; state.missions = {}; }
+  if(!state.missions[k] && create) state.missions[k] = { done:{}, started:new Date().toISOString() };
+  return state.missions[k] || null;
+}
+function missionPct(r){ const m = missionOf(r, false); if(!m) return 0; return Math.round(MISSION_STEPS.filter(s=>m.done && m.done[s.id]).length / MISSION_STEPS.length * 100); }
+function bigCountdown(s){
+  const d = dueTarget(s); if(!d) return null; let t = Math.max(0, Math.floor((d - Date.now())/1000));
+  const dd = Math.floor(t/86400); t %= 86400; const hh = Math.floor(t/3600); t %= 3600; const mm = Math.floor(t/60), ss = t % 60;
+  return { dd, hh, mm, ss, closed: d <= Date.now() };
+}
+function ringSvg(pct, size, stroke){
+  const r = (size - stroke)/2, C = 2*Math.PI*r;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="ms-ring"><circle cx="${size/2}" cy="${size/2}" r="${r}" class="ms-ring-bg" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" class="ms-ring-fg" stroke-width="${stroke}" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}" transform="rotate(-90 ${size/2} ${size/2})"/></svg>`;
+}
+function renderMissionStrip(){
+  const el = document.getElementById("missionStrip"); if(!el) return;
+  const rows = (state.external||[]).map((r,i)=>({ r, i, d: dueTarget(r.bidDeadline) })).filter(o=>o.d && o.d > Date.now()).sort((a,b)=>a.d - b.d);
+  if(!rows.length){ el.innerHTML = ""; el.style.display = "none"; return; }
+  el.style.display = "";
+  el.innerHTML = `<div class="ms-strip-head">🚀 ${escapeHtml(L("Missions"))}<span>${escapeHtml(L("Turn an opportunity into a step-by-step bid plan"))}</span></div><div class="ms-cards">` + rows.map(({r,i})=>{
+    const p = missionPct(r), c = bigCountdown(r.bidDeadline), started = !!missionOf(r, false);
+    return `<button class="ms-card" data-mi="${i}"><div class="ms-card-ring">${ringSvg(p, 54, 5)}<b>${p}%</b></div>
+      <div class="ms-card-main"><div class="ms-card-t">${escapeHtml(tx(r.name||"—"))}</div><div class="ms-card-a">${escapeHtml(tx(r.agency||""))}</div>
+      <div class="ms-card-c" data-due="${escapeHtml(r.bidDeadline||"")}">${c ? (c.dd + (LANG==="ar"?"ي ":"d ") + String(c.hh).padStart(2,"0") + ":" + String(c.mm).padStart(2,"0")) : ""}</div></div>
+      <span class="ms-card-go">${escapeHtml(L(started ? "Continue" : "Start mission"))} →</span></button>`; }).join("") + `</div>`;
+  el.querySelectorAll("[data-mi]").forEach(b=>b.onclick = ()=>openMission(+b.dataset.mi));
+}
+function openMission(i){
+  const r = (state.external||[])[i]; if(!r) return;
+  MISSION_I = i;
+  let ov = document.getElementById("missionOv");
+  if(!ov){ ov = document.createElement("div"); ov.id = "missionOv"; document.body.appendChild(ov);
+    ov.addEventListener("click", e=>{ if(e.target === ov) closeMission(); }); }
+  ov.classList.add("show"); document.body.classList.add("mission-open");
+  if(typeof sfx === "function") sfx("open");
+  renderMission(true);
+  clearInterval(MISSION_TIMER); MISSION_TIMER = setInterval(tickMission, 1000);
+}
+function closeMission(){
+  const ov = document.getElementById("missionOv"); if(ov) ov.classList.remove("show");
+  document.body.classList.remove("mission-open"); clearInterval(MISSION_TIMER); MISSION_I = -1;
+  if(typeof sfx === "function") sfx("close"); renderMissionStrip();
+}
+function tickMission(){
+  const r = (state.external||[])[MISSION_I]; const el = document.getElementById("msCount"); if(!r || !el) return;
+  const c = bigCountdown(r.bidDeadline); if(!c){ el.innerHTML = ""; return; }
+  const p = n=>String(n).padStart(2,"0");
+  el.innerHTML = c.closed ? `<span class="ms-closed">${escapeHtml(L("Closed"))}</span>` :
+    [[c.dd, L("days")],[p(c.hh), L("hours")],[p(c.mm), L("min")],[p(c.ss), L("sec")]].map(([v,l])=>`<div class="ms-cd"><b>${v}</b><span>${escapeHtml(l)}</span></div>`).join("");
+  el.classList.toggle("urgent", !c.closed && c.dd < 2);
+}
+function renderMission(first){
+  const ov = document.getElementById("missionOv"); const r = (state.external||[])[MISSION_I]; if(!ov || !r) return;
+  const m = missionOf(r, false) || { done:{} }, p = missionPct(r);
+  const steps = MISSION_STEPS.map((s,k)=>{ const done = !!(m.done && m.done[s.id]); const due = s.due && r[s.due] ? String(r[s.due]) : "";
+    const dd = due ? dueTarget(due) : null; const late = dd && !done && dd < Date.now();
+    return `<button class="ms-step ${done ? "done" : ""} ${late ? "late" : ""}" data-step="${s.id}" style="--k:${k}"><span class="ms-check">${done ? "✓" : k+1}</span>
+      <span class="ms-step-t">${escapeHtml(L(s.t))}</span>${due ? `<span class="ms-step-due">${escapeHtml(L(late ? "Missed" : "Due"))} · ${escapeHtml(due)}</span>` : ""}</button>`; }).join("");
+  ov.innerHTML = `<div class="ms-panel ${first ? "enter" : ""}">
+    <button class="ms-x" onclick="closeMission()" title="${escapeHtml(L("Close"))}">✕</button>
+    <div class="ms-kind">🚀 ${escapeHtml(L("Mission"))} · ${escapeHtml(r.rn || "")}</div>
+    <h2 class="ms-title">${escapeHtml(tx(r.name||"—"))}</h2><div class="ms-agency">${escapeHtml(tx(r.agency||""))}${r.fit ? ` · <span class="ms-fit">${escapeHtml(disp(r.fit))}</span>` : ""}</div>
+    <div class="ms-body">
+      <div class="ms-left"><div class="ms-big-ring">${ringSvg(p, 200, 12)}<div class="ms-big-pct"><b>${p}%</b><span>${escapeHtml(L("ready"))}</span></div></div>
+        <div class="ms-cd-label">${escapeHtml(L("Bid deadline"))} · ${escapeHtml(r.bidDeadline || "—")}</div><div class="ms-count" id="msCount"></div>
+        <button class="btn-ai ms-plan" id="msPlan">✨ ${escapeHtml(L("Ask Saud for a plan"))}</button></div>
+      <div class="ms-steps">${steps}</div>
+    </div>
+    ${p === 100 ? `<div class="ms-done-banner">🏁 ${escapeHtml(L("Mission complete — ready to submit!"))}</div>` : ""}
+  </div>`;
+  tickMission();
+  ov.querySelectorAll("[data-step]").forEach(b=>b.onclick = e=>{
+    const mm = missionOf(r, true); mm.done = mm.done || {}; const id = b.dataset.step; const was = !!mm.done[id];
+    if(was) delete mm.done[id]; else mm.done[id] = new Date().toISOString();
+    const before = p; saveLocalDraft();
+    if(!was){ const rc = b.querySelector(".ms-check").getBoundingClientRect(); burst(rc.left + rc.width/2, rc.top + rc.height/2, 26); if(typeof sfx === "function") sfx("done"); }
+    else if(typeof sfx === "function") sfx("click");
+    renderMission(false);
+    if(missionPct(r) === 100 && before < 100){ burst(0, 0, 160, { rain:true }); if(typeof sfx === "function") setTimeout(()=>sfx("done"), 250); }
+  });
+  ov.querySelector("#msPlan").onclick = ()=>{ const left = MISSION_STEPS.filter(s=>!(m.done && m.done[s.id])).map(s=>s.t).join(", ");
+    closeMission(); askSaud((LANG==="ar" ? "ضع لي خطة يومية حتى موعد التقديم لهذه الفرصة: " : "Give me a day-by-day plan until the bid deadline for this opportunity: ") + (r.name||"") + " — " + (r.agency||"") + " (" + (r.bidDeadline||"") + "). " + (LANG==="ar" ? "الخطوات المتبقية: " : "Steps left: ") + left); };
+}
+
+/* ---------- 5) Team constellation ---------- */
+let FOCUS_PERSON = "";
+const OWNER_SECTIONS = [[/etimad|external/i, "external"], [/internal|pipeline/i, "internal"], [/prototype/i, "prototypes"], [/project/i, "projects"], [/marketing|campaign/i, "marketing"], [/milestone/i, "milestones"], [/task/i, "tasks"]];
+function firstTok(s){ return String(s||"").trim().split(/\s+/)[0].toLowerCase(); }
+function personMatches(person, s){ const f = firstTok(person); return !!f && String(s||"").toLowerCase().split(/[\s,;/&]+/).includes(f); }
+function personWork(p){
+  const secs = new Set(), items = [], seen = new Set();
+  (state.raci||[]).forEach(r=>{ if(personMatches(p.name, r.owner)) OWNER_SECTIONS.forEach(([re, sec])=>{ if(re.test(r.section||"")) secs.add(sec); }); });
+  const add = (sec, i, row)=>{ const k = sec + ":" + i; if(seen.has(k)) return; seen.add(k); items.push({ sec, idx:i, label: rowLabel(row) || "—" }); };
+  ["external","internal","projects","prototypes","marketing","milestones","tasks","todos"].forEach(sec=>(state[sec]||[]).forEach((row,i)=>{
+    if(sec === "todos" && row.done) return;
+    const own = row.owner || row.lead || row.assignee || row.team || "";
+    if(own ? personMatches(p.name, own) : secs.has(sec)) add(sec, i, row);
+  }));
+  return { secs:[...secs], items };
+}
+function renderConstellation(){
+  const box = document.getElementById("constBox"); if(!box) return;
+  const team = (state.team||[]).filter(t=>t && t.name);
+  if(!team.length){ box.innerHTML = `<div class="ov-note">${escapeHtml(L("Add your team on the Notes page to see the constellation."))}</div>`; return; }
+  const W = 900, H = 400, cx = W/2, cy = H/2 + 6, rx = 330, ry = 132;
+  const ppl = team.map((p,k)=>{ const a = -Math.PI/2 + (k + .5) * 2*Math.PI/team.length; return { p, k, x: cx + Math.cos(a)*rx, y: cy + Math.sin(a)*ry, w: personWork(p) }; });
+  let seed = 7; const rnd = ()=>{ seed = (seed*9301 + 49297) % 233280; return seed/233280; };
+  const stars = Array.from({length:70}, ()=>`<circle cx="${(rnd()*W).toFixed(1)}" cy="${(rnd()*H).toFixed(1)}" r="${(rnd()*1.3+.3).toFixed(2)}" class="cs-star" style="animation-delay:${(rnd()*4).toFixed(2)}s"/>`).join("");
+  const links = ppl.map(o=>`<line x1="${cx}" y1="${cy}" x2="${o.x}" y2="${o.y}" class="cs-link" data-pk="${o.k}"/>`).join("") +
+    ppl.map((o,k)=>{ const n = ppl[(k+1) % ppl.length]; return ppl.length > 2 ? `<line x1="${o.x}" y1="${o.y}" x2="${n.x}" y2="${n.y}" class="cs-ring-link"/>` : ""; }).join("");
+  const nodes = ppl.map(o=>{
+    const n = o.w.items.length, orbitR = 44, sats = o.w.items.slice(0, 10).map((it,j,arr)=>{ const a = j * 2*Math.PI/arr.length;
+      return `<g class="cs-sat" data-sec="${it.sec}" data-idx="${it.idx}" transform="translate(${(Math.cos(a)*orbitR).toFixed(1)} ${(Math.sin(a)*orbitR).toFixed(1)})"><circle r="5"/><title>${escapeHtml(tx(it.label))}</title></g>`; }).join("");
+    const nm = tx(o.p.name), ini = nm.split(/\s+/).map(s=>s[0]).slice(0,2).join("");
+    return `<g class="cs-person ${FOCUS_PERSON && firstTok(FOCUS_PERSON) === firstTok(o.p.name) ? "focus" : ""}" data-pk="${o.k}" transform="translate(${o.x.toFixed(1)} ${o.y.toFixed(1)})">
+      <circle r="${orbitR}" class="cs-orbit-path"/><g class="cs-orbit" style="animation-duration:${18 + o.k*4}s">${sats}</g>
+      <circle r="26" class="cs-glow"/><circle r="21" class="cs-node"/><text class="cs-ini" text-anchor="middle" dominant-baseline="central">${escapeHtml(ini)}</text>
+      <text class="cs-name" y="${o.y > cy ? 62 : -58}" text-anchor="middle">${escapeHtml(nm)}</text>
+      <text class="cs-count" y="${o.y > cy ? 78 : -42}" text-anchor="middle">${n} ${escapeHtml(L(n === 1 ? "item" : "items"))}</text></g>`; }).join("");
+  box.innerHTML = `<div class="cs-wrap"><svg viewBox="0 0 ${W} ${H}" class="cs-svg" preserveAspectRatio="xMidYMid meet">${stars}${links}
+      <g class="cs-center" transform="translate(${cx} ${cy})"><circle r="34" class="cs-sun-glow"/><circle r="26" class="cs-sun"/><text text-anchor="middle" dominant-baseline="central" class="cs-sun-t">${escapeHtml(LANG==="ar" ? "مدوام" : "MIDWAM")}</text></g>
+      ${nodes}</svg><div class="cs-card" id="csCard"></div></div>
+    <div class="cs-hint">${escapeHtml(L("Click a person to light up their work across the dashboard · click a moon to open it"))}</div>`;
+  const card = box.querySelector("#csCard");
+  box.querySelectorAll(".cs-person").forEach(g=>{
+    const o = ppl[+g.dataset.pk];
+    g.onmouseenter = ()=>{ box.querySelector(`.cs-link[data-pk="${o.k}"]`)?.classList.add("hot");
+      const by = {}; o.w.items.forEach(it=>{ by[it.sec] = (by[it.sec]||0) + 1; });
+      card.innerHTML = `<b>${escapeHtml(tx(o.p.name))}</b><span>${escapeHtml(tx(o.p.title||""))}</span>` +
+        (o.w.items.length ? `<div class="cs-card-rows">${Object.entries(by).map(([s,n])=>`<div><i>${n}</i>${escapeHtml(L(SECTION_LABEL_V20[s] || s))}</div>`).join("")}</div>` : `<div class="cs-card-rows"><div>${escapeHtml(L("Nothing assigned yet"))}</div></div>`);
+      const sb = box.querySelector(".cs-wrap").getBoundingClientRect(), gb = g.getBoundingClientRect();
+      card.style.left = Math.min(sb.width - 230, Math.max(0, gb.left - sb.left + gb.width/2 - 110)) + "px"; card.style.top = (gb.top - sb.top + gb.height + 6) + "px"; card.classList.add("show");
+      if(typeof sfx === "function") sfx("tick"); };
+    g.onmouseleave = ()=>{ box.querySelector(`.cs-link[data-pk="${o.k}"]`)?.classList.remove("hot"); card.classList.remove("show"); };
+    g.addEventListener("click", e=>{ if(e.target.closest(".cs-sat")) return; setFocusPerson(firstTok(FOCUS_PERSON) === firstTok(o.p.name) ? "" : o.p.name); });
+  });
+  box.querySelectorAll(".cs-sat").forEach(s=>s.addEventListener("click", e=>{ e.stopPropagation(); openDrawer(s.dataset.sec, +s.dataset.idx); }));
+}
+const SECTION_LABEL_V20 = { external:"Etimad", internal:"Pipeline", projects:"Projects", prototypes:"Prototypes", marketing:"Marketing", milestones:"Milestones", tasks:"Tasks", todos:"To-dos" };
+function setFocusPerson(name){
+  FOCUS_PERSON = name || ""; if(typeof sfx === "function") sfx(FOCUS_PERSON ? "open" : "close");
+  renderConstellation(); applyPersonFocus();
+}
+function applyPersonFocus(){
+  document.querySelectorAll(".p-hl").forEach(e=>e.classList.remove("p-hl"));
+  let pill = document.getElementById("focusPill");
+  if(!FOCUS_PERSON){ document.body.classList.remove("person-focus"); if(pill) pill.remove(); return; }
+  const p = (state.team||[]).find(t=>firstTok(t.name) === firstTok(FOCUS_PERSON)) || { name: FOCUS_PERSON };
+  const w = personWork(p); document.body.classList.add("person-focus");
+  const BODY = { external:"externalBody", internal:"internalBody", projects:"projectsBody", prototypes:"prototypesBody", marketing:"marketingBody", tasks:"tasksBody", milestones:"milestonesBody", todos:"todosBody" };
+  w.items.forEach(it=>{
+    document.querySelectorAll(`[data-bind^="${it.sec}.${it.idx}."]`).forEach(c=>{ const h = c.closest("tr, .kb-card"); if(h) h.classList.add("p-hl"); });
+    document.querySelectorAll(`.rd-item, .rd-blip`).forEach(e=>{ const x = (typeof RADAR_ITEMS !== "undefined") && RADAR_ITEMS[+e.dataset.i]; if(x && x.sec === it.sec && x.idx === it.idx) e.classList.add("p-hl"); });
+    document.querySelectorAll(`.ms-card[data-mi="${it.idx}"]`).forEach(e=>{ if(it.sec === "external") e.classList.add("p-hl"); });
+  });
+  if(!pill){ pill = document.createElement("div"); pill.id = "focusPill"; document.body.appendChild(pill); }
+  pill.innerHTML = `✦ ${escapeHtml(L("Focusing on"))} <b>${escapeHtml(tx(p.name))}</b> · ${w.items.length} ${escapeHtml(L(w.items.length === 1 ? "item" : "items"))} <button onclick="setFocusPerson('')">✕</button>`;
+}
+function renderV20(){
+  const t1 = document.getElementById("csTitle"); if(t1) t1.textContent = L("Team constellation");
+  ensureVoiceWave(); renderConstellation(); renderMissionStrip(); applyPersonFocus();
+  if(MISSION_I >= 0 && document.getElementById("missionOv")?.classList.contains("show")) renderMission(false);
 }
 
 /* ---------- popover (composer + thread) ---------- */
@@ -3903,6 +4257,7 @@ function renderAll(){
   renderV14();
   renderV16();
   renderV18();
+  renderV20();
   saveLocalDraft();
   scheduleTranslate();
 }

@@ -1146,7 +1146,6 @@
     <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
     <section class="rd-sec"><div class="sechead"><h2 id="rdTitle">Deadline radar — next 14 days</h2></div><div id="radarBox"></div></section>
-    <section class="cs-sec"><div class="sechead"><h2 id="csTitle">Team constellation</h2></div><div id="constBox"></div></section>
     <section class="geo-sec"><div class="sechead"><h2 id="geoTitle">Opportunity map</h2></div><div id="geoBox"></div></section>
     <section class="tl-sec"><div class="sechead"><h2 id="tlTitle">Next 30 days — timeline</h2></div><div id="ovTimeline"></div></section>
     <div class="ov-grid">
@@ -3989,7 +3988,17 @@ function migrateV19(){
   cmtList().forEach(c=>{ if(!c.resolved && /^#briefBox/.test(c.sel || "") && /^✎/.test(c.text || "") && !(c.replies||[]).some(x=>/^Claude:/.test(x.text||""))){
     c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the brief no longer shows raw code; it shows clean bullet points, and switches to Arabic when you switch language (press ✨ Refresh brief once to get a fresh one).", at:new Date().toISOString() }); } });
 }
-function renderV16(){ migrateV17(); migrateV19(); applyStyleOverrides(); renderSaudEdits(); }
+function migrateV23(){
+  // v23: Team constellation section removed from Overview (Saud request "delete this", Oct 8).
+  if(state._v23constellation) return; state._v23constellation = true;
+  const isIt = s=>/^#page-overview > section:nth-of-type\(2\)/.test(s || "");
+  devRequests().forEach(r=>{ if(r.status === "open" && isIt(r.sel) && /TEAM CONSTELLATION/i.test(r.snippet || "")){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Team constellation removed from Overview (v23)."; } });
+  state.styleOverrides = styleOverrides().filter(o=>!isIt(o.sel));
+  cmtList().forEach(c=>{ if(!c.resolved && isIt(c.sel) && /^✎/.test(c.text || "") && /TEAM CONSTELLATION/i.test(c.snippet || "") && !(c.replies||[]).some(x=>/^Claude:/.test(x.text||""))){
+    c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the Team constellation section is removed from the Overview page.", at:new Date().toISOString() }); } });
+  if(typeof FOCUS_PERSON !== "undefined") FOCUS_PERSON = "";
+}
+function renderV16(){ migrateV17(); migrateV19(); migrateV23(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 

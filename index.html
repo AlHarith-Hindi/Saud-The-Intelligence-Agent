@@ -2221,6 +2221,10 @@ function animateCounters(){
 /* ---------- AI daily brief (Saud) — generated in BOTH languages, follows the language switch ---------- */
 function loadBrief(){
   try{
+    // v24: a brief written by Claude after the daily scheduled tasks lives in the shared data file (state.claudeBrief) — no worker/API key used. Newest of the two wins.
+    const cb = (typeof state !== "undefined" && state && state.claudeBrief && Array.isArray(state.claudeBrief.en) && state.claudeBrief.en.length) ? state.claudeBrief : null;
+    if(cb){ let lb = null; try{ lb = JSON.parse(localStorage.getItem("saudBrief")||"null"); }catch(e){}
+      if(!lb || !lb.at || new Date(cb.at) >= new Date(lb.at)) return { en: cb.en.map(String), ar: (Array.isArray(cb.ar) && cb.ar.length ? cb.ar : cb.en).map(String), at: cb.at, by: "claude" }; }
     const b = JSON.parse(localStorage.getItem("saudBrief")||"null"); if(!b || !Array.isArray(b.en)) return null;
     // v19: repair a brief that was stored as raw JSON text (reply wrapped in ```json or with stray quotes)
     const raw = b.en.concat(b.ar||[]).some(x=>/^\s*(```|\{|"(en|ar)"\s*:|\[|\]|\})/.test(String(x)));
@@ -2268,7 +2272,7 @@ function renderBrief(animate){
   const at = new Date(b.at);
   const when = at.toLocaleString(LANG==="ar" ? "ar-u-nu-latn" : "en-GB", { weekday:"short", hour:"2-digit", minute:"2-digit" });
   box.classList.add("show"); box.dataset.lang = LANG; box.dataset.at = b.at;
-  box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4><span class="brief-meta">${escapeHtml(L("Generated"))} ${escapeHtml(when)}</span><button class="brief-speak" id="briefSpeak" onclick="speakBrief()">🔊 ${escapeHtml(L("Listen"))}</button>
+  box.innerHTML = `<div class="brief-head"><h4>${escapeHtml(L("Today's brief"))}</h4><span class="brief-meta">${escapeHtml(b.by === "claude" ? (LANG === "ar" ? "كتبه Claude" : "Written by Claude") : L("Generated"))} ${escapeHtml(when)}</span><button class="brief-speak" id="briefSpeak" onclick="speakBrief()">🔊 ${escapeHtml(L("Listen"))}</button>
       <button class="brief-x" title="${escapeHtml(L("Hide"))}" onclick="document.getElementById('briefBox').classList.remove('show')">✕</button></div><ul></ul>`;
   const ul = box.querySelector("ul");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;

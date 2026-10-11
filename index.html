@@ -660,7 +660,9 @@
     transition:width .18s, height .18s, left .18s, top .18s, background .18s, opacity .2s;}
   #cursorRing::after{content:""; position:absolute; left:50%; top:50%; width:4px; height:4px; margin:-2px; border-radius:50%; background:var(--copper);}
   #cursorRing.hot{width:54px; height:54px; left:-27px; top:-27px; background:color-mix(in srgb, var(--copper) 10%, transparent);}
-  #cursorRing.core{width:70px; height:70px; left:-35px; top:-35px; border-style:dashed; animation:spin 4s linear infinite;}
+  /* v28: the spin animation used to replace the ring's translate() and throw it to the top-left over the sphere — now only the dashed border (::before) spins */
+  #cursorRing.core{width:70px; height:70px; left:-35px; top:-35px; border-color:transparent;}
+  #cursorRing.core::before{content:""; position:absolute; inset:-1.5px; border-radius:50%; border:1.5px dashed color-mix(in srgb, var(--copper) 80%, transparent); animation:spin 4s linear infinite;}
   #cursorRing.down{width:26px; height:26px; left:-13px; top:-13px;}
   body.calm #cursorRing, body.calm #trailCanvas{display:none;}
   /* Saud core */

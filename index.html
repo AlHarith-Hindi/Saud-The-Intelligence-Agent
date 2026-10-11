@@ -2528,6 +2528,7 @@ function applyTilt(root){
     el.addEventListener("mousemove", e=>{
       const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5, y = (e.clientY - r.top)/r.height - .5;
       if(typeof MOTION !== "undefined" && !MOTION) return;
+      if(e.target && e.target.closest && e.target.closest(".core-wrap")){ el.style.transform = ""; return; }   // v26: no hero tilt over the sphere, so the dots stay under the cursor
       const k = el.classList.contains("hero") ? 2.5 : el.classList.contains("agenda-item") ? 0 : 7;
       el.style.transform = `perspective(900px) rotateX(${(-y*k).toFixed(2)}deg) rotateY(${(x*k).toFixed(2)}deg) translateY(-2px)`;
     });
@@ -2894,7 +2895,7 @@ function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(
     const c = S/2, R = S*.38, acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522";
     let rgb = { r:242, g:101, b:34 }; try{ if(acc.startsWith("#")) rgb = hexToRgb(acc); }catch(e){}
     const A = a => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-    if(!CORE.drag && fxOn()) CORE.ry += CORE.busy ? .03 : CORE.vy;
+    if(!CORE.drag && !CORE.hover && fxOn()) CORE.ry += CORE.busy ? .03 : CORE.vy;   // v26: hold still while a dot is hovered
     CORE.pulse = (CORE.pulse + (CORE.busy ? .08 : .02)) % (Math.PI*2);
     // glow
     const gr = g.createRadialGradient(c,c,R*.1,c,c,R*1.35); gr.addColorStop(0, A(.33)); gr.addColorStop(1, A(0)); g.fillStyle = gr; g.fillRect(0,0,S,S);

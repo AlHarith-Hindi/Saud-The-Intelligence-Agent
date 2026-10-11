@@ -367,6 +367,8 @@
   [dir="rtl"] td, [dir="rtl"] [data-bind]:not([data-bind^="titles."]), [dir="rtl"] .ov-list-item .t, [dir="rtl"] .ov-list-item .s{unicode-bidi:plaintext; text-align:right;}
   [dir="rtl"] #saud-chat-fab{right:auto; left:20px;}
   [dir="rtl"] #saud-chat-panel{right:auto; left:20px;}
+  /* v25: brief is written by Claude daily; Refresh-brief button and chatbot button removed (Harith) */
+  #briefBtn, #saud-chat-fab{display:none !important;}
 
   /* ================= v9: immersive / interactive layer ================= */
   :root{ --mono:"JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace; }
@@ -1142,7 +1144,7 @@
 
   <!-- ============================== OVERVIEW ============================== -->
   <div class="page active" id="page-overview">
-    <div class="hero"><div class="core-wrap"><canvas id="saudCore"></canvas><div id="coreTip"></div><div class="core-label" id="coreLabel"></div></div><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="hijri" id="heroHijri"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="editbtn secondary present-btn" id="heroPresent" onclick="togglePresent()">▶ Present</button><button class="editbtn secondary mic-btn" id="micBtn" onclick="voiceAsk()">🎙</button><button class="btn-ai" id="briefBtn" onclick="briefMe()">✨ Brief me</button></div></div>
+    <div class="hero"><div class="core-wrap"><canvas id="saudCore"></canvas><div id="coreTip"></div><div class="core-label" id="coreLabel"></div></div><div><div class="hero-greet" id="heroGreet"></div><div class="hero-sub" id="heroSub"></div></div><div class="hero-right"><span class="clock" id="heroClock"></span><span class="hijri" id="heroHijri"></span><span class="status-dot" id="syncPill"><i></i><span></span></span><button class="editbtn secondary present-btn" id="heroPresent" onclick="togglePresent()">▶ Present</button><button class="editbtn secondary mic-btn" id="micBtn" onclick="voiceAsk()">🎙</button></div></div>
     <div class="brief" id="briefBox"></div>
     <div class="stat-row" id="statRow"></div>
     <section class="rd-sec"><div class="sechead"><h2 id="rdTitle">Deadline radar — next 14 days</h2></div><div id="radarBox"></div></section>
@@ -2380,7 +2382,6 @@ function cmdkCommands(){
     .map(([p,k,ic])=>({ group:L("Go to"), label:t[k]||(p==="customize"?L("Customize"):p), ic, run:()=>switchPage(p) }));
   const actions = [
     { label:L("Switch language"), ic:"🌐", run:toggleLang },
-    { label:L("Brief me"), ic:"✨", run:()=>{ switchPage("overview"); briefMe(); } },
     { label:L("Ask Saud"), ic:"💬", run:()=>{ const f=document.getElementById("saud-chat-fab"); if(f) f.click(); } },
     { label:t.btnEdit||"Edit", ic:"✎", run:()=>document.getElementById("toggleEdit").click() },
     { label:t.btnTheme||"Theme", ic:"🎨", run:()=>switchPage("customize") },

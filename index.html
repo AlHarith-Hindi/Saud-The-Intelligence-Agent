@@ -2528,7 +2528,6 @@ function applyTilt(root){
     el.addEventListener("mousemove", e=>{
       const r = el.getBoundingClientRect(); const x = (e.clientX - r.left)/r.width - .5, y = (e.clientY - r.top)/r.height - .5;
       if(typeof MOTION !== "undefined" && !MOTION) return;
-      if(e.target && e.target.closest && e.target.closest(".core-wrap")){ el.style.transform = ""; return; }   // v26: no hero tilt over the sphere, so the dots stay under the cursor
       const k = el.classList.contains("hero") ? 2.5 : el.classList.contains("agenda-item") ? 0 : 7;
       el.style.transform = `perspective(900px) rotateX(${(-y*k).toFixed(2)}deg) rotateY(${(x*k).toFixed(2)}deg) translateY(-2px)`;
     });
@@ -2923,10 +2922,10 @@ function coreHit(e){ const cv = e.currentTarget; const r = cv.getBoundingClientR
 function wireCore(){
   const cv = document.getElementById("saudCore"); if(!cv || cv._w) return; cv._w = true;
   const tip = document.getElementById("coreTip");
-  cv.addEventListener("pointerdown", e=>{ CORE.drag = { x:e.clientX, y:e.clientY, ry:CORE.ry, rx:CORE.rx, moved:false }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointerdown", e=>{ CORE.drag = { x:e.clientX, y:e.clientY, ry:CORE.ry, rx:CORE.rx, moved:false, node:!!coreHit(e) }; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener("pointermove", e=>{
-    if(CORE.drag){ const dx = e.clientX - CORE.drag.x, dy = e.clientY - CORE.drag.y; if(Math.abs(dx)+Math.abs(dy) > 3) CORE.drag.moved = true;
-      CORE.ry = CORE.drag.ry + dx*.012; CORE.rx = Math.max(-1.2, Math.min(1.2, CORE.drag.rx + dy*.012)); }
+    if(CORE.drag){ const dx = e.clientX - CORE.drag.x, dy = e.clientY - CORE.drag.y; if(Math.abs(dx)+Math.abs(dy) > (CORE.drag.node ? 10 : 3)) CORE.drag.moved = true;
+      if(CORE.drag.moved){ CORE.ry = CORE.drag.ry + dx*.012; CORE.rx = Math.max(-1.2, Math.min(1.2, CORE.drag.rx + dy*.012)); } }   // v27: pressing a dot no longer spins/tilts the ball — it only rotates once you really drag
     const h = coreHit(e); CORE.hover = h ? h.n : null; cv.style.cursor = h ? "pointer" : "grab";
     if(tip){ if(h){ tip.innerHTML = `<b>${escapeHtml(h.n.kind)}</b>${escapeHtml(h.n.label)}<i>${escapeHtml(h.n.sub||"")}</i>`; placeCoreTip(tip, cv, h); } else tip.classList.remove("show"); }
   });

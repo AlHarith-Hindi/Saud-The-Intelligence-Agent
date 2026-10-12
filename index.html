@@ -2590,7 +2590,7 @@ function applyReveal(){
 
 /* text decode effect on the greeting */
 function decodeText(el, text){
-  if(!el) return;
+  if(!el) return; el.textContent = text; el.dataset.txt = text; return;   /* v36.3: no text decode/typing (Harith) */
   if(REDUCED || LANG === "ar" || el.dataset.txt === text){ el.textContent = text; el.dataset.txt = text; return; }
   el.dataset.txt = text; const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+<>/"; let f = 0; const total = 18;
   (function step(){
@@ -6253,7 +6253,7 @@ async function exportPPTX(){
   document.addEventListener("click", function(e){
     var c = e.target.closest && e.target.closest(".xf-chip, #extFilterPop [data-g]"); if(!c) return;
     try{ if(typeof sfx === "function") sfx("tick"); }catch(err){}
-    setTimeout(function(){ var n = document.getElementById("xfCount"); if(n) scramble(n); var b = document.getElementById("extFilterBtn"); if(b){ b.classList.remove("tx-blip"); void b.offsetWidth; b.classList.add("tx-blip"); } }, 0);
+    setTimeout(function(){ var n = null; var b = document.getElementById("extFilterBtn"); if(b){ b.classList.remove("tx-blip"); void b.offsetWidth; b.classList.add("tx-blip"); } }, 0);
   }, true);
   function scramble(el){ if(isRed()) return; var final = el.textContent, chars = "0123456789#%/<>", n = 0;
     var iv = setInterval(function(){ n++; el.textContent = final.split("").map(function(ch, i){ return (/\s/.test(ch) || i < n) ? ch : chars[Math.floor(Math.random() * chars.length)]; }).join(""); if(n >= final.length){ clearInterval(iv); el.textContent = final; } }, 22); }
@@ -6321,7 +6321,7 @@ async function exportPPTX(){
   var hEl = ov.querySelector(".iv-h"), dEl = ov.querySelector(".iv-date"), list = ov.querySelector(".iv-brief"), bar = ov.querySelector(".iv-bar");
   var hr = new Date().getHours(); var name = "Al-Harith";
   var greet = AR() ? (hr < 12 ? "صباح الخير، الحارث" : hr < 18 ? "مساء الخير، الحارث" : "مساء الخير، الحارث") : ((hr < 12 ? "Good morning, " : hr < 18 ? "Good afternoon, " : "Good evening, ") + name);
-  setTimeout(function(){ var k = 0; var iv = setInterval(function(){ k++; hEl.textContent = greet.slice(0, k); if(k >= greet.length) clearInterval(iv); }, 38); }, 1300);
+  hEl.textContent = greet; hEl.style.opacity = "0"; hEl.style.transition = "opacity .6s"; setTimeout(function(){ hEl.style.opacity = "1"; }, 1300);   /* v36.3: greeting fades in, no typing */
   try{ var hij = (document.getElementById("heroHijri") || {}).textContent || ""; dEl.textContent = new Date().toLocaleDateString(AR() ? "ar-SA-u-nu-latn-ca-gregory" : "en-GB", { weekday:"long", day:"numeric", month:"long", year:"numeric", timeZone:"Asia/Riyadh" }) + (hij ? "  ·  " + hij : ""); }catch(e){}
   function briefLines(){ try{ var b = typeof loadBrief === "function" ? loadBrief() : null; if(!b) return []; return (AR() ? b.ar : b.en).map(function(x){ return String(x).replace(/\*\*/g, "").replace(/^\s*[-•*\d.)]+\s*/, "").trim(); }).filter(Boolean).slice(0, 4); }catch(e){ return []; } }
   var autoT = null, total = 9000;
@@ -6480,7 +6480,7 @@ async function exportPPTX(){
   function countRows(){ var b = document.getElementById("externalBody"); if(!b) return [0, 0]; var rows = [].slice.call(b.children).filter(function(tr){ return !/^extDetail/.test(tr.id || "") && tr.querySelector('[data-bind^="external."]'); });
     var vis = rows.filter(function(tr){ return tr.style.display !== "none" && !tr.classList.contains("xf-hide") && getComputedStyle(tr).display !== "none"; }).length; return [vis, rows.length]; }
   var lastCnt = "";
-  function updCount(){ var el = document.getElementById("hudCnt"); if(!el) return; var c = countRows(); var s = String(c[0]).padStart(2, "0") + " / " + String(c[1]).padStart(2, "0") + (AR() ? " إشارة" : " SIGNALS"); if(s !== lastCnt){ lastCnt = s; scramble(el, s); } }
+  function updCount(){ var el = document.getElementById("hudCnt"); if(!el) return; var c = countRows(); var s = String(c[0]).padStart(2, "0") + " / " + String(c[1]).padStart(2, "0") + (AR() ? " إشارة" : " SIGNALS"); if(s !== lastCnt){ lastCnt = s; el.textContent = s; } }
   function buildMonths(sel, box){ var cur = sel.value; box.innerHTML = ""; [].slice.call(sel.options).forEach(function(o){ var m = o.textContent.match(/^(.*?)\s*\((\d+)\)\s*$/); var lab = o.value ? (m ? m[1] : o.textContent).replace(/^\S*📅\s*/, "") : (AR() ? "كل الأشهر" : "All months");
       var short = o.value ? lab.replace(/(\w{3})\w*\s+(\d{4})/, "$1 $2") : lab; var b = document.createElement("button"); b.type = "button"; b.className = "hud-m" + (o.value === cur ? " on" : ""); b.dataset.v = o.value; b.innerHTML = short.replace(/[<>&]/g, "") + (m ? "<i>" + m[2] + "</i>" : ""); box.appendChild(b); }); }
   function hudSetup(){ var bar = document.querySelector("#page-external .ext-filters"); var sel = document.getElementById("extMonth"); var inp = document.getElementById("externalSearch");
@@ -6492,7 +6492,7 @@ async function exportPPTX(){
     wrap.insertAdjacentHTML("afterbegin", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/><path d="M11 7v8M7 11h8" opacity=".5"/></svg>');
     inp.setAttribute("data-ph", inp.getAttribute("placeholder") || ""); inp.setAttribute("placeholder", "");
     var ghost = document.createElement("span"); ghost.className = "hud-ghost"; wrap.appendChild(ghost); var scan = document.createElement("span"); scan.className = "hud-scan"; wrap.appendChild(scan);
-    runGhost(ghost, inp); ["focus", "blur", "input"].forEach(function(ev){ inp.addEventListener(ev, function(){ ghost.style.display = (!inp.value && document.activeElement !== inp) ? "" : "none"; setTimeout(updCount, 60); }); });
+    ghost.remove(); inp.setAttribute("placeholder", AR() ? "ابحث باسم الفرصة أو الجهة أو الرقم المرجعي…" : "Search opportunity, agency or RN…");   /* v36.3: static placeholder, no typing */ ["focus", "blur", "input"].forEach(function(ev){ inp.addEventListener(ev, function(){ ghost.style.display = (!inp.value && document.activeElement !== inp) ? "" : "none"; setTimeout(updCount, 60); }); });
     sel.classList.add("hud-hide"); var box = document.createElement("div"); box.className = "hud-months"; sel.parentNode.insertBefore(box, sel.nextSibling); buildMonths(sel, box);
     if(window.MutationObserver) new MutationObserver(function(){ buildMonths(sel, box); }).observe(sel, { childList:true, subtree:true });
     box.addEventListener("click", function(e){ var b = e.target.closest(".hud-m"); if(!b) return; sel.value = b.dataset.v; sel.dispatchEvent(new Event("change", { bubbles:true })); buildMonths(sel, box); try{ if(typeof sfx === "function") sfx("tick"); }catch(err){} setTimeout(updCount, 80); });

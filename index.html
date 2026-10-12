@@ -6893,141 +6893,145 @@ async function exportPPTX(){
   .tm-reveal{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px;}
   .tm-reveal[hidden]{display:none;}
   .tm-reveal code{padding:7px 12px; border-radius:10px; background:rgba(0,0,0,.4); border:1px dashed rgba(242,101,34,.45); font-family:var(--mono, monospace); font-size:15px; letter-spacing:.16em; color:#fff;}
+  /* v38.1: kill switch */
+  .tm-killbtn{border-color:rgba(224,90,79,.55) !important; color:#ff8a7e !important;}
+  .tm-kill{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:10px; padding:10px; border-radius:12px; border:1px dashed rgba(224,90,79,.55); background:rgba(224,90,79,.08);}
+  .tm-kill input{flex:1 1 160px; height:36px; border-radius:10px; border:1px solid rgba(224,90,79,.5); background:rgba(0,0,0,.4); color:#fff; padding:0 10px; font:inherit;}
+  .tm-killgo{background:#e05a4f !important; border-color:#e05a4f !important; color:#fff !important;}
 </style>
 <script>
-/* v38 module: team view — read-only, passcode-protected (AES-GCM) snapshot for Trad and the heads, plus the publisher in Harith's dashboard */
+/* v38 module: team view — secret one-click link (key in the link, data encrypted, no password, no name picker) + kill switch, plus the publisher in Harith's dashboard (v38.1) */
 (function(){
   "use strict";
   var TEAM = !!window.__SAUD_TEAM__;
   var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
   var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
   var toast = function(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} };
-  var snd = function(k){ try{ if(typeof sfx === "function") sfx(k); }catch(e){} };
-  var FILE = "team.json", PASS_KEY = "saudTeamPass", WHO_KEY = "saudTeamViewer";
-  var ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  var NAMES = [["Trad", "طراد"], ["Firas", "فراس"], ["Mohammed", "محمد"], ["Sameer", "سمير"], ["Faisal", "فيصل"]];
+  var FILE = "team.json";
+  var KILL_HASH = "9dfaed01a54d1ec77858db1a00e027b9d238008c5de233de1c86164048b77f62";   /* SHA-256 of Harith's kill password — the password itself is not stored anywhere */
   var PRIVATE = ["teamView", "devRequests", "comments", "legacyV1", "alarmLog"];   /* never leaves the private data repo */
   var CODE = { owner:location.hostname.split(".")[0], repo:(location.pathname.split("/")[1] || "") };
 
-  /* ---------- crypto: PBKDF2-SHA256 (250k) → AES-GCM-256, gzip first ---------- */
-  function newPass(){ var a = crypto.getRandomValues(new Uint8Array(12)), s = ""; for(var i = 0; i < 12; i++){ s += ALPH[a[i] % ALPH.length]; if(i === 3 || i === 7) s += "-"; } return s; }
-  function norm(p){ return String(p || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  /* ---------- crypto: random 256-bit key that lives only in the link (#k=…, never sent to any server) → AES-GCM, gzip first ---------- */
   function b64(u8){ var s = ""; for(var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
   function unb64(s){ var b = atob(s), u = new Uint8Array(b.length); for(var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
-  function key(pass, salt, it){ return crypto.subtle.importKey("raw", new TextEncoder().encode(norm(pass)), "PBKDF2", false, ["deriveKey"]).then(function(base){
-      return crypto.subtle.deriveKey({ name:"PBKDF2", salt:salt, iterations:it, hash:"SHA-256" }, base, { name:"AES-GCM", length:256 }, false, ["encrypt", "decrypt"]); }); }
+  function newKey(){ return b64(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function aesKey(k){ var s = String(k || "").replace(/-/g, "+").replace(/_/g, "/"); while(s.length % 4) s += "="; return crypto.subtle.importKey("raw", unb64(s), "AES-GCM", false, ["encrypt", "decrypt"]); }
   function gz(u8, T){ return new Response(new Blob([u8]).stream().pipeThrough(new T("gzip"))).arrayBuffer().then(function(b){ return new Uint8Array(b); }); }
-  async function seal(obj, pass){ var raw = new TextEncoder().encode(JSON.stringify(obj)), z = 0; if(typeof CompressionStream !== "undefined"){ raw = await gz(raw, CompressionStream); z = 1; }
-    var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), it = 250000;
-    var ct = new Uint8Array(await crypto.subtle.encrypt({ name:"AES-GCM", iv:iv }, await key(pass, salt, it), raw));
-    return { v:1, app:"midwam-team-view", at:new Date().toISOString(), kdf:"PBKDF2-SHA256", it:it, salt:b64(salt), iv:b64(iv), z:z, ct:b64(ct) }; }
-  async function unseal(f, pass){ var pt = new Uint8Array(await crypto.subtle.decrypt({ name:"AES-GCM", iv:unb64(f.iv) }, await key(pass, unb64(f.salt), f.it || 250000), unb64(f.ct)));
+  async function seal(obj, k){ var raw = new TextEncoder().encode(JSON.stringify(obj)), z = 0; if(typeof CompressionStream !== "undefined"){ raw = await gz(raw, CompressionStream); z = 1; }
+    var iv = crypto.getRandomValues(new Uint8Array(12)); var ct = new Uint8Array(await crypto.subtle.encrypt({ name:"AES-GCM", iv:iv }, await aesKey(k), raw));
+    return { v:3, app:"midwam-team-view", at:new Date().toISOString(), iv:b64(iv), z:z, ct:b64(ct) }; }
+  async function unseal(f, k){ var pt = new Uint8Array(await crypto.subtle.decrypt({ name:"AES-GCM", iv:unb64(f.iv) }, await aesKey(k), unb64(f.ct)));
     if(f.z) pt = await gz(pt, DecompressionStream); return JSON.parse(new TextDecoder().decode(pt)); }
+  async function sha(s){ var b = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(s)))); var h = ""; for(var i = 0; i < b.length; i++) h += ("0" + b[i].toString(16)).slice(-2); return h; }
   function fmt(iso){ var d = new Date(iso); if(isNaN(d)) return "—"; var l = AR() ? "ar-u-nu-latn" : "en-GB";
     return d.toLocaleDateString(l, { weekday:"short", day:"numeric", month:"short" }) + ", " + d.toLocaleTimeString(l, { hour:"2-digit", minute:"2-digit", hour12:false }); }
   function copy(t, ok){ try{ navigator.clipboard.writeText(t).then(function(){ toast(ok); }, function(){ toast(t); }); }catch(e){ toast(t); } }
 
-  /* ---------- publisher (Harith's dashboard only) ---------- */
+  /* ---------- publisher + kill switch (Harith's dashboard only) ---------- */
   function ro(){ return TEAM || (typeof READONLY !== "undefined" && READONLY); }
   function ready(){ return !ro() && typeof gh !== "undefined" && !!gh.connected && !!gh.token; }
-  function cfg(create){ if(typeof state === "undefined" || !state) return null; if(!state.teamView && create) state.teamView = { pass:newPass(), createdAt:new Date().toISOString() }; return state.teamView || null; }
+  function cfg(create){ if(typeof state === "undefined" || !state) return null; if(!state.teamView && create) state.teamView = { createdAt:new Date().toISOString() };
+    var c = state.teamView || null; if(c){ if(c.pass) delete c.pass; if(!c.key && create) c.key = newKey(); } return c; }
   function snapshot(){ var c = JSON.parse(JSON.stringify(state)); PRIVATE.forEach(function(k){ delete c[k]; }); c._teamSnapshotAt = new Date().toISOString(); return c; }
-  function link(){ return location.origin + location.pathname.replace(/index\.html$/, "") + "?team"; }
+  function link(){ var c = cfg(false); return location.origin + location.pathname.replace(/index\.html$/, "") + "?team#k=" + (c && c.key ? c.key : ""); }
   var busy = false;
+  async function putFile(file){ var url = "https://api.github.com/repos/" + CODE.owner + "/" + CODE.repo + "/contents/" + FILE, sha0 = null;
+    try{ var g = await fetch(url + "?ref=main&t=" + Date.now(), { cache:"no-store" }); if(g.ok) sha0 = (await g.json()).sha; }catch(e){}
+    var body = { message:(file.killed ? "Team view switched OFF " : "Team view snapshot ") + file.at.slice(0, 16).replace("T", " ") + " UTC", content:btoa(JSON.stringify(file)), branch:"main" }; if(sha0) body.sha = sha0;
+    return fetch(url, { method:"PUT", headers:{ Authorization:"Bearer " + gh.token, Accept:"application/vnd.github+json", "content-type":"application/json" }, body:JSON.stringify(body) }); }
   async function teamPublish(opts){ opts = opts || {};
-    if(!ready()) return { ok:false, reason:"not-connected" }; if(busy) return { ok:false, reason:"busy" }; busy = true;
+    if(!ready()) return { ok:false, reason:"not-connected" }; var c0 = cfg(false); if(c0 && c0.killed) return { ok:false, reason:"killed" }; if(busy) return { ok:false, reason:"busy" }; busy = true;
     try{
-      var c = cfg(true), file = await seal(snapshot(), c.pass);
-      var url = "https://api.github.com/repos/" + CODE.owner + "/" + CODE.repo + "/contents/" + FILE, sha = null;
-      try{ var g = await fetch(url + "?ref=main&t=" + Date.now(), { cache:"no-store" }); if(g.ok) sha = (await g.json()).sha; }catch(e){}
-      var body = { message:"Team view snapshot " + file.at.slice(0, 16).replace("T", " ") + " UTC", content:btoa(JSON.stringify(file)), branch:"main" }; if(sha) body.sha = sha;
-      var res = await fetch(url, { method:"PUT", headers:{ Authorization:"Bearer " + gh.token, Accept:"application/vnd.github+json", "content-type":"application/json" }, body:JSON.stringify(body) });
+      var c = cfg(true), file = await seal(snapshot(), c.key), res = await putFile(file);
       c.lastTry = new Date().toISOString();
       if(res.ok){ c.lastPublishedAt = file.at; c.lastError = ""; c.blocked = false; }
       else { c.blocked = res.status === 403 || res.status === 404; c.lastError = c.blocked ? "permission" : ("HTTP " + res.status); }
-      renderCard(); if(opts.save !== false && typeof saveLocalDraft === "function") saveLocalDraft();
-      return { ok:res.ok, status:res.status, at:file.at, kb:Math.round(body.content.length / 1024), blocked:!!c.blocked };
+      renderCard(true); if(opts.save !== false && typeof saveLocalDraft === "function") saveLocalDraft();
+      return { ok:res.ok, status:res.status, at:file.at, blocked:!!c.blocked };
     }catch(e){ return { ok:false, reason:String((e && e.message) || e) }; }
     finally{ busy = false; }
   }
   window.teamPublish = teamPublish;
-  function autoPub(){ var c = cfg(false); if(!c || !c.pass || !ready()) return; var last = Date.parse(c.lastTry || "") || 0, wait = c.blocked ? 864e5 : 2 * 6e4;
+  async function killTeamView(pw){
+    if(ro() || (await sha(pw)) !== KILL_HASH) return { ok:false, reason:"password" };
+    var c = cfg(true); c.key = newKey(); c.killed = true; c.killedAt = new Date().toISOString();   /* new key = every old link is dead even if the file can't be overwritten */
+    var out = { ok:true, wiped:false };
+    if(ready()){ try{ var res = await putFile({ v:3, app:"midwam-team-view", at:new Date().toISOString(), killed:true }); out.wiped = res.ok; if(!res.ok) out.status = res.status; }catch(e){} }
+    if(typeof saveLocalDraft === "function") saveLocalDraft(); try{ if(typeof saveToGitHub === "function") await saveToGitHub(); }catch(e){}
+    renderCard(true); return out; }
+  async function reviveTeamView(){ var c = cfg(true); c.killed = false; c.key = newKey(); c.revivedAt = new Date().toISOString(); renderCard(true); return teamPublish(); }
+  function autoPub(){ var c = cfg(false); if(!c || !c.key || c.killed || !ready()) return; var last = Date.parse(c.lastTry || "") || 0, wait = c.blocked ? 864e5 : 2 * 6e4;
     if(Date.now() - last < wait) return; c.lastTry = new Date().toISOString(); setTimeout(function(){ teamPublish({ save:false }); }, 2500); }
   if(!TEAM && typeof saveToGitHub === "function" && !saveToGitHub.__v38){ var baseSave = saveToGitHub; saveToGitHub = async function(){ var out = await baseSave.apply(this, arguments); try{ autoPub(); }catch(e){} return out; }; saveToGitHub.__v38 = true; }
 
-  var revealed = false, rotArm = 0;
-  function renderCard(){ if(ro()) return; var grid = document.querySelector("#page-customize .cu-grid"); if(!grid) return; var card = document.getElementById("tmCard");
+  var killOpen = false;
+  function renderCard(force){ if(ro()) return; var grid = document.querySelector("#page-customize .cu-grid"); if(!grid) return; var card = document.getElementById("tmCard");
     if(!card){ card = document.createElement("div"); card.className = "cu-card"; card.id = "tmCard"; grid.appendChild(card); }
+    if(card.contains(document.activeElement) && document.activeElement.tagName === "INPUT" && !force) return;   /* don't wipe the password box while typing */
     var c = cfg(false), ar = AR(), st, cls = "";
-    if(!c) st = ar ? "لم تُفعّل بعد — اضغط «انشر الآن»." : "Not set up yet — press Publish now.";
+    if(c && c.killed){ st = (ar ? "⛔ أُوقفت نسخة الفريق " : "⛔ Team view switched OFF ") + fmt(c.killedAt) + (ar ? " — كل الروابط القديمة لا تعمل." : " — every old link is dead."); cls = " err"; }
+    else if(!c || !c.key) st = ar ? "لم تُفعّل بعد — اضغط «انشر الآن»." : "Not set up yet — press Publish now.";
     else if(c.blocked){ st = ar ? "متوقفة: رمز GitHub الخاص باللوحة لا يملك صلاحية الكتابة على مستودع الموقع بعد." : "Waiting on GitHub: the dashboard's token can't write to the website repo yet."; cls = " err"; }
     else if(c.lastError){ st = (ar ? "فشل النشر: " : "Publish failed: ") + c.lastError; cls = " err"; }
     else if(c.lastPublishedAt){ st = (ar ? "آخر نشر: " : "Last published: ") + fmt(c.lastPublishedAt); cls = " ok"; }
     else st = ar ? "لم تُنشر بعد." : "Not published yet.";
-    var html = '<div class="cu-t">' + (ar ? "نسخة الفريق (للعرض فقط)" : "Team view (read-only)") + '</div><div class="cu-d">' + (ar ? "نسخة للعرض فقط لطراد ورؤساء الأقسام، مشفّرة برمز دخول، وتتحدّث تلقائيًا بعد دقيقتين من أي تعديل. أنت من يشارك الرابط والرمز." : "A view-only copy for Trad and the heads, locked with a passcode. It updates itself a couple of minutes after any change here. You share the link and passcode yourself.") + "</div>"
-      + '<div class="tm-st' + cls + '">' + esc(st) + "</div>"
-      + '<div class="cu-actions" style="margin:0"><button class="editbtn secondary" type="button" data-tm="copy">⧉ ' + (ar ? "نسخ الرابط" : "Copy link") + '</button><button class="editbtn secondary" type="button" data-tm="pass">🔑 ' + (ar ? "رمز الدخول" : "Passcode") + '</button><button class="editbtn" type="button" data-tm="pub">⇪ ' + (ar ? "انشر الآن" : "Publish now") + "</button></div>"
-      + '<div class="tm-reveal"' + (revealed && c ? "" : " hidden") + ">" + (c ? "<code>" + esc(c.pass) + '</code><button class="tinybtn" type="button" data-tm="cpass">' + (ar ? "نسخ" : "Copy") + '</button><button class="tinybtn" type="button" data-tm="rot">' + (rotArm > Date.now() ? (ar ? "متأكد؟ اضغط مجددًا" : "Sure? Click again") : (ar ? "رمز جديد" : "New passcode")) + "</button>" : "") + "</div>";
-    if(card.__h !== html){ card.__h = html; card.innerHTML = html; } }
+    var acts = (c && c.killed)
+      ? '<button class="editbtn" type="button" data-tm="revive">↻ ' + (ar ? "تشغيل من جديد (رابط جديد)" : "Turn back on (new link)") + "</button>"
+      : '<button class="editbtn secondary" type="button" data-tm="copy">⧉ ' + (ar ? "نسخ الرابط السري" : "Copy secret link") + '</button><button class="editbtn" type="button" data-tm="pub">⇪ ' + (ar ? "انشر الآن" : "Publish now") + '</button><button class="editbtn secondary tm-killbtn" type="button" data-tm="kill">⛔ ' + (ar ? "إيقاف نسخة الفريق" : "Kill team view") + "</button>";
+    var killBox = (killOpen && !(c && c.killed)) ? '<div class="tm-kill"><input type="password" id="tmKillPw" autocomplete="off" placeholder="' + (ar ? "كلمة مرور الإيقاف" : "Kill password") + '"><button class="editbtn tm-killgo" type="button" data-tm="killgo">' + (ar ? "أوقفها الآن" : "Kill now") + '</button><button class="tinybtn" type="button" data-tm="killx">' + (ar ? "إلغاء" : "Cancel") + "</button></div>" : "";
+    var html = '<div class="cu-t">' + (ar ? "نسخة الفريق (للعرض فقط)" : "Team view (read-only)") + '</div><div class="cu-d">' + (ar ? "نسخة للعرض فقط لطراد ورؤساء الأقسام عبر رابط سري بنقرة واحدة — بدون كلمة مرور. البيانات مشفّرة والمفتاح داخل الرابط فقط. تتحدّث تلقائيًا بعد دقيقتين من أي تعديل. زر الإيقاف يقتل كل الروابط فورًا." : "A view-only copy for Trad and the heads through a secret one-click link — no password. The data is encrypted and the key lives only in the link. It updates itself a couple of minutes after any change. The kill switch ends every link at once.") + "</div>"
+      + '<div class="tm-st' + cls + '">' + esc(st) + '</div><div class="cu-actions" style="margin:0">' + acts + "</div>" + killBox;
+    if(force || card.__h !== html){ card.__h = html; card.innerHTML = html; var pw = document.getElementById("tmKillPw"); if(pw && killOpen) setTimeout(function(){ try{ pw.focus(); }catch(e){} }, 30); } }
 
-  /* ---------- team view (?team) ---------- */
-  var PASS = "", AT = "", introDone = false;
-  function whoRaw(){ try{ return localStorage.getItem(WHO_KEY) || ""; }catch(e){ return ""; } }
-  function who(){ var n = whoRaw(); if(!n) return ""; if(AR()){ var m = NAMES.filter(function(x){ return x[0] === n; })[0]; return m ? m[1] : n; } return n; }
-  function teamName(){ return who() || (AR() ? "فريق Midwam" : "Midwam team"); }
+  /* ---------- team view (?team#k=…) — opens straight away ---------- */
+  var AT = "", KEY = "", introDone = false;
+  function teamName(){ return AR() ? "فريق Midwam" : "Midwam team"; }
   window.__teamWho = function(){ return TEAM ? teamName() : ""; };
-  function msg(t){ var m = document.getElementById("tmMsg"); if(m) m.textContent = t || ""; }
-  function shake(){ var b = document.querySelector("#tmGate .tm-box"); if(!b) return; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); }
-  function gate(text){ var g = document.getElementById("tmGate"); if(!g){ g = document.createElement("div"); g.id = "tmGate"; document.body.appendChild(g); }
-    var ar = AR(), me = whoRaw(), keep = (document.getElementById("tmIn") || {}).value || "";
-    g.innerHTML = '<form class="tm-box" id="tmForm" autocomplete="off"><button type="button" class="tm-lang" data-tmlang="1">' + (ar ? "English" : "عربي") + '</button><div class="tm-brand"><span class="tm-mark"></span>MIDWAM</div><div class="tm-kick">' + (ar ? "نسخة الفريق · للعرض فقط" : "Team view · read-only") + "</div><h1>" + (ar ? "لوحة Midwam" : "Midwam Dashboard") + "</h1><p>" + (ar ? "أدخل رمز الدخول الذي أرسله لك الحارث." : "Enter the passcode Harith sent you.") + "</p>"
-      + '<input id="tmIn" class="tm-in" spellcheck="false" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX" aria-label="Passcode">'
-      + '<div class="tm-who"><span>' + (ar ? "من يتصفّح؟" : "Who's viewing?") + "</span>" + NAMES.map(function(n){ return '<button type="button" class="tm-chip' + (me === n[0] ? " on" : "") + '" data-who="' + n[0] + '">' + (ar ? n[1] : n[0]) + "</button>"; }).join("") + "</div>"
-      + '<button type="submit" class="tm-go">' + (ar ? "افتح اللوحة ←" : "Open dashboard →") + '</button><label class="tm-rem"><input type="checkbox" id="tmRem" checked> ' + (ar ? "تذكّرني على هذا الجهاز" : "Remember on this device") + '</label><div class="tm-msg" id="tmMsg">' + esc(text || "") + "</div></form>";
-    var inp = document.getElementById("tmIn"); inp.value = keep; setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 60);
-    document.getElementById("tmForm").addEventListener("submit", function(e){ e.preventDefault(); var p = inp.value; if(norm(p).length < 8){ msg(AR() ? "أدخل الرمز كاملًا." : "Enter the full passcode."); shake(); return; } unlock(p, document.getElementById("tmRem").checked, false); }); }
+  function screen(text){ var g = document.getElementById("tmGate"); if(!g){ g = document.createElement("div"); g.id = "tmGate"; document.body.appendChild(g); }
+    g.innerHTML = '<div class="tm-box"><div class="tm-brand"><span class="tm-mark"></span>MIDWAM</div><div class="tm-kick">' + (AR() ? "نسخة الفريق · للعرض فقط" : "Team view · read-only") + "</div><h1>" + (AR() ? "لوحة Midwam" : "Midwam Dashboard") + '</h1><div class="tm-msg">' + esc(text) + "</div></div>"; }
   async function fetchFile(){ try{ var a = await fetch("https://api.github.com/repos/" + CODE.owner + "/" + CODE.repo + "/contents/" + FILE + "?ref=main&t=" + Date.now(), { cache:"no-store", headers:{ Accept:"application/vnd.github.raw+json" } }); if(a.ok) return await a.json(); }catch(e){}
     var res = await fetch(FILE + "?t=" + Date.now(), { cache:"no-store" }); if(res.status === 404) throw new Error("nofile"); if(!res.ok) throw new Error("net"); return await res.json(); }
-  async function load(pass){ var f = await fetchFile(); var data; try{ data = await unseal(f, pass); }catch(e){ throw new Error("pass"); } return { f:f, data:data }; }
-  async function unlock(pass, remember, silent){ var ar = AR(); msg(ar ? "جارٍ الفتح…" : "Unlocking…");
-    var got; try{ got = await load(pass); }catch(e){ var k = e && e.message;
-      if(k === "pass"){ if(silent){ try{ localStorage.removeItem(PASS_KEY); }catch(err){} msg(ar ? "تغيّر رمز الدخول — أدخل الرمز الجديد." : "The passcode has changed — enter the new one."); } else { msg(ar ? "رمز الدخول غير صحيح." : "That passcode doesn't match."); shake(); } }
-      else if(k === "nofile") msg(ar ? "نسخة الفريق لم تُنشر بعد — اطلب من الحارث نشرها." : "The team copy isn't published yet — ask Harith.");
-      else msg(ar ? "تعذّر التحميل — تحقّق من الاتصال وحاول مجددًا." : "Couldn't load — check your connection and try again.");
-      return false; }
-    if(remember){ try{ localStorage.setItem(PASS_KEY, norm(pass)); }catch(e){} }
-    PASS = norm(pass); apply(got); snd("open"); return true; }
-  function apply(got){ AT = got.f.at; state = got.data; try{ renderAll(); }catch(e){ console.error(e); }
+  function shutDown(msg){ AT = ""; try{ state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }catch(e){} document.documentElement.classList.add("tm-locked"); var p = document.getElementById("tmPill"); if(p) p.remove(); var iv = document.getElementById("introV35"); if(iv) iv.remove(); screen(msg); }
+  async function apply(f){ if(!f || f.killed) throw new Error("killed"); var data; try{ data = await unseal(f, KEY); }catch(e){ throw new Error("key"); }
+    AT = f.at; state = data; try{ renderAll(); }catch(e){ console.error(e); }
     var g = document.getElementById("tmGate"); if(g) g.remove(); document.documentElement.classList.remove("tm-locked"); pill();
     if(!introDone){ introDone = true; try{ if(typeof window.__v35intro === "function" && !/[?&]nointro/.test(location.search) && !navigator.webdriver) window.__v35intro(); }catch(e){} } }
+  function why(k){ var ar = AR(); return k === "killed" || k === "key" ? (ar ? "هذا الرابط لم يعد يعمل — اطلب الرابط الجديد من الحارث." : "This link no longer works — ask Harith for the current one.")
+      : k === "nofile" ? (ar ? "نسخة الفريق لم تُنشر بعد — اطلب من الحارث نشرها." : "The team copy isn't published yet — ask Harith.")
+      : (ar ? "تعذّر التحميل — تحقّق من الاتصال وحدّث الصفحة." : "Couldn't load — check your connection and refresh."); }
+  async function open(){ screen(AR() ? "جارٍ التحميل…" : "Loading…"); if(!KEY){ screen(why("key")); return; }
+    try{ await apply(await fetchFile()); }catch(e){ screen(why(e && e.message)); } }
   function pill(){ if(!AT) return; var p = document.getElementById("tmPill"); if(!p){ p = document.createElement("div"); p.id = "tmPill"; document.body.appendChild(p); }
-    var ar = AR(); p.innerHTML = '<span class="tm-dot"></span>' + (ar ? "للعرض فقط · آخر تحديث " : "View-only · updated ") + esc(fmt(AT)) + '<button type="button" data-tm="lock">' + (ar ? "قفل" : "Lock") + "</button>"; }
-  async function refresh(){ if(!PASS || document.hidden) return; try{ var f = await fetchFile(); if(!f || f.at === AT) return;
-      var data = await unseal(f, PASS); apply({ f:f, data:data }); }catch(e){} }
+    p.innerHTML = '<span class="tm-dot"></span>' + (AR() ? "للعرض فقط · آخر تحديث " : "View-only · updated ") + esc(fmt(AT)); }
+  async function refresh(){ if(!AT || document.hidden) return; var f; try{ f = await fetchFile(); }catch(e){ return; } if(!f || f.at === AT) return;
+    try{ await apply(f); }catch(e){ var k = e && e.message; if(k === "killed" || k === "key") shutDown(why(k)); } }   /* kill switch reaches open tabs too */
 
   if(TEAM){
     document.documentElement.classList.add("tm-locked");
+    var m = /[#&]k=([A-Za-z0-9_-]{20,})/.exec(location.hash || ""); KEY = m ? m[1] : "";
     try{ var of = window.fetch.bind(window); window.fetch = function(u, o){ var s = String((u && u.url) || u || ""); if(/workers\.dev/i.test(s)) return Promise.reject(new Error("Not available in the team view")); return of(u, o); }; }catch(e){}
     try{ if(typeof askSaud === "function") askSaud = function(){ toast(AR() ? "غير متاح في نسخة الفريق" : "Not available in the team view"); }; }catch(e){}
-    try{ if(typeof greeting === "function") greeting = function(){ var n = teamName(), h = new Date().getHours(); if(AR()) return (h < 12 ? "صباح الخير" : "مساء الخير") + (n ? "، " + n : ""); return (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + (n ? ", " + n : ""); }; }catch(e){}
-    gate(""); var saved = ""; try{ saved = localStorage.getItem(PASS_KEY) || ""; }catch(e){} if(saved) unlock(saved, true, true);
-    setInterval(refresh, 3 * 6e4); document.addEventListener("visibilitychange", function(){ if(!document.hidden) refresh(); });
+    try{ if(typeof greeting === "function") greeting = function(){ var n = teamName(), h = new Date().getHours(); if(AR()) return (h < 12 ? "صباح الخير" : "مساء الخير") + "، " + n; return (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + ", " + n; }; }catch(e){}
+    try{ localStorage.removeItem("saudTeamPass"); localStorage.removeItem("saudTeamViewer"); }catch(e){}
+    open();
+    setInterval(refresh, 2 * 6e4); document.addEventListener("visibilitychange", function(){ if(!document.hidden) refresh(); });
   }
 
   document.addEventListener("click", function(e){
-    var w = e.target.closest("[data-who]"); if(w){ try{ localStorage.setItem(WHO_KEY, w.dataset.who); }catch(err){} [].forEach.call(document.querySelectorAll("#tmGate [data-who]"), function(b){ b.classList.toggle("on", b === w); }); snd("tick"); return; }
-    if(e.target.closest("[data-tmlang]")){ try{ if(typeof toggleLang === "function") toggleLang(); }catch(err){} gate(""); return; }
-    var t = e.target.closest("[data-tm]"); if(!t) return; var a = t.dataset.tm, ar = AR();
-    if(a === "lock"){ try{ localStorage.removeItem(PASS_KEY); }catch(err){} location.reload(); return; }
-    if(ro()) return;
-    if(a === "copy"){ copy(link(), ar ? "نُسخ الرابط" : "Link copied"); return; }
-    if(a === "pass"){ if(!cfg(false)){ if(!ready()){ toast(ar ? "اربط GitHub أولًا" : "Connect GitHub sync first"); return; } cfg(true); if(typeof saveLocalDraft === "function") saveLocalDraft(); } revealed = !revealed; renderCard(); return; }
-    if(a === "cpass"){ var c = cfg(false); if(c) copy(c.pass, ar ? "نُسخ رمز الدخول" : "Passcode copied"); return; }
-    if(a === "rot"){ if(rotArm < Date.now()){ rotArm = Date.now() + 4000; renderCard(); setTimeout(renderCard, 4100); return; } rotArm = 0; var c2 = cfg(true); c2.pass = newPass(); c2.rotatedAt = new Date().toISOString(); renderCard();
-      teamPublish().then(function(r){ toast(r.ok ? (ar ? "رمز جديد — نُشرت النسخة. أرسل الرمز الجديد للفريق." : "New passcode set and published — send it to the team.") : (ar ? "رمز جديد محفوظ — النشر لم يتم بعد." : "New passcode saved — not published yet.")); }); return; }
+    var t = e.target.closest("[data-tm]"); if(!t || ro()) return; var a = t.dataset.tm, ar = AR();
+    if(a === "copy"){ if(!cfg(false) || !cfg(false).key){ toast(ar ? "اضغط «انشر الآن» أولًا" : "Press Publish now first"); return; } copy(link(), ar ? "نُسخ الرابط السري" : "Secret link copied"); return; }
     if(a === "pub"){ if(!ready()){ toast(ar ? "اربط GitHub أولًا" : "Connect GitHub sync first"); return; } t.disabled = true; t.textContent = ar ? "جارٍ النشر…" : "Publishing…";
-      teamPublish().then(function(r){ renderCard(); toast(r.ok ? (ar ? "نُشرت نسخة الفريق" : "Team view published") : r.blocked ? (ar ? "لم تُنشر: الرمز لا يملك صلاحية الكتابة على مستودع الموقع" : "Not published: the token can't write to the website repo") : (ar ? "فشل النشر" : "Publish failed")); }); return; }
+      teamPublish().then(function(r){ renderCard(true); toast(r.ok ? (ar ? "نُشرت نسخة الفريق" : "Team view published") : r.blocked ? (ar ? "لم تُنشر: الرمز لا يملك صلاحية الكتابة على مستودع الموقع" : "Not published: the token can't write to the website repo") : (ar ? "فشل النشر" : "Publish failed")); }); return; }
+    if(a === "kill"){ killOpen = true; renderCard(true); return; }
+    if(a === "killx"){ killOpen = false; renderCard(true); return; }
+    if(a === "killgo"){ var pw = (document.getElementById("tmKillPw") || {}).value || ""; t.disabled = true;
+      killTeamView(pw).then(function(r){ if(!r.ok){ t.disabled = false; toast(ar ? "كلمة المرور غير صحيحة" : "Wrong password"); var i = document.getElementById("tmKillPw"); if(i){ i.value = ""; i.focus(); } return; }
+        killOpen = false; renderCard(true); try{ if(typeof sfx === "function") sfx("close"); }catch(err){}
+        toast(ar ? "أُوقفت نسخة الفريق — كل الروابط القديمة لا تعمل الآن" : "Team view killed — every old link is dead now"); }); return; }
+    if(a === "revive"){ t.disabled = true; reviveTeamView().then(function(r){ renderCard(true); toast(r.ok ? (ar ? "عادت نسخة الفريق برابط جديد — انسخه وأرسله" : "Team view back on with a NEW link — copy it and send it") : (ar ? "رابط جديد محفوظ — النشر لم يتم بعد" : "New link saved — not published yet")); }); return; }
   });
+  document.addEventListener("keydown", function(e){ if(e.key === "Enter" && e.target && e.target.id === "tmKillPw"){ e.preventDefault(); var b = document.querySelector("#tmCard [data-tm='killgo']"); if(b) b.click(); } });
   setInterval(function(){ try{ renderCard(); }catch(e){} }, 2000); try{ renderCard(); }catch(e){}
 })();
 </script>

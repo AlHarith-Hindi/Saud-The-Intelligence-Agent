@@ -371,6 +371,23 @@
   #briefBtn, #saud-chat-fab{display:none !important;}
   /* v33: sidebar alert count badge hidden (Harith) */
   .sb-alert{display:none !important;}
+  /* v34: Etimad rows open on click + filter */
+  #externalBody > tr:not([id^="extDetail"]){cursor:pointer;}
+  #externalBody > tr:not([id^="extDetail"]):hover > td{background:color-mix(in srgb, var(--copper) 7%, transparent);}
+  #externalBody > tr.xf-hide{display:none !important;}
+  .xf-wrap{position:relative; display:inline-block;}
+  .xf-btn{cursor:pointer; white-space:nowrap;}
+  .xf-btn.on{border-color:var(--copper); color:var(--copper);}
+  .xf-pop{position:absolute; top:calc(100% + 8px); left:0; z-index:60; min-width:320px; max-width:420px; padding:16px; border-radius:14px; background:var(--card, #1d1714); border:1px solid color-mix(in srgb, var(--copper) 35%, transparent); box-shadow:0 18px 40px rgba(0,0,0,.45); display:none;}
+  [dir="rtl"] .xf-pop{left:auto; right:0;}
+  .xf-pop.show{display:block;}
+  .xf-pop h5{margin:10px 0 6px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; opacity:.7;}
+  .xf-pop h5:first-child{margin-top:0;}
+  .xf-chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .xf-chip{cursor:pointer; padding:5px 11px; border-radius:999px; font-size:12px; border:1px solid color-mix(in srgb, currentColor 25%, transparent); background:transparent; color:inherit;}
+  .xf-chip.on{background:var(--copper); border-color:var(--copper); color:#1a0f08;}
+  .xf-foot{display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:12px; opacity:.85;}
+  .xf-foot button{cursor:pointer; background:none; border:none; color:var(--copper); font-size:12px;}
 
   /* ================= v9: immersive / interactive layer ================= */
   :root{ --mono:"JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace; }
@@ -2698,7 +2715,7 @@ document.addEventListener("click", e=>{
   const tr = e.target.closest("#externalBody tr, #internalBody tr, #projectsBody tr");
   if(tr && !e.target.closest("button, a, input, select, .actions-cell")){
     const cell = tr.querySelector("[data-bind]"); if(!cell) return;
-    const m = cell.dataset.bind.match(/^(\w+)\.(\d+)\./); if(m) openDrawer(m[1], +m[2]);
+    const m = cell.dataset.bind.match(/^(\w+)\.(\d+)\./); if(m){ if(m[1] === "external" && !editing && document.getElementById("extDetail" + m[2])) toggleExtDetail(+m[2]); else openDrawer(m[1], +m[2]); }   // v34: click an Etimad row to open its details
   }
   const kb = e.target.closest(".kb-card");
   if(kb && !kb.classList.contains("dragging")) openDrawer("internal", +kb.dataset.idx);
@@ -4031,7 +4048,7 @@ function migrateV23(){
     c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the Team constellation section is removed from the Overview page.", at:new Date().toISOString() }); } });
   if(typeof FOCUS_PERSON !== "undefined") FOCUS_PERSON = "";
 }
-function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); migrateV31(); migrateV32(); applyStyleOverrides(); renderSaudEdits(); }
+function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); migrateV31(); migrateV32(); extFilterSetup(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 
@@ -4777,7 +4794,42 @@ function renderOverviewNav(){
 
 /* ---------- External ---------- */
 let externalFilter = "";
-function renderExternal(){
+/* v34: Etimad filter (fit · category · closing within) */
+var XF;
+function xfInit(){ if(XF) return; XF = { fit:[], cat:[], within:0 }; try{ const s = JSON.parse(localStorage.getItem("extFilterV34") || "null"); if(s && typeof s === "object") XF = Object.assign(XF, s); }catch(e){} }
+function xfSave(){ try{ localStorage.setItem("extFilterV34", JSON.stringify(XF)); }catch(e){} }
+function xfActive(){ return XF.fit.length + XF.cat.length + (XF.within ? 1 : 0); }
+function applyExtFilter(){ xfInit(); const body = document.getElementById("externalBody"); if(!body) return; const now = Date.now();
+  [...body.children].forEach(tr => { if(/^extDetail/.test(tr.id || "")) return; const cell = tr.querySelector('[data-bind^="external."]'); if(!cell){ tr.classList.remove("xf-hide"); return; }
+    const m = cell.dataset.bind.match(/^external\.(\d+)\./); const r = m && (state.external || [])[+m[1]]; let hide = false;
+    if(r){ if(XF.fit.length && !XF.fit.includes(r.fit || "")) hide = true;
+      if(XF.cat.length && !XF.cat.includes(r.category || "")) hide = true;
+      if(XF.within){ const t = extDateKey(r); if(!(t >= now - 864e5 && t <= now + XF.within * 864e5)) hide = true; } }
+    tr.classList.toggle("xf-hide", hide); const d = document.getElementById("extDetail" + (m ? m[1] : "")); if(d) d.classList.toggle("xf-hide", hide); });
+  const b = document.getElementById("extFilterBtn"); if(b){ const n = xfActive(); b.classList.toggle("on", n > 0); b.textContent = (LANG === "ar" ? "⚲ تصفية" : "⚲ Filter") + (n ? " · " + n : ""); } }
+function xfRenderPop(){ xfInit(); const pop = document.getElementById("extFilterPop"); if(!pop) return; const list = state.external || [];
+  const fits = [...new Set(list.map(r => r.fit).filter(Boolean))].sort((a,b) => ["Strong","Medium","Low-Medium","Low"].indexOf(a) - ["Strong","Medium","Low-Medium","Low"].indexOf(b));
+  const cats = [...new Set(list.map(r => r.category).filter(Boolean))].sort();
+  const chip = (grp, v, label, on) => '<button type="button" class="xf-chip' + (on ? " on" : "") + '" data-g="' + grp + '" data-v="' + escapeHtml(String(v)) + '">' + escapeHtml(label) + '</button>';
+  const ar = LANG === "ar";
+  pop.innerHTML = '<h5>' + (ar ? "الملاءمة" : "Fit") + '</h5><div class="xf-chips">' + fits.map(f => chip("fit", f, L(f), XF.fit.includes(f))).join("") + '</div>'
+    + '<h5>' + (ar ? "الفئة" : "Category") + '</h5><div class="xf-chips">' + cats.map(c => chip("cat", c, L(c), XF.cat.includes(c))).join("") + '</div>'
+    + '<h5>' + (ar ? "تُغلق خلال" : "Closing within") + '</h5><div class="xf-chips">' + [[0, ar ? "أي وقت" : "Any time"], [7, ar ? "7 أيام" : "7 days"], [14, ar ? "14 يومًا" : "14 days"], [30, ar ? "30 يومًا" : "30 days"]].map(([d, l]) => chip("within", d, l, XF.within === d)).join("") + '</div>'
+    + '<div class="xf-foot"><span id="xfCount"></span><button type="button" data-g="clear">' + (ar ? "مسح الكل" : "Clear all") + '</button></div>';
+  const vis = () => { const body = document.getElementById("externalBody"); const n = body ? [...body.children].filter(tr => !/^extDetail/.test(tr.id || "") && tr.querySelector('[data-bind^="external."]') && !tr.classList.contains("xf-hide") && tr.style.display !== "none").length : 0; const el = document.getElementById("xfCount"); if(el) el.textContent = ar ? ("الظاهر: " + n) : (n + " shown"); };
+  vis(); }
+function extFilterSetup(){ xfInit(); const sel = document.getElementById("extMonth"); if(!sel) return;
+  if(!document.getElementById("extFilterBtn")){ const w = document.createElement("span"); w.className = "xf-wrap"; w.innerHTML = '<button type="button" class="row-search xf-btn" id="extFilterBtn"></button><div class="xf-pop" id="extFilterPop"></div>'; sel.insertAdjacentElement("afterend", w);
+    const btn = w.querySelector("#extFilterBtn"), pop = w.querySelector("#extFilterPop");
+    btn.addEventListener("click", e => { e.stopPropagation(); xfRenderPop(); pop.classList.toggle("show"); });
+    pop.addEventListener("click", e => { e.stopPropagation(); const c = e.target.closest("[data-g]"); if(!c) return; const g = c.dataset.g, v = c.dataset.v;
+      if(g === "clear"){ XF = { fit:[], cat:[], within:0 }; } else if(g === "within"){ XF.within = +v; } else { const a = XF[g]; const i = a.indexOf(v); if(i >= 0) a.splice(i, 1); else a.push(v); }
+      xfSave(); applyExtFilter(); xfRenderPop(); });
+    document.addEventListener("click", () => pop.classList.remove("show"));
+    const body = document.getElementById("externalBody"); if(body && window.MutationObserver) new MutationObserver(() => applyExtFilter()).observe(body, { childList:true }); }
+  applyExtFilter(); }
+function extDateKey(r){ const t = Date.parse(String((r && r.bidDeadline) || "").trim().replace(" ", "T")); return isNaN(t) ? 8.64e15 : t; }
+function renderExternal(){ if(typeof editing === "undefined" || !editing){ if(Array.isArray(state.external)) state.external.sort((a,b) => extDateKey(a) - extDateKey(b)); }   // v34: Etimad opportunities sorted by bid deadline, soonest first
   const kpiWrap = document.getElementById("externalKpis"); kpiWrap.innerHTML = "";
   const list = state.external;
   const missing = list.filter(r=>!r.fit || r.fit==="Unknown").length;
@@ -4817,7 +4869,7 @@ function renderExternal(){
           <input class="status-select edit-only" list="catOptionsList" data-catselect="${i}" style="background:#3987e522; color:#3987e5;" value="${escapeHtml(r.category)}">
         </td>
         <td data-bind="external.${i}.bidDeadline">${escapeHtml(tx(r.bidDeadline))}</td>
-        <td><div data-bind="external.${i}.notes">${escapeHtml(tx(r.notes))}</div>${(r.details||r.price||r.place||r.partners||r.award)?`<button class="detail-toggle view-only" onclick="toggleExtDetail(${i})">${L("Details ▾")}</button>`:""}</td>
+        <td><div data-bind="external.${i}.notes">${escapeHtml(tx(r.notes))}</div>${(r.details||r.price||r.place||r.partners||r.award)?``:""}</td>
         <td class="actions-cell edit-only">
           ${reorderBtns('external', i, list.length)}
           <button class="rowdel" onclick="confirmDelete(this, ()=>removeRow('external',${i}))">✕</button>

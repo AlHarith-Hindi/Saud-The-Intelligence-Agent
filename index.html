@@ -3996,7 +3996,7 @@ function migrateV19(){
   cmtList().forEach(c=>{ if(!c.resolved && /^#briefBox/.test(c.sel || "") && /^✎/.test(c.text || "") && !(c.replies||[]).some(x=>/^Claude:/.test(x.text||""))){
     c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the brief no longer shows raw code; it shows clean bullet points, and switches to Arabic when you switch language (press ✨ Refresh brief once to get a fresh one).", at:new Date().toISOString() }); } });
 }
-function migrateV31(){ if(state._v31headmkt) return; state._v31headmkt = true;   // v31: Faisal stays "Head of Marketing" (he leads KNKT) — Harith
+function migrateV32(){ if(state._v32headmkt) return; state._v32headmkt = true;   // v31: Faisal stays "Head of Marketing" (he leads KNKT) — Harith
   const fix = v => String(v).replace(/Head of KNKT/g,"Head of Marketing (leads KNKT)").replace(/رئيس KNKT/g,"مدير التسويق (يقود KNKT)");
   ["titles","titlesAr"].forEach(t => { const o = state[t]; if(o && typeof o.marketingOwnerLine === "string") o.marketingOwnerLine = fix(o.marketingOwnerLine); });
   (state.team||[]).forEach(p => { if(p && typeof p.title === "string") p.title = p.title.replace(/Head of KNKT/g,"Head of Marketing"); });
@@ -4029,7 +4029,7 @@ function migrateV23(){
     c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the Team constellation section is removed from the Overview page.", at:new Date().toISOString() }); } });
   if(typeof FOCUS_PERSON !== "undefined") FOCUS_PERSON = "";
 }
-function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); migrateV31(); migrateV31(); applyStyleOverrides(); renderSaudEdits(); }
+function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); migrateV31(); migrateV32(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 

@@ -6210,20 +6210,20 @@ async function exportPPTX(){
   #hvCard .hv-pill{display:inline-block; font-size:10px; padding:2px 8px; border-radius:999px; margin-top:6px; border:1px solid currentColor;}
   [dir="rtl"] #hvCard{direction:rtl;}
   /* cinematic opening */
-  #introV35{position:fixed; inset:0; z-index:100000; background:radial-gradient(circle at 50% 34%, #2a160c 0%, #0d0907 62%); color:#f4ede4; overflow:hidden; transition:opacity .7s ease, transform .7s ease;}
+  #introV35{position:fixed; inset:0; z-index:100000; background:radial-gradient(circle at 50% 25%, #2a160c 0%, #0d0907 62%); color:#f4ede4; overflow:hidden; transition:opacity .7s ease, transform .7s ease;}
   #introV35.out{opacity:0; transform:scale(1.04); pointer-events:none;}
   #introV35 canvas{position:absolute; inset:0;}
   #introV35 .iv-grid{position:absolute; inset:0; background-image:linear-gradient(rgba(242,101,34,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(242,101,34,.05) 1px, transparent 1px); background-size:48px 48px; mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 70%); -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 70%);}
-  #introV35 .iv-txt{position:absolute; left:50%; top:58%; transform:translateX(-50%); width:min(860px, 90vw); text-align:center;}
+  #introV35 .iv-txt{position:absolute; left:50%; top:calc(25vh + 13vmin + 22px); transform:translateX(-50%); width:min(860px, 90vw); text-align:center;}
   #introV35 .iv-eb{font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--copper,#F26522); opacity:0; animation:ivIn .6s 1.2s forwards;}
   #introV35 .iv-h{font-size:clamp(28px, 4vw, 46px); font-weight:700; margin:10px 0 4px; min-height:1.2em;}
   #introV35 .iv-date{font-size:13px; opacity:0; animation:ivIn .6s 1.9s forwards; font-family:var(--mono, monospace); color:#cdbfb1;}
-  #introV35 .iv-brief{list-style:none; padding:0; margin:22px auto 0; text-align:start; max-width:760px;}
-  #introV35 .iv-brief li{font-size:14px; line-height:1.5; padding:7px 0 7px 18px; position:relative; opacity:0; transform:translateY(6px); transition:opacity .4s, transform .4s; color:#e6dbcf; border-bottom:1px solid rgba(242,101,34,.12);}
+  #introV35 .iv-brief{list-style:none; padding:0; margin:14px auto 0; text-align:start; max-width:760px;}
+  #introV35 .iv-brief li{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:13px; line-height:1.45; padding:6px 0 6px 18px; position:relative; opacity:0; transform:translateY(6px); transition:opacity .4s, transform .4s; color:#e6dbcf; border-bottom:1px solid rgba(242,101,34,.12);}
   [dir="rtl"] #introV35 .iv-brief li{padding:7px 18px 7px 0;}
   #introV35 .iv-brief li::before{content:""; position:absolute; inset-inline-start:0; top:15px; width:7px; height:7px; border-radius:50%; background:var(--copper,#F26522); box-shadow:0 0 8px var(--copper,#F26522);}
   #introV35 .iv-brief li.on{opacity:1; transform:none;}
-  #introV35 .iv-act{display:flex; gap:12px; justify-content:center; margin-top:22px; opacity:0; animation:ivIn .5s 2.4s forwards;}
+  #introV35 .iv-act{display:flex; gap:12px; justify-content:center; margin-top:16px; opacity:0; animation:ivIn .5s 2.4s forwards;}
   #introV35 .iv-act button{cursor:pointer; font:inherit; font-size:13px; padding:10px 18px; border-radius:999px; border:1px solid rgba(242,101,34,.5); background:transparent; color:#f4ede4;}
   #introV35 .iv-act button.pri{background:var(--copper,#F26522); color:#1a0f08; border-color:var(--copper,#F26522); font-weight:700;}
   #introV35 .iv-skip{position:absolute; top:22px; inset-inline-end:26px; cursor:pointer; background:none; border:1px solid rgba(244,237,228,.25); color:#f4ede4; border-radius:999px; padding:7px 14px; font-size:12px; opacity:.75;}
@@ -6306,7 +6306,7 @@ async function exportPPTX(){
   var t0 = performance.now(), rot = 0, exiting = false, exitT = 0, done = false, target = null;
   function ease(t){ return t < 0 ? 0 : t > 1 ? 1 : 1 - Math.pow(1 - t, 3); }
   function frame(now){ if(done) return; var t = ease((now - t0) / 1600); rot += .006; g.clearRect(0, 0, W, H);
-    var cx = W / 2, cy = H * .33, R = Math.min(W, H) * .16;
+    var cx = W / 2, cy = H * .25, R = Math.min(W, H) * .13;
     if(exiting){ var k = ease((now - exitT) / 650); if(target){ cx = cx + (target.x - cx) * k; cy = cy + (target.y - cy) * k; R = R + (target.r - R) * k; } }
     g.strokeStyle = "rgba(242,101,34," + (.25 * t) + ")"; g.lineWidth = 1; g.beginPath(); g.ellipse(cx, cy, R * 1.55, R * .42, -.35, 0, Math.PI * 2); g.stroke();
     var ca = Math.cos(rot), sa = Math.sin(rot);
@@ -6323,7 +6323,7 @@ async function exportPPTX(){
   var greet = AR() ? (hr < 12 ? "صباح الخير، الحارث" : hr < 18 ? "مساء الخير، الحارث" : "مساء الخير، الحارث") : ((hr < 12 ? "Good morning, " : hr < 18 ? "Good afternoon, " : "Good evening, ") + name);
   setTimeout(function(){ var k = 0; var iv = setInterval(function(){ k++; hEl.textContent = greet.slice(0, k); if(k >= greet.length) clearInterval(iv); }, 38); }, 1300);
   try{ var hij = (document.getElementById("heroHijri") || {}).textContent || ""; dEl.textContent = new Date().toLocaleDateString(AR() ? "ar-SA-u-nu-latn-ca-gregory" : "en-GB", { weekday:"long", day:"numeric", month:"long", year:"numeric", timeZone:"Asia/Riyadh" }) + (hij ? "  ·  " + hij : ""); }catch(e){}
-  function briefLines(){ try{ var b = typeof loadBrief === "function" ? loadBrief() : null; if(!b) return []; return (AR() ? b.ar : b.en).map(function(x){ return String(x).replace(/\*\*/g, "").replace(/^\s*[-•*\d.)]+\s*/, "").trim(); }).filter(Boolean).slice(0, 5); }catch(e){ return []; } }
+  function briefLines(){ try{ var b = typeof loadBrief === "function" ? loadBrief() : null; if(!b) return []; return (AR() ? b.ar : b.en).map(function(x){ return String(x).replace(/\*\*/g, "").replace(/^\s*[-•*\d.)]+\s*/, "").trim(); }).filter(Boolean).slice(0, 4); }catch(e){ return []; } }
   var autoT = null, total = 9000;
   function showBrief(tries){ var lines = briefLines(); if(!lines.length && tries < 12){ setTimeout(function(){ showBrief(tries + 1); }, 500); return; }
     lines.forEach(function(l, i){ var li = document.createElement("li"); li.textContent = l; list.appendChild(li); setTimeout(function(){ li.classList.add("on"); }, 120 + i * 420); });

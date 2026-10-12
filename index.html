@@ -6426,7 +6426,7 @@ async function exportPPTX(){
       basePageFx(page);   /* keeps sound, present-mode slides, title handling; its wipe line is hidden by CSS */
       if(page === prev || !fxOK() || document.body.classList.contains("present")) return;
       var dir = 1; try{ dir = PAGE_ORDER.indexOf(page) >= PAGE_ORDER.indexOf(prev) ? 1 : -1; }catch(e){}
-      stageLights(dir);   /* v36.2: stage-lights section transition (Harith picked #2); typing removed */
+      /* v36.4: stage lights removed (Harith) — no custom section transition, just the default soft fade */
     };
   }
 

@@ -1134,7 +1134,7 @@
   <div class="qa-modal" id="qaModal" onclick="if(event.target===this) closeQuickAdd()"><div class="qa-box"><h4>Quick add</h4><div class="qa-types"></div>
     <input id="qaTitle" autocomplete="off"><div class="qa-row"><input id="qaDate" type="date"><input id="qaOwner" autocomplete="off"></div>
     <div class="qa-actions"><button class="editbtn secondary" id="qaCancel" onclick="closeQuickAdd()">Cancel</button><button class="editbtn" id="qaSave" onclick="saveQuickAdd()">Add</button></div></div></div>
-  <button id="qaFab" onclick="openQuickAdd()">＋</button>
+  
   <div id="presentDots"></div>
   <div id="editDock"><span class="ed-live">✎ <span data-l="Editing">Editing</span></span>
     <button class="editbtn secondary edit-only" id="undoBtn" disabled><span data-bind="titles.btnUndo"></span></button>
@@ -2767,7 +2767,7 @@ function saveQuickAdd(){
   const t = m.querySelector("#qaTitle").value.trim(); if(!t){ m.querySelector("#qaTitle").focus(); return; }
   const d = m.querySelector("#qaDate").value; const o = m.querySelector("#qaOwner").value.trim();
   addRow(k, QA_TYPES[k].make(t, d, o)); closeQuickAdd(); renderAll();
-  const r = document.getElementById("qaFab").getBoundingClientRect(); burst(r.left + r.width/2, r.top); if(typeof sfx === "function") sfx("pop");
+  const qf = document.getElementById("qaFab"); if(qf){ const r = qf.getBoundingClientRect(); burst(r.left + r.width/2, r.top); } if(typeof sfx === "function") sfx("pop");
 }
 
 /* ---------- motion switch (per viewer) ---------- */
@@ -4004,6 +4004,15 @@ function migrateV30(){ if(state._v30knkt) return; state._v30knkt = true;
   (state.team||[]).forEach(p => { if(p && typeof p.title === "string" && /Head of Marketing/.test(p.title)) p.title = kn(p.title); });
   (state.raci||[]).forEach(r => { if(!r) return; if(r.section === "Marketing") r.section = "KNKT"; if(typeof r.owner === "string") r.owner = r.owner.replace(/Head of Marketing/g,"Head of KNKT"); });
   try{ saveLocalDraft(); }catch(e){} setTimeout(() => { try{ renderAll(); }catch(e){} }, 0); }
+function migrateV31(){
+  // v31: floating "+" quick-add button (#qaFab) removed (Saud request "delete this", Oct 11).
+  if(state._v31qafab) return; state._v31qafab = true;
+  const isIt = s => /#qaFab/.test(s || "");
+  devRequests().forEach(r => { if(r.status === "open" && isIt(r.sel)){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Floating + quick-add button removed (v31)."; } });
+  state.styleOverrides = styleOverrides().filter(o => !isIt(o.sel));
+  cmtList().forEach(c => { if(!c.resolved && isIt(c.sel) && !(c.replies||[]).some(x => /^Claude:/.test(x.text||""))){
+    c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the floating + (quick add) button is removed from the dashboard.", at:new Date().toISOString() }); } });
+}
 function migrateV23(){
   // v23: Team constellation section removed from Overview (Saud request "delete this", Oct 8).
   if(state._v23constellation) return; state._v23constellation = true;
@@ -4014,7 +4023,7 @@ function migrateV23(){
     c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the Team constellation section is removed from the Overview page.", at:new Date().toISOString() }); } });
   if(typeof FOCUS_PERSON !== "undefined") FOCUS_PERSON = "";
 }
-function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); applyStyleOverrides(); renderSaudEdits(); }
+function renderV16(){ migrateV17(); migrateV19(); migrateV23(); migrateV30(); migrateV31(); applyStyleOverrides(); renderSaudEdits(); }
 
 const CATEGORY_OPTIONS = ["National Day","Sports/Equestrian","Health","Conference/Exhibition","Religious/Pilgrimage","Volunteering/CSR","Culture/Heritage","Event Management","Other/Uncategorized"];
 

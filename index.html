@@ -6343,7 +6343,8 @@ async function exportPPTX(){
   /* v36: page warp transition (replaces the glowing wipe line) + Etimad HUD control bar */
   #pageWipe{display:none !important;}
   .tx-warp{position:fixed; pointer-events:none; z-index:9000;}
-  .tx-in{animation:txIn .62s cubic-bezier(.2,.8,.2,1) var(--txd, 0ms) both;}
+  .ty-on::after{content:"\258D"; color:var(--copper,#F26522); margin-inline-start:1px; animation:hudCaret .55s steps(1) infinite;}
+  .tx-in-old{animation:txIn .62s cubic-bezier(.2,.8,.2,1) var(--txd, 0ms) both;}
   @keyframes txIn{0%{opacity:0; transform:translateY(24px) scale(.985); filter:blur(8px); clip-path:inset(0 0 100% 0)} 55%{filter:blur(0)} 100%{opacity:1; transform:none; filter:none; clip-path:inset(0 0 0 0)}}
   .page.active.tx-run{animation:none;}
   /* HUD bar */
@@ -6410,9 +6411,25 @@ async function exportPPTX(){
       basePageFx(page);   /* keeps sound, present-mode slides, title handling; its wipe line is hidden by CSS */
       if(page === prev || !fxOK() || document.body.classList.contains("present")) return;
       var dir = 1; try{ dir = PAGE_ORDER.indexOf(page) >= PAGE_ORDER.indexOf(prev) ? 1 : -1; }catch(e){}
-      warp(dir); cascade();
-      var pt = document.getElementById("pageTitle"); if(pt) scramble(pt, pt.textContent);
+      typeIn();   /* v36.1: typing transition (Harith) — warp/cascade removed */
     };
+  }
+
+  /* v36.1: typing transition — on page change the visible labels, headings and placeholders type themselves in */
+  var TY_SKIP = "script, style, svg, canvas, input, textarea, select, option, [contenteditable='true'], #hvCard, .xf-pop, #introV35, .hud-ghost, .tx-press, .tx-brk";
+  function typeIn(){ var a = document.querySelector(".page.active"); if(!a) return; var H = innerHeight, out = [];
+    var pt = document.getElementById("pageTitle"); if(pt) out.push(pt);
+    var all = a.querySelectorAll("*");
+    for(var i = 0; i < all.length && out.length < 70; i++){ var el = all[i]; if(el.children.length || el.closest(TY_SKIP)) continue; var t = el.textContent; if(!t || t.trim().length < 2 || t.length > 90) continue;
+      var r = el.getBoundingClientRect(); if(!r.width || r.bottom < 0 || r.top > H) continue; out.push(el); }
+    out.forEach(function(el, idx){ var orig = el.textContent; if(el.__ty) clearInterval(el.__ty); var w = el.offsetWidth, h = el.offsetHeight;
+      el.style.minWidth = w + "px"; el.style.minHeight = h + "px"; el.textContent = ""; el.classList.add("ty-on");
+      var step = Math.max(1, Math.ceil(orig.length / 14)), n = 0, exp = "";
+      var finish = function(ok){ clearInterval(el.__ty); el.__ty = null; if(ok) el.textContent = orig; el.classList.remove("ty-on"); el.style.minWidth = ""; el.style.minHeight = ""; };
+      setTimeout(function(){ el.__ty = setInterval(function(){ if(el.textContent !== exp){ finish(false); return; } n = Math.min(orig.length, n + step); exp = orig.slice(0, n); el.textContent = exp; if(n >= orig.length) finish(true); }, 24); }, Math.min(idx * 16, 560));
+      setTimeout(function(){ if(el.__ty && el.textContent === exp) finish(true); }, 2200); });
+    [].slice.call(a.querySelectorAll("input[placeholder]")).forEach(function(inp){ var ph = inp.getAttribute("placeholder"); if(!ph || ph.length < 2) return; var k = 0; inp.setAttribute("placeholder", "");
+      var iv = setInterval(function(){ k = Math.min(ph.length, k + 2); inp.setAttribute("placeholder", ph.slice(0, k) + (k < ph.length ? "▍" : "")); if(k >= ph.length) clearInterval(iv); }, 22); });
   }
 
   /* ---------- 2. Etimad HUD control bar ---------- */

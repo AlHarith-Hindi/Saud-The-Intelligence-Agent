@@ -6343,6 +6343,21 @@ async function exportPPTX(){
   /* v36: page warp transition (replaces the glowing wipe line) + Etimad HUD control bar */
   #pageWipe{display:none !important;}
   .tx-warp{position:fixed; pointer-events:none; z-index:9000;}
+  /* v36.2 stage lights */
+  .stg{position:fixed; top:0; height:100vh; z-index:9000; pointer-events:none; --sx:50%; --sy:50%; --sr:110px; opacity:0;
+    background:radial-gradient(circle at var(--sx) var(--sy), rgba(255,226,190,.16) 0, rgba(255,214,170,.07) var(--sr), rgba(6,4,3,.9) calc(var(--sr) + 80px));
+    animation:stgDim .2s ease-out forwards;}
+  .stg.up{animation:stgUp .5s ease forwards;}
+  @keyframes stgDim{to{opacity:1}}
+  @keyframes stgUp{from{opacity:1} to{opacity:0}}
+  .stg-beam{position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,226,190,.34), rgba(255,200,150,.05)); filter:blur(3px); mix-blend-mode:screen;}
+  .stg-rig{position:absolute; top:8px; left:24px; right:24px; display:flex; justify-content:space-between;}
+  .stg-rig i{width:10px; height:10px; border-radius:50%; background:#3a2a20; border:1px solid rgba(255,214,170,.25); transition:background .18s, box-shadow .18s;}
+  .stg.lit .stg-rig i{background:#ffe2bd; box-shadow:0 0 12px 3px rgba(255,205,150,.85), 0 40px 90px 18px rgba(255,190,120,.18);}
+  .page.active.stg-page{animation:stgPage 1.15s ease;}
+  @keyframes stgPage{0%{filter:brightness(.5) saturate(.7)} 55%{filter:brightness(.55) saturate(.7)} 100%{filter:none}}
+  .stg-title{animation:stgTitle 1.2s ease;}
+  @keyframes stgTitle{0%,30%{text-shadow:none} 55%{text-shadow:0 0 18px rgba(255,214,170,.9), 0 0 42px rgba(242,101,34,.6)} 100%{text-shadow:none}}
   .ty-on::after{content:"\258D"; color:var(--copper,#F26522); margin-inline-start:1px; animation:hudCaret .55s steps(1) infinite;}
   .tx-in-old{animation:txIn .62s cubic-bezier(.2,.8,.2,1) var(--txd, 0ms) both;}
   @keyframes txIn{0%{opacity:0; transform:translateY(24px) scale(.985); filter:blur(8px); clip-path:inset(0 0 100% 0)} 55%{filter:blur(0)} 100%{opacity:1; transform:none; filter:none; clip-path:inset(0 0 0 0)}}
@@ -6411,9 +6426,31 @@ async function exportPPTX(){
       basePageFx(page);   /* keeps sound, present-mode slides, title handling; its wipe line is hidden by CSS */
       if(page === prev || !fxOK() || document.body.classList.contains("present")) return;
       var dir = 1; try{ dir = PAGE_ORDER.indexOf(page) >= PAGE_ORDER.indexOf(prev) ? 1 : -1; }catch(e){}
-      typeIn();   /* v36.1: typing transition (Harith) — warp/cascade removed */
+      stageLights(dir);   /* v36.2: stage-lights section transition (Harith picked #2); typing removed */
     };
   }
+
+  /* v36.2: stage lights — venue dims, a spotlight sweeps in and lands on the page title, then the house lights come up */
+  function stageLights(dir){ var m = document.querySelector(".main") || document.body; var r = m.getBoundingClientRect(); if(!r.width) return;
+    var old = document.querySelector(".stg"); if(old) old.remove();
+    var ov = document.createElement("div"); ov.className = "stg"; ov.style.left = r.left + "px"; ov.style.width = r.width + "px";
+    var rig = ""; for(var i = 0; i < 11; i++) rig += "<i></i>"; ov.innerHTML = '<div class="stg-rig">' + rig + '</div><div class="stg-beam"></div>'; document.body.appendChild(ov);
+    var beam = ov.querySelector(".stg-beam"), lights = ov.querySelectorAll(".stg-rig i");
+    var pt = document.getElementById("pageTitle"); var tr = pt ? pt.getBoundingClientRect() : null;
+    var tx = tr && tr.width ? tr.left - r.left + Math.min(tr.width, 420) / 2 : r.width * .3, ty = tr && tr.height ? tr.top + tr.height / 2 : 90;
+    var x0 = dir > 0 ? r.width * 1.05 : -r.width * .05, y0 = innerHeight * .78, src = dir > 0 ? r.width * .82 : r.width * .18, R = 110;
+    var page = document.querySelector(".page.active"); if(page){ page.classList.remove("stg-page"); void page.offsetWidth; page.classList.add("stg-page"); }
+    try{ if(typeof sfx === "function") sfx("open"); }catch(e){}
+    var t0 = performance.now(), D = 560;
+    function ease(t){ return t < 0 ? 0 : t > 1 ? 1 : 1 - Math.pow(1 - t, 3); }
+    (function fr(now){ if(!document.body.contains(ov)) return; var t = ease((now - t0 - 140) / D); var x = x0 + (tx - x0) * t, y = y0 + (ty - y0) * t;
+      ov.style.setProperty("--sx", x + "px"); ov.style.setProperty("--sy", y + "px");
+      beam.style.clipPath = "polygon(" + (src - 10) + "px 0px, " + (src + 10) + "px 0px, " + (x + R * .85) + "px " + y + "px, " + (x - R * .85) + "px " + y + "px)";
+      if(now - t0 < 140 + D) requestAnimationFrame(fr); })(t0);
+    setTimeout(function(){ if(pt){ pt.classList.remove("stg-title"); void pt.offsetWidth; pt.classList.add("stg-title"); setTimeout(function(){ pt.classList.remove("stg-title"); }, 1300); } }, 380);
+    setTimeout(function(){ ov.classList.add("lit"); [].forEach.call(lights, function(l, i){ l.style.transitionDelay = (i * 30) + "ms"; }); try{ if(typeof sfx === "function") sfx("done"); }catch(e){} }, 760);
+    setTimeout(function(){ ov.classList.add("up"); beam.style.transition = "opacity .3s"; beam.style.opacity = "0"; }, 900);
+    setTimeout(function(){ ov.remove(); if(page) page.classList.remove("stg-page"); }, 1500); }
 
   /* v36.1: typing transition — on page change the visible labels, headings and placeholders type themselves in */
   var TY_SKIP = "script, style, svg, canvas, input, textarea, select, option, [contenteditable='true'], #hvCard, .xf-pop, #introV35, .hud-ghost, .tx-press, .tx-brk";

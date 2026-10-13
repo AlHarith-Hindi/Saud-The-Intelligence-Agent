@@ -7138,5 +7138,365 @@ async function exportPPTX(){
   try{ if(migrateV40() && typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){}
 })();
 </script>
+<style id="v41css">
+  /* v41: win/loss record (Etimad page) + Saudi events calendar page */
+  #wlSec .wl-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.6fr); gap:16px; margin-top:14px;}
+  @media (max-width:1100px){ #wlSec .wl-grid{grid-template-columns:1fr;} }
+  .wl-box{border:1px solid var(--border); border-radius:14px; background:rgba(0,0,0,.18); padding:12px 14px; min-width:0;}
+  .wl-box h4{margin:0 0 10px; font-family:var(--mono, monospace); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--copper); font-weight:600;}
+  .wl-box table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .wl-box th{text-align:start; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:6px 8px; border-bottom:1px solid var(--border);}
+  .wl-box td{padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top;}
+  .wl-box tr:last-child td{border-bottom:none;}
+  .wl-empty{font-size:12.5px; color:var(--muted); padding:6px 2px;}
+  .wl-await{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .wl-item{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(0,0,0,.2);}
+  .wl-item.due{border-color:rgba(232,163,61,.65); background:rgba(232,163,61,.09); box-shadow:0 0 18px rgba(232,163,61,.12);}
+  .wl-item .wl-t{flex:1 1 260px; min-width:0;}
+  .wl-item .wl-t b{display:block; font-size:13px; color:var(--cream);}
+  .wl-item .wl-t span{font-size:11.5px; color:var(--muted);}
+  .wl-ask{font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--warning);}
+  .wl-btn{cursor:pointer; padding:7px 12px; border-radius:10px; border:1px solid rgba(242,101,34,.45); background:rgba(242,101,34,.1); color:var(--cream); font:inherit; font-size:12px;}
+  .wl-btn:hover{background:rgba(242,101,34,.2);}
+  .wl-pill{display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:999px; font-family:var(--mono, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; border:1px solid currentColor; white-space:nowrap;}
+  .wl-pill.won{color:#3ccb7f; background:rgba(60,203,127,.12);} .wl-pill.lost{color:#ff7a70; background:rgba(229,72,77,.1);}
+  .wl-pill.nobid{color:#a99c8f;} .wl-pill.canc{color:#8e8a85; border-style:dashed;} .wl-pill.wait{color:var(--warning); border-style:dashed;}
+  .wl-add{cursor:pointer; margin-inline-start:8px; padding:2px 9px; border-radius:999px; border:1px dashed rgba(242,101,34,.55); background:transparent; color:var(--copper); font:inherit; font-size:11px;}
+  .wl-rate{font-family:var(--mono, monospace); font-size:11px; color:var(--sand);}
+  .wl-gap{font-family:var(--mono, monospace); font-size:11px; color:var(--muted);}
+  #wlNudge{display:flex; align-items:center; gap:10px; width:100%; margin:10px 0 0; padding:10px 14px; border-radius:12px; border:1px solid rgba(232,163,61,.55); background:rgba(232,163,61,.08); color:var(--cream); font:inherit; font-size:13px; cursor:pointer; text-align:start;}
+  #wlNudge[hidden]{display:none;}
+  #wlNudge b{color:var(--warning); font-family:var(--mono, monospace); letter-spacing:.1em; font-size:11px; text-transform:uppercase;}
+  #wlModal{position:fixed; inset:0; z-index:9800; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(5,4,3,.66); backdrop-filter:blur(4px);}
+  #wlModal[hidden]{display:none;}
+  .wl-card{width:min(520px,100%); max-height:92vh; overflow:auto; border-radius:18px; border:1px solid rgba(242,101,34,.35); background:var(--night2); box-shadow:0 30px 80px rgba(0,0,0,.55); padding:20px 20px 16px;}
+  .wl-card h3{margin:0 0 2px; font-size:17px;}
+  .wl-card .wl-sub{font-size:12px; color:var(--muted); margin-bottom:14px;}
+  .wl-outs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .wl-out{cursor:pointer; flex:1 1 100px; padding:10px 8px; border-radius:11px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.3); color:var(--sand); font:inherit; font-size:12.5px;}
+  .wl-out.on.won{background:#3ccb7f; color:#0d1a12; border-color:#3ccb7f;} .wl-out.on.lost{background:#e5484d; color:#fff; border-color:#e5484d;}
+  .wl-out.on.nobid{background:#8f857b; color:#140f0b; border-color:#8f857b;} .wl-out.on.canc{background:#4a4640; color:#fff; border-color:#6b655d;}
+  .wl-f{display:flex; flex-direction:column; gap:5px; margin-bottom:11px;}
+  .wl-f span{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+  .wl-f input, .wl-f select, .wl-f textarea{height:38px; border-radius:10px; border:1px solid var(--border); background:var(--night); color:var(--cream); padding:0 10px; font:inherit; font-size:13px;}
+  .wl-f textarea{height:64px; padding:8px 10px; resize:vertical;}
+  .wl-row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .wl-acts{display:flex; justify-content:flex-end; gap:8px; margin-top:6px;}
+  .wl-acts .wl-clear{margin-inline-end:auto; background:transparent; border-color:rgba(255,255,255,.14); color:var(--muted);}
+  /* events page */
+  .ev-cal{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:14px; margin-top:14px;}
+  .ev-month{border:1px solid var(--border); border-radius:14px; background:rgba(0,0,0,.18); padding:12px; min-width:0;}
+  .ev-month h4{margin:0 0 10px; display:flex; justify-content:space-between; align-items:baseline; font-family:var(--font-display); font-size:17px; letter-spacing:.04em; color:var(--sand);}
+  .ev-month h4 i{font-style:normal; font-family:var(--mono, monospace); font-size:10.5px; color:var(--muted);}
+  .ev-month.now{border-color:rgba(242,101,34,.5);}
+  .ev-item{display:block; width:100%; text-align:start; cursor:pointer; margin-bottom:8px; padding:9px 10px; border-radius:11px; border:1px solid rgba(255,255,255,.08); background:var(--night2); color:var(--cream); font:inherit;}
+  .ev-item:last-child{margin-bottom:0;}
+  .ev-item:hover{border-color:rgba(242,101,34,.5);}
+  .ev-item .ev-d{font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--copper);}
+  .ev-item .ev-n{display:block; font-size:13px; font-weight:600; margin:2px 0;}
+  .ev-item .ev-c{font-size:11.5px; color:var(--muted);}
+  .ev-tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;}
+  .ev-tag{padding:2px 8px; border-radius:999px; font-family:var(--mono, monospace); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid currentColor;}
+  .ev-tag.win{color:#3ccb7f; background:rgba(60,203,127,.1);} .ev-tag.soon{color:var(--sand);} .ev-tag.live{color:#ff7a70;} .ev-tag.exp{color:var(--muted); border-style:dashed;}
+  .ev-tag.opp{cursor:pointer; color:var(--copper); background:rgba(242,101,34,.1);}
+  #eventsBody tr.ev-past td{opacity:.45;}
+</style>
+<script>
+/* v41 module: Win/loss record on the Etimad page + Saudi events calendar page (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var arr = function(k){ var s = ST(); if(!s) return []; if(!Array.isArray(s[k])) s[k] = []; return s[k]; };
+  function due(s){ try{ return typeof dueTarget === "function" ? dueTarget(s) : null; }catch(e){ return null; } }
+  function pd(s){ try{ return typeof parseDeadline === "function" ? parseDeadline(s) : null; }catch(e){ return null; } }
+  function today0(){ var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function fmtD(s, withYear){ var d = pd(s); if(!d) return String(s || ""); var o = { day:"numeric", month:"short" }; if(withYear) o.year = "numeric"; return d.toLocaleDateString(loc(), o); }
+  function toast(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} }
+  function snd(k){ try{ if(typeof sfx === "function") sfx(k); }catch(e){} }
+  function save(){ try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} }
+  function hist(){ try{ if(typeof pushHistory === "function") pushHistory(); }catch(e){} }
+
+  try{ ["outcome", "outcomeReason", "outcomeAt", "winPrice", "ourPrice", "keywords", "start", "end", "watchFrom", "confirmed", "nameAr", "angleAr", "cityAr", "_src"].forEach(function(f){ TR_SKIP_FIELDS.add(f); }); }catch(e){}
+
+  /* =====================================================================
+     1) WIN / LOSS RECORD
+     ===================================================================== */
+  var OUT = {
+    won:{ en:"Won", ar:"فزنا", cls:"won", ic:"🏆" },
+    lost:{ en:"Lost", ar:"خسرنا", cls:"lost", ic:"✕" },
+    nobid:{ en:"Didn't bid", ar:"لم نتقدّم", cls:"nobid", ic:"—" },
+    cancelled:{ en:"Cancelled", ar:"أُلغيت", cls:"canc", ic:"⊘" }
+  };
+  var REASONS = [["price", "Price", "السعر"], ["technical", "Technical score", "التقييم الفني"], ["deadline", "Missed deadline", "فاتنا الموعد"], ["qualify", "Didn't qualify", "لم نتأهّل"], ["notinvited", "Not invited (direct purchase)", "لم نُدعَ (شراء مباشر)"], ["cancelled", "Cancelled by the entity", "ألغتها الجهة"], ["other", "Other", "سبب آخر"]];
+  function reasonLabel(k){ for(var i = 0; i < REASONS.length; i++){ if(REASONS[i][0] === k) return AR() ? REASONS[i][2] : REASONS[i][1]; } return ""; }
+  function outLabel(k){ var o = OUT[k]; return o ? (AR() ? o.ar : o.en) : ""; }
+  function pill(k){ var o = OUT[k]; return o ? '<span class="wl-pill ' + o.cls + '">' + o.ic + " " + esc(AR() ? o.ar : o.en) + "</span>" : ""; }
+  function num(v){ var n = parseFloat(String(v == null ? "" : v).replace(/[^\d.]/g, "")); return isFinite(n) && n > 0 ? n : null; }
+  function sar(v){ var n = num(v); if(n == null) return ""; var s = n >= 1e6 ? (Math.round(n / 1e5) / 10) + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n)); return (AR() ? s + " ر.س" : "SAR " + s); }
+
+  /* every Etimad row — open ones live in state.external, closed ones are auto-moved to state.externalExcluded with all their fields */
+  function allRows(){ var out = []; arr("external").forEach(function(r, i){ if(r) out.push({ r:r, sec:"external", i:i }); }); arr("externalExcluded").forEach(function(r, i){ if(r) out.push({ r:r, sec:"externalExcluded", i:i }); }); return out; }
+  function closed(x){ if(x.sec === "externalExcluded") return true; var d = due(x.r.bidDeadline); return !!(d && d.getTime() < Date.now()); }
+  function bidOn(r){ return r.outcome === "won" || r.outcome === "lost" || (r.decision === "pursue" && r.outcome !== "nobid" && r.outcome !== "cancelled"); }
+  function awaiting(){ return allRows().filter(function(x){ return closed(x) && !x.r.outcome && x.r.decision === "pursue" && x.r.rn !== undefined; }); }
+  function isDue(x){ var t = today0(), a = pd(x.r.award); if(a) return a <= t; var b = pd(x.r.bidDeadline || x.r.deadline); return !!(b && (t - b) / 864e5 >= 45); }
+  function dueCount(){ return awaiting().filter(isDue).length; }
+
+  function stats(){
+    var rows = allRows().map(function(x){ return x.r; });
+    var won = rows.filter(function(r){ return r.outcome === "won"; }).length, lost = rows.filter(function(r){ return r.outcome === "lost"; }).length;
+    var bids = rows.filter(bidOn).length, aw = awaiting().length;
+    return { bids:bids, won:won, lost:lost, rate:(won + lost) ? Math.round(100 * won / (won + lost)) : null, aw:aw, due:dueCount() };
+  }
+  function byAgency(){
+    var m = {};
+    allRows().forEach(function(x){ var r = x.r; if(!(bidOn(r) || r.outcome)) return; var k = String(r.agency || "—").trim();
+      var g = m[k] || (m[k] = { agency:k, bids:0, won:0, lost:0, last:null, lastAt:"" });
+      if(bidOn(r)) g.bids++; if(r.outcome === "won") g.won++; if(r.outcome === "lost") g.lost++;
+      if(r.outcome && String(r.outcomeAt || "") >= g.lastAt){ g.lastAt = String(r.outcomeAt || ""); g.last = r.outcome; } });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){ return (b.bids - a.bids) || (b.won - a.won) || a.agency.localeCompare(b.agency); });
+  }
+  function L2(){ var ar = AR(); return {
+    title: ar ? "سجل الفوز والخسارة" : "Win / loss record",
+    sub: ar ? "نتيجة كل منافسة بعد إغلاقها: من فاز وبأي سعر ولماذا. يتحوّل البند إلى اللون الكهرماني في تاريخ الترسية المتوقع ويسألك «النتيجة؟»."
+            : "What happened to every tender after it closed: who won, at what price and why. A row turns amber on its expected award date and asks “Outcome?”.",
+    k: ar ? ["تقدّمنا لها", "فزنا", "خسرنا", "نسبة الفوز", "بانتظار النتيجة"] : ["Bids", "Won", "Lost", "Win rate", "Awaiting outcome"],
+    ks: ar ? ["«نتقدّم» أو بنتيجة", "منافسات رابحة", "منافسات خاسرة", "من المنافسات المحسومة", "مغلقة بلا نتيجة"] : ["pursued or with a result", "tenders won", "tenders lost", "of decided results", "closed, no result yet"],
+    agency: ar ? "النتائج حسب الجهة" : "Results by agency",
+    record: ar ? "السجل" : "Record",
+    awaitH: ar ? "بانتظار النتيجة" : "Awaiting outcome",
+    colsA: ar ? ["الجهة", "تقدّمنا", "فزنا", "خسرنا", "النسبة", "آخر نتيجة"] : ["Agency", "Bids", "Won", "Lost", "Rate", "Last"],
+    colsR: ar ? ["المنافسة", "النتيجة", "السبب", "الفائز", "سعر الفائز", "سعرنا"] : ["Tender", "Outcome", "Why", "Winner", "Winning price", "Our price"],
+    emptyA: ar ? "لا نتائج بعد — ستظهر هنا بعد تسجيل أول نتيجة." : "No results yet — they appear here once the first outcome is recorded.",
+    emptyR: ar ? "لم تُسجَّل أي نتيجة بعد. عند إغلاق منافسة اختر «+ النتيجة» بجانبها في قائمة الفرص المنتهية." : "No outcomes recorded yet. When a tender closes, press “+ Outcome” next to it in the expired list.",
+    ask: ar ? "النتيجة؟" : "Outcome?",
+    waitAward: ar ? "الترسية المتوقعة " : "Expected award ",
+    noAward: ar ? "لا يوجد تاريخ ترسية" : "No award date",
+    rec: ar ? "سجّل النتيجة" : "Record outcome",
+    add: ar ? "+ النتيجة" : "+ Outcome",
+    nudge: ar ? "منافسات وصلت تاريخ الترسية وتحتاج نتيجة" : "tender(s) reached the award date and need an outcome"
+  }; }
+
+  function ensureSection(){
+    var page = document.getElementById("page-external"); if(!page) return null; var sec = document.getElementById("wlSec"); if(sec) return sec;
+    var first = page.querySelector("section"); if(!first) return null;
+    sec = document.createElement("section"); sec.id = "wlSec";
+    sec.innerHTML = '<div class="sechead"><h2 class="wl-title"></h2></div><div class="subhead wl-sub"></div><div class="kpi-row" id="wlKpis"></div><div class="wl-await" id="wlAwait"></div>'
+      + '<div class="wl-grid"><div class="wl-box"><h4 class="wl-ha"></h4><div id="wlAgency"></div></div><div class="wl-box"><h4 class="wl-hr"></h4><div class="table-scroll" id="wlRecord"></div></div></div>';
+    first.insertAdjacentElement("afterend", sec); return sec;
+  }
+  function renderWL(){
+    var sec = ensureSection(); if(!sec) return; var T = L2(), s = stats(), ar = AR();
+    sec.querySelector(".wl-title").textContent = T.title; sec.querySelector(".wl-sub").textContent = T.sub; sec.querySelector(".wl-ha").textContent = T.agency; sec.querySelector(".wl-hr").textContent = T.record;
+    var vals = [s.bids, s.won, s.lost, s.rate == null ? "—" : s.rate + "%", s.aw];
+    document.getElementById("wlKpis").innerHTML = vals.map(function(v, i){ var col = i === 1 ? "#3ccb7f" : i === 2 ? "#ff7a70" : i === 4 && s.due ? "var(--warning)" : ""; return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value" style="font-size:18px;' + (col ? "color:" + col + ";" : "") + '">' + esc(v) + '</div><div class="sub">' + esc(T.ks[i]) + "</div></div>"; }).join("");
+    /* awaiting list — amber when the expected award date has arrived */
+    var aw = awaiting().sort(function(a, b){ return (isDue(b) - isDue(a)) || ((pd(a.r.award) || 0) - (pd(b.r.award) || 0)); });
+    document.getElementById("wlAwait").innerHTML = aw.length ? aw.map(function(x){ var r = x.r, d = isDue(x);
+      return '<div class="wl-item' + (d ? " due" : "") + '"><div class="wl-t"><b>' + esc(TX(r.name || r.rn)) + "</b><span>" + esc(TX(r.agency || "")) + " · " + esc(r.award ? T.waitAward + fmtD(r.award, true) : T.noAward) + "</span></div>"
+        + (d ? '<span class="wl-ask">⚑ ' + esc(T.ask) + "</span>" : '<span class="wl-pill wait">' + esc(ar ? "بانتظار الترسية" : "Waiting") + "</span>")
+        + (RO() ? "" : '<button type="button" class="wl-btn" data-wlsec="' + x.sec + '" data-wli="' + x.i + '">' + esc(T.rec) + "</button>") + "</div>"; }).join("") : "";
+    /* by agency */
+    var ag = byAgency();
+    document.getElementById("wlAgency").innerHTML = ag.length ? "<table><thead><tr>" + T.colsA.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + "</tr></thead><tbody>"
+      + ag.map(function(g){ var dec = g.won + g.lost; return "<tr><td>" + esc(TX(g.agency)) + "</td><td>" + g.bids + "</td><td>" + g.won + "</td><td>" + g.lost + '</td><td class="wl-rate">' + (dec ? Math.round(100 * g.won / dec) + "%" : "—") + "</td><td>" + (g.last ? pill(g.last) : "—") + "</td></tr>"; }).join("") + "</tbody></table>"
+      : '<div class="wl-empty">' + esc(T.emptyA) + "</div>";
+    /* record */
+    var rec = allRows().filter(function(x){ return !!x.r.outcome; }).sort(function(a, b){ return String(b.r.outcomeAt || "").localeCompare(String(a.r.outcomeAt || "")); });
+    document.getElementById("wlRecord").innerHTML = rec.length ? "<table><thead><tr>" + T.colsR.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + (RO() ? "" : "<th></th>") + "</tr></thead><tbody>"
+      + rec.map(function(x){ var r = x.r, wp = num(r.winPrice), op = num(r.ourPrice), gap = (wp && op) ? Math.round(100 * (op - wp) / wp) : null;
+        return "<tr><td><b>" + esc(TX(r.name || r.rn)) + '</b><br><span class="wl-gap">' + esc(TX(r.agency || "")) + "</span></td><td>" + pill(r.outcome) + "</td><td>" + esc(reasonLabel(r.outcomeReason) || "—") + "</td><td>" + esc(r.winner ? TX(r.winner) : "—") + "</td><td>" + esc(sar(r.winPrice) || "—") + "</td><td>" + esc(sar(r.ourPrice) || "—")
+          + (gap != null && r.outcome === "lost" ? '<br><span class="wl-gap">' + (gap > 0 ? "+" : "") + gap + "%" + (ar ? " عن الفائز" : " vs winner") + "</span>" : "") + "</td>"
+          + (RO() ? "" : '<td><button type="button" class="wl-add" data-wlsec="' + x.sec + '" data-wli="' + x.i + '">✎</button></td>') + "</tr>"; }).join("") + "</tbody></table>"
+      : '<div class="wl-empty">' + esc(T.emptyR) + "</div>";
+    decorateExpired(); nudge();
+  }
+  /* "+ Outcome" / outcome pill on each expired row */
+  function decorateExpired(){
+    var body = document.getElementById("externalExcludedBody"); if(!body) return; var T = L2();
+    [].slice.call(body.children).forEach(function(tr){ var c = tr.querySelector('[data-bind^="externalExcluded."][data-bind$=".reason"]'); if(!c) return; var m = c.dataset.bind.match(/^externalExcluded\.(\d+)\./); if(!m) return; var i = +m[1], r = arr("externalExcluded")[i]; if(!r) return;
+      var old = c.querySelector(".wl-tagx"); var html = r.outcome ? pill(r.outcome) : (RO() ? "" : '<button type="button" class="wl-add" data-wlsec="externalExcluded" data-wli="' + i + '">' + esc(T.add) + "</button>");
+      var key = (r.outcome || "") + "|" + (AR() ? "ar" : "en") + "|" + i; if(old && old.dataset.k === key) return; if(old) old.remove();
+      if(!html) return; var span = document.createElement("span"); span.className = "wl-tagx view-only"; span.dataset.k = key; span.style.marginInlineStart = "8px"; span.innerHTML = html; c.appendChild(span); });
+  }
+  /* overview nudge under the bid board */
+  function nudge(){
+    var n = dueCount(), board = document.getElementById("bdBoard") || document.getElementById("briefBox"); var b = document.getElementById("wlNudge");
+    if(!board){ return; }
+    if(!b){ b = document.createElement("button"); b.type = "button"; b.id = "wlNudge"; board.insertAdjacentElement("afterend", b); }
+    if(b.previousElementSibling !== board) board.insertAdjacentElement("afterend", b);
+    if(!n || RO()){ b.hidden = true; return; } b.hidden = false; b.innerHTML = "<b>⚑ " + esc(L2().ask) + "</b><span>" + n + " " + esc(L2().nudge) + "</span>";
+  }
+  function goWL(){ try{ switchPage("external"); }catch(e){} setTimeout(function(){ var s = document.getElementById("wlSec"); if(s) s.scrollIntoView({ behavior:"smooth", block:"start" }); }, 380); }
+
+  /* ---------- outcome editor ---------- */
+  var cur = null;
+  function openEditor(sec, i){
+    if(RO()) return; var r = arr(sec)[i]; if(!r) return; cur = { sec:sec, i:i, out:r.outcome || "" }; var ar = AR();
+    var m = document.getElementById("wlModal"); if(!m){ m = document.createElement("div"); m.id = "wlModal"; m.hidden = true; document.body.appendChild(m); }
+    var outs = ["won", "lost", "nobid", "cancelled"].map(function(k){ var o = OUT[k]; return '<button type="button" class="wl-out ' + o.cls + (cur.out === k ? " on" : "") + '" data-wlout="' + k + '">' + o.ic + " " + esc(ar ? o.ar : o.en) + "</button>"; }).join("");
+    var rs = '<option value="">' + (ar ? "— اختر —" : "— choose —") + "</option>" + REASONS.map(function(x){ return '<option value="' + x[0] + '"' + (r.outcomeReason === x[0] ? " selected" : "") + ">" + esc(ar ? x[2] : x[1]) + "</option>"; }).join("");
+    m.innerHTML = '<div class="wl-card" role="dialog" aria-modal="true"><h3>' + esc(ar ? "نتيجة المنافسة" : "Tender outcome") + '</h3><div class="wl-sub">' + esc(TX(r.name || r.rn)) + " · " + esc(TX(r.agency || "")) + "</div>"
+      + '<div class="wl-outs">' + outs + "</div>"
+      + '<label class="wl-f"><span>' + esc(ar ? "السبب" : "Why") + '</span><select id="wlReason">' + rs + "</select></label>"
+      + '<label class="wl-f"><span>' + esc(ar ? "الفائز" : "Winner") + '</span><input id="wlWinner" type="text" value="' + esc(r.winner || "") + '" placeholder="' + esc(ar ? "اسم الشركة الفائزة" : "Winning company") + '"></label>'
+      + '<div class="wl-row2"><label class="wl-f"><span>' + esc(ar ? "سعر الفائز (ر.س)" : "Winning price (SAR)") + '</span><input id="wlWinPrice" type="text" inputmode="decimal" value="' + esc(r.winPrice || "") + '"></label>'
+      + '<label class="wl-f"><span>' + esc(ar ? "سعرنا (ر.س، اختياري)" : "Our price (SAR, optional)") + '</span><input id="wlOurPrice" type="text" inputmode="decimal" value="' + esc(r.ourPrice || "") + '"></label></div>'
+      + '<label class="wl-f"><span>' + esc(ar ? "ملاحظة" : "Note") + '</span><textarea id="wlNote">' + esc(r.outcomeNote || "") + "</textarea></label>"
+      + '<div class="wl-acts"><button type="button" class="wl-btn wl-clear" data-wlact="clear">' + esc(ar ? "مسح النتيجة" : "Clear") + '</button><button type="button" class="wl-btn" data-wlact="cancel">' + esc(ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="wl-btn" data-wlact="save" style="background:var(--copper);border-color:var(--copper);color:#1a0d05;font-weight:700;">' + esc(ar ? "حفظ" : "Save") + "</button></div></div>";
+    m.hidden = false;
+  }
+  function closeEditor(){ var m = document.getElementById("wlModal"); if(m) m.hidden = true; cur = null; }
+  function saveEditor(clear){
+    if(!cur) return; var r = arr(cur.sec)[cur.i]; if(!r){ closeEditor(); return; }
+    if(!clear && !cur.out){ toast(AR() ? "اختر النتيجة أولًا" : "Pick an outcome first"); return; }
+    hist(); var v = function(id){ var el = document.getElementById(id); return el ? String(el.value || "").trim() : ""; };
+    if(clear){ ["outcome", "outcomeReason", "outcomeAt", "winner", "winPrice", "ourPrice", "outcomeNote"].forEach(function(k){ delete r[k]; }); }
+    else { r.outcome = cur.out; r.outcomeReason = v("wlReason"); r.winner = v("wlWinner"); r.winPrice = v("wlWinPrice"); r.ourPrice = v("wlOurPrice"); r.outcomeNote = v("wlNote"); r.outcomeAt = new Date().toISOString();
+      ["outcomeReason", "winner", "winPrice", "ourPrice", "outcomeNote"].forEach(function(k){ if(!r[k]) delete r[k]; }); }
+    try{ if(typeof logActivity === "function") logActivity("edit", cur.sec, r.name, { outcome:r.outcome || "cleared" }); }catch(e){}
+    closeEditor(); try{ renderAll(); }catch(e){ renderWL(); } save(); snd(r.outcome === "won" ? "success" : "click");
+    toast(clear ? (AR() ? "تم مسح النتيجة" : "Outcome cleared") : (AR() ? "تم حفظ النتيجة: " : "Outcome saved: ") + outLabel(r.outcome));
+  }
+
+  /* =====================================================================
+     2) SAUDI EVENTS CALENDAR
+     ===================================================================== */
+  var SEED = [
+    { name:"Riyadh Season 2026", nameAr:"موسم الرياض 2026", city:"Riyadh", cityAr:"الرياض", start:"2026-10-21", end:"2026-12-31", kind:"Season", angle:"Zones, activations and brand experiences for entities and sponsors.", angleAr:"مناطق وتفعيلات وتجارب للجهات والرعاة.", watchFrom:"2026-07-23", keywords:["موسم الرياض", "Riyadh Season"], confirmed:"start", source:"Gulf News, Sep 2026 (opens 21 Oct, ~10 weeks; end date estimated)" },
+    { name:"FII10 — Future Investment Initiative", nameAr:"مبادرة مستقبل الاستثمار FII10", city:"Riyadh", cityAr:"الرياض", start:"2026-10-26", end:"2026-10-29", kind:"Conference", angle:"Side events, entity lounges and stage production.", angleAr:"فعاليات جانبية وصالات للجهات وإنتاج المسرح.", watchFrom:"2026-08-12", keywords:["مستقبل الاستثمار", "FII"], confirmed:"yes", source:"FII Institute via Amlak, 2026" },
+    { name:"Global Health Exhibition 2026", nameAr:"معرض الصحة العالمي 2026", city:"Riyadh", cityAr:"الرياض", start:"2026-10-26", end:"2026-10-29", kind:"Exhibition", angle:"Pavilions for the Ministry of Health, health clusters and health entities.", angleAr:"أجنحة لوزارة الصحة والتجمعات الصحية والجهات الصحية.", watchFrom:"2026-08-12", keywords:["الصحة العالمي", "Global Health"], confirmed:"yes", source:"Ministry of Health, Aug 2026" },
+    { name:"Biban 2026", nameAr:"ملتقى بيبان 2026", city:"Riyadh (Riyadh Front)", cityAr:"الرياض (واجهة الرياض)", start:"2026-11-05", end:"2026-11-08", kind:"Forum", angle:"Booths and pavilions for Monsha'at partners and government entities.", angleAr:"أجنحة ومنصات لشركاء منشآت والجهات الحكومية.", watchFrom:"2026-08-22", keywords:["بيبان", "Biban"], confirmed:"yes", source:"Monsha'at (Salla seasons calendar)" },
+    { name:"Hajj Conference & Exhibition (6th)", nameAr:"مؤتمر ومعرض الحج (السادس)", city:"Jeddah", cityAr:"جدة", start:"2026-11-08", end:"2026-11-11", kind:"Exhibition", angle:"Entity pavilions and stands — exhibition work only (no Hajj guest services).", angleAr:"أجنحة ومنصات للجهات — أعمال المعرض فقط (دون خدمات ضيوف الرحمن).", watchFrom:"2026-08-25", keywords:["مؤتمر ومعرض الحج", "معرض الحج", "Hajj Expo"], confirmed:"yes", source:"Arab News, Oct 2026" },
+    { name:"Cityscape Global 2026", nameAr:"سيتي سكيب العالمي 2026", city:"Riyadh (Malham)", cityAr:"الرياض (ملهم)", start:"2026-11-16", end:"2026-11-19", kind:"Exhibition", angle:"Pavilions for municipalities, regions and housing entities — Asir and Al-Ahsa are already on Etimad.", angleAr:"أجنحة للأمانات والمناطق وجهات الإسكان — عسير والأحساء موجودتان في اعتماد.", watchFrom:"2026-09-02", keywords:["سيتي سكيب", "سيتي سكايب", "Cityscape"], confirmed:"yes", source:"Real Estate General Authority (REGA)" },
+    { name:"Riyadh International Book Fair 2026", nameAr:"معرض الرياض الدولي للكتاب 2026", city:"Riyadh", cityAr:"الرياض", start:"2026-12-10", end:"2026-12-19", kind:"Exhibition", angle:"Entity pavilions (like the King Fahd Security College tender).", angleAr:"أجنحة للجهات (مثل منافسة كلية الملك فهد الأمنية).", watchFrom:"2026-09-26", keywords:["معرض الرياض الدولي للكتاب", "معارض الكتاب", "معرض الكتاب", "Book Fair"], confirmed:"yes", source:"Arab News, Sep 2026" },
+    { name:"AFC Asian Cup 2027", nameAr:"كأس آسيا 2027", city:"Riyadh · Jeddah · Khobar", cityAr:"الرياض · جدة · الخبر", start:"2027-01-07", end:"2027-02-05", kind:"Sports", angle:"Fan zones, host-city dressing, opening and closing activations.", angleAr:"مناطق المشجعين وتزيين المدن المستضيفة وتفعيلات الافتتاح والختام.", watchFrom:"2026-10-09", keywords:["كأس آسيا", "Asian Cup"], confirmed:"yes", source:"AFC" },
+    { name:"Saudi Cup 2027", nameAr:"كأس السعودية 2027", city:"Riyadh (King Abdulaziz Racecourse)", cityAr:"الرياض (ميدان الملك عبدالعزيز)", start:"2027-02-05", end:"2027-02-06", kind:"Sports", angle:"Evening ceremony and guest experiences — the Jockey Club tender is already on Etimad.", angleAr:"الحفل المسائي وتجارب الضيوف — منافسة نادي الفروسية موجودة في اعتماد.", watchFrom:"2026-11-07", keywords:["كأس السعودية", "Saudi Cup"], confirmed:"yes", source:"webook.com racing season 2026-27" },
+    { name:"Ramadan 1448", nameAr:"رمضان 1448", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-02-08", end:"2027-03-08", kind:"Season", angle:"Entity Ramadan programmes and majlis events (production only — no catering).", angleAr:"برامج رمضان ومجالس الجهات (إنتاج فقط — دون إعاشة).", watchFrom:"2026-11-10", keywords:["رمضان", "Ramadan"], confirmed:"expected", source:"Saudi Hijri calendar (expected — moon sighting)" },
+    { name:"Founding Day 2027", nameAr:"يوم التأسيس 2027", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-02-22", end:"2027-02-22", kind:"National", angle:"Celebrations, shows and activations by ministries, municipalities and regions. Falls inside Ramadan in 2027.", angleAr:"احتفالات وعروض وتفعيلات للوزارات والأمانات والمناطق. يقع داخل رمضان في 2027.", watchFrom:"2026-11-24", keywords:["يوم التأسيس", "Founding Day"], confirmed:"yes", source:"Fixed date (22 Feb)" },
+    { name:"Eid al-Fitr 1448", nameAr:"عيد الفطر 1448", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-03-09", end:"2027-03-12", kind:"Season", angle:"Municipal Eid celebrations, shows and fireworks programmes.", angleAr:"احتفالات الأمانات بالعيد والعروض وبرامج الألعاب النارية.", watchFrom:"2026-12-09", keywords:["عيد الفطر", "احتفالات العيد", "Eid al-Fitr"], confirmed:"expected", source:"Saudi Hijri calendar (expected — moon sighting)" },
+    { name:"Saudi Flag Day 2027", nameAr:"يوم العلم 2027", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-03-11", end:"2027-03-11", kind:"National", angle:"Flag Day ceremonies and city dressing.", angleAr:"فعاليات يوم العلم وتزيين المدن.", watchFrom:"2026-12-11", keywords:["يوم العلم", "Flag Day"], confirmed:"yes", source:"Fixed date (11 Mar)" },
+    { name:"LEAP 2027", nameAr:"ليب 2027", city:"Riyadh (Malham)", cityAr:"الرياض (ملهم)", start:"2027-04-12", end:"2027-04-15", kind:"Conference", angle:"Tech pavilions and interactive experiences for government entities.", angleAr:"أجنحة تقنية وتجارب تفاعلية للجهات الحكومية.", watchFrom:"2027-01-27", keywords:["مؤتمر ليب", "معرض ليب", "LEAP 20"], confirmed:"yes", source:"EventsEye / Informa (dates may change)" },
+    { name:"Eid al-Adha 1448", nameAr:"عيد الأضحى 1448", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-05-16", end:"2027-05-19", kind:"Season", angle:"Municipal Eid celebrations and shows (no Hajj services).", angleAr:"احتفالات الأمانات بالعيد والعروض (دون خدمات الحج).", watchFrom:"2027-02-15", keywords:["عيد الأضحى", "Eid al-Adha"], confirmed:"expected", source:"Hijri calendar estimate (moon sighting)" },
+    { name:"Saudi National Day 97", nameAr:"اليوم الوطني 97", city:"Nationwide", cityAr:"جميع المناطق", start:"2027-09-23", end:"2027-09-23", kind:"National", angle:"Shows, celebrations and city dressing — tenders usually appear in July–August.", angleAr:"عروض واحتفالات وتزيين المدن — المنافسات تظهر عادةً في يوليو وأغسطس.", watchFrom:"2027-06-25", keywords:["اليوم الوطني", "National Day"], confirmed:"yes", source:"Fixed date (23 Sep)" }
+  ];
+  var EV_TPL = { name:"New event", city:"", start:"", end:"", kind:"Exhibition", angle:"", watchFrom:"", keywords:[], confirmed:"yes", source:"" };
+  function evs(){ return arr("events"); }
+  function evName(r){ return (AR() && r.nameAr && (!r._src || r._src === r.name)) ? r.nameAr : TX(r.name || ""); }
+  function evCity(r){ return (AR() && r.cityAr && (!r._src || r._src === r.name)) ? r.cityAr : TX(r.city || ""); }
+  function evAngle(r){ return (AR() && r.angleAr && (!r._src || r._src === r.name)) ? r.angleAr : TX(r.angle || ""); }
+  function evStatus(r){ var t = today0(), s = pd(r.start), e = pd(r.end) || s, w = pd(r.watchFrom);
+    if(!s) return { k:"soon", t:AR() ? "بدون تاريخ" : "No date" };
+    if(e && e < t) return { k:"exp", t:AR() ? "انتهت" : "Past" };
+    if(s <= t) return { k:"live", t:AR() ? "جارية الآن" : "Live now" };
+    if(w && w <= t) return { k:"win", t:AR() ? "نافذة المنافسات مفتوحة" : "Tender window open" };
+    return { k:"soon", t:(AR() ? "راقب من " : "Watch from ") + (w ? fmtD(r.watchFrom) : "—") }; }
+  function kwOf(r){ var k = Array.isArray(r.keywords) ? r.keywords.slice() : []; if(!k.length && r.name) k = [String(r.name).replace(/\s*\d{4}.*$/, "")]; return k.filter(function(x){ return x && String(x).trim().length > 2; }); }
+  function related(r){ var kws = kwOf(r).map(function(k){ return String(k).toLowerCase(); }); if(!kws.length) return { n:0, kw:"" }; var hit = "";
+    var n = arr("external").filter(function(x){ var hay = [x.name, x.agency, x.notes, x.details].join(" ").toLowerCase(); for(var j = 0; j < kws.length; j++){ if(hay.indexOf(kws[j]) >= 0){ hit = hit || kwOf(r)[j]; return true; } } return false; }).length; return { n:n, kw:hit }; }
+  function EL(){ var ar = AR(); return {
+    tab: ar ? "الفعاليات" : "Events",
+    title: ar ? "تقويم الفعاليات السعودية" : "Saudi events calendar",
+    sub: ar ? "الفعاليات الكبرى المتكررة ومتى تبدأ منافساتها عادةً — حتى تستعد Midwam قبل أن تُطرح في اعتماد. «نافذة المنافسات» تقدير: نحو 75 يومًا قبل المعارض و90 يومًا قبل المناسبات الوطنية والرياضية."
+            : "The big recurring events and when their tenders usually appear — so Midwam prepares before they hit Etimad. “Tender window” is an estimate: about 75 days before exhibitions and 90 days before national and sports events.",
+    add: ar ? "+ إضافة فعالية" : "+ Add event",
+    list: ar ? "كل الفعاليات" : "All events",
+    cols: ar ? ["الفعالية", "المدينة", "البداية", "النهاية", "النوع", "فرصة Midwam", "راقب من", "المصدر"] : ["Event", "City", "Start", "End", "Type", "Midwam angle", "Watch from", "Source"],
+    k: ar ? ["خلال 90 يومًا", "نافذة المنافسات مفتوحة", "فرص مرتبطة في اعتماد", "جارية الآن"] : ["Next 90 days", "Tender window open", "Related on Etimad", "Live now"],
+    ks: ar ? ["فعاليات قادمة", "راقب اعتماد الآن", "منافسات مفتوحة تطابق الفعاليات", "فعاليات قائمة اليوم"] : ["upcoming events", "watch Etimad now", "open tenders matching an event", "running today"],
+    expected: ar ? "تاريخ متوقع" : "Expected date",
+    onEtimad: ar ? " في اعتماد" : " on Etimad",
+    foot: ar ? "التواريخ من مصادر رسمية وإعلامية حتى 13 أكتوبر 2026؛ مواعيد رمضان والأعياد تقريبية حسب رؤية الهلال. عدّل أي صف بوضع التحرير." : "Dates from official and press sources as of 13 Oct 2026; Ramadan and Eid dates are estimates (moon sighting). Edit any row in edit mode.",
+    none: ar ? "لا فعاليات قادمة — أضف واحدة." : "No upcoming events — add one."
+  }; }
+  function evShell(){
+    var ext = document.querySelector('.tab-btn[data-page="external"]'), extPage = document.getElementById("page-external"); if(!ext || !extPage) return false;
+    var b = document.querySelector('.tab-btn[data-page="events"]');
+    if(!b){ b = document.createElement("button"); b.className = "tab-btn"; b.dataset.page = "events"; b.setAttribute("onclick", "switchPage('events')");
+      b.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/></svg><span class="ev-tab"></span>';
+      ext.insertAdjacentElement("afterend", b); }
+    var p = document.getElementById("page-events");
+    if(!p){ p = document.createElement("div"); p.className = "page"; p.id = "page-events";
+      p.innerHTML = '<section><div class="sechead"><h2 class="ev-title"></h2><button class="addbtn ev-add" type="button"></button></div><div class="subhead ev-sub"></div><div class="kpi-row" id="evKpis"></div><div class="ev-cal" id="evCal"></div></section>'
+        + '<section><div class="sechead"><h2 class="ev-list"></h2></div><div class="table-scroll"><table class="wide-table"><thead><tr class="ev-head"></tr></thead><tbody id="eventsBody"></tbody></table></div><div class="footer-note ev-foot"></div></section>';
+      extPage.insertAdjacentElement("afterend", p);
+      p.querySelector(".ev-add").addEventListener("click", function(){ if(typeof addRow === "function") addRow("events", EV_TPL); }); }
+    try{ if(typeof PAGE_ORDER !== "undefined" && PAGE_ORDER.indexOf("events") < 0){ var i = PAGE_ORDER.indexOf("external"); PAGE_ORDER.splice(i < 0 ? PAGE_ORDER.length : i + 1, 0, "events"); } }catch(e){}
+    return true; }
+  var evLang = "";
+  function evLabels(force){ var lg = String(typeof LANG !== "undefined" ? LANG : ""); var p = document.getElementById("page-events"); if(!p) return; if(!force && evLang === lg && p.querySelector(".ev-head").children.length) return; evLang = lg;
+    var T = EL(), t = document.querySelector('.tab-btn[data-page="events"] .ev-tab'); if(t && t.textContent !== T.tab) t.textContent = T.tab;
+    p.querySelector(".ev-title").textContent = T.title; p.querySelector(".ev-add").textContent = T.add; p.querySelector(".ev-sub").textContent = T.sub; p.querySelector(".ev-list").textContent = T.list; p.querySelector(".ev-foot").textContent = T.foot;
+    p.querySelector(".ev-head").innerHTML = T.cols.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + '<th class="actions"></th>';
+    var pt = document.getElementById("pageTitle"); if(pt && p.classList.contains("active")) pt.textContent = T.tab; }
+  function evItem(r, i){ var st = evStatus(r), rel = related(r), T = EL(); var range = r.end && r.end !== r.start ? fmtD(r.start) + " – " + fmtD(r.end) : fmtD(r.start);
+    return '<button type="button" class="ev-item" data-evi="' + i + '"><span class="ev-d">' + esc(range) + '</span><span class="ev-n">' + esc(evName(r)) + '</span><span class="ev-c">' + esc(evCity(r)) + (r.angle ? " · " + esc(evAngle(r)) : "") + "</span>"
+      + '<span class="ev-tags"><span class="ev-tag ' + st.k + '">' + esc(st.t) + "</span>" + (r.confirmed === "expected" ? '<span class="ev-tag exp">' + esc(T.expected) + "</span>" : "")
+      + (rel.n ? '<span class="ev-tag opp" data-evkw="' + esc(rel.kw) + '">' + rel.n + esc(T.onEtimad) + "</span>" : "") + "</span></button>"; }
+  function renderEvents(){
+    if(!evShell()) return; evLabels(true); var T = EL(), list = evs(), t = today0(), ar = AR();
+    var upcoming = list.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var e = pd(x.r.end) || pd(x.r.start); return e && e >= t; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); });
+    var in90 = upcoming.filter(function(x){ var s = pd(x.r.start); return s > t && (s - t) / 864e5 <= 90; }).length;
+    var win = upcoming.filter(function(x){ return evStatus(x.r).k === "win"; }).length, live = upcoming.filter(function(x){ return evStatus(x.r).k === "live"; }).length;
+    var relN = 0; upcoming.forEach(function(x){ relN += related(x.r).n; });
+    var kp = document.getElementById("evKpis"); if(kp) kp.innerHTML = [in90, win, relN, live].map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value" style="font-size:18px;' + (i === 1 && v ? "color:#3ccb7f;" : "") + '">' + v + '</div><div class="sub">' + esc(T.ks[i]) + "</div></div>"; }).join("");
+    /* month-by-month: the current month plus the next 11 */
+    var cal = document.getElementById("evCal"), html = "";
+    for(var k = 0; k < 12; k++){ var m0 = new Date(t.getFullYear(), t.getMonth() + k, 1), m1 = new Date(t.getFullYear(), t.getMonth() + k + 1, 0);
+      var items = upcoming.filter(function(x){ var s = pd(x.r.start), e = pd(x.r.end) || s; return s <= m1 && e >= m0 && (k === 0 || s >= m0); });
+      if(!items.length) continue;
+      html += '<div class="ev-month' + (k === 0 ? " now" : "") + '"><h4>' + esc(m0.toLocaleDateString(loc(), { month:"long", year:"numeric" })) + "<i>" + items.length + "</i></h4>" + items.map(function(x){ return evItem(x.r, x.i); }).join("") + "</div>"; }
+    if(cal) cal.innerHTML = html || '<div class="wl-empty">' + esc(T.none) + "</div>";
+    /* editable table */
+    var body = document.getElementById("eventsBody"); if(!body) return; body.innerHTML = "";
+    list.forEach(function(r, i){ var e = pd(r.end) || pd(r.start), past = e && e < t;
+      var td = function(f, val){ return '<td data-bind="events.' + i + "." + f + '">' + esc(val != null ? val : TX(r[f] || "")) + "</td>"; };
+      var tr = elTR('<tr class="' + (past ? "ev-past" : "") + '">' + td("name", evName(r)) + td("city", evCity(r)) + td("start", r.start || "") + td("end", r.end || "") + td("kind") + td("angle", evAngle(r)) + td("watchFrom", r.watchFrom || "") + td("source")
+        + '<td class="actions-cell edit-only">' + (typeof reorderBtns === "function" ? reorderBtns("events", i, list.length) : "") + '<button class="rowdel" type="button" data-evdel="' + i + '">✕</button></td></tr>');
+      body.appendChild(tr); });
+    [].forEach.call(body.querySelectorAll("[data-evdel]"), function(btn){ btn.addEventListener("click", function(){ var i = +btn.dataset.evdel; if(typeof confirmDelete === "function") confirmDelete(btn, function(){ removeRow("events", i); }); else removeRow("events", i); }); });
+    try{ if(typeof applyEditMode === "function") applyEditMode(); }catch(e){}
+    try{ if(typeof tickCountdowns === "function") tickCountdowns(); }catch(e){}
+  }
+  function seed(){ var s = ST(); if(!s || RO() || s._v41ev) return false; if(!Array.isArray(s.events) || !s.events.length) s.events = SEED.map(function(x){ var c = JSON.parse(JSON.stringify(x)); c._src = c.name; return c; }); s._v41ev = true; return true; }
+  function goEtimad(kw){ try{ switchPage("external"); }catch(e){} setTimeout(function(){ var inp = document.getElementById("externalSearch"); if(!inp) return; inp.value = kw; inp.dispatchEvent(new Event("input", { bubbles:true })); }, 350); }
+
+  /* ---------- registry hooks ---------- */
+  window.renderEvents = renderEvents; window.winLoss = { render:renderWL, open:openEditor, stats:stats, awaiting:awaiting, dueCount:dueCount, byAgency:byAgency };
+  try{ RENDER_FN.events = renderEvents; }catch(e){}
+  try{ DRAWER_FIELDS.events = [["city", "City"], ["start", "Start"], ["end", "End"], ["kind", "Type"], ["angle", "Midwam angle"], ["watchFrom", "Watch from"], ["source", "Source"]]; KIND_SECTION["Event"] = "events"; SECTION_PAGE.events = "events"; }catch(e){}
+  try{ SECTION_NAME_KEY.events = "tabEvents"; TITLES_AR.tabEvents = "الفعاليات"; }catch(e){}
+  try{ GLOBAL_SEARCH_SOURCES.push({ section:"events", page:"events", kind:"Event", fields:["name", "city", "angle"], label:function(r){ return r.name; }, sub:function(r){ return (r.start || "") + (r.city ? " · " + r.city : ""); } }); }catch(e){}
+  if(typeof upcomingItems === "function" && !upcomingItems.__v41){ var baseUp = upcomingItems; upcomingItems = function(days){ var out = baseUp(days); try{
+      var t = today0(), end = new Date(t.getTime() + days * 864e5);
+      evs().forEach(function(r){ var s = pd(r.start); if(s && s >= t && s <= end) out.push({ d:s, kind:"Event", title:r.name, page:"events", s:r.start });
+        var w = pd(r.watchFrom); if(w && w >= t && w <= end) out.push({ d:w, kind:"Event", title:(AR() ? "نافذة المنافسات: " : "Tender window: ") + r.name, page:"events", s:r.watchFrom }); });
+      out.sort(function(a, b){ return a.d - b.d; }); }catch(e){} return out; }; upcomingItems.__v41 = true; }
+  if(typeof renderAll === "function" && !renderAll.__v41){ var baseRA = renderAll; renderAll = function(){ var changed = false; try{ changed = seed(); var s = ST(); if(s){ s.titles = s.titles || {}; if(typeof s.titles.tabEvents !== "string") s.titles.tabEvents = "Events"; } }catch(e){}
+      var out = baseRA.apply(this, arguments); try{ renderEvents(); renderWL(); }catch(e){ console.error(e); } if(changed) save(); return out; }; renderAll.__v41 = true; }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", function(e){
+    if(typeof CMT_MODE !== "undefined" && CMT_MODE) return;
+    var a = e.target.closest("[data-wli]"); if(a){ e.preventDefault(); e.stopPropagation(); openEditor(a.dataset.wlsec, +a.dataset.wli); return; }
+    var o = e.target.closest("[data-wlout]"); if(o && cur){ cur.out = o.dataset.wlout; [].forEach.call(document.querySelectorAll("#wlModal [data-wlout]"), function(b){ b.classList.toggle("on", b === o); }); snd("tick"); return; }
+    var act = e.target.closest("[data-wlact]"); if(act){ var k = act.dataset.wlact; if(k === "save") saveEditor(false); else if(k === "clear") saveEditor(true); else closeEditor(); return; }
+    if(e.target.id === "wlModal"){ closeEditor(); return; }
+    if(e.target.closest("#wlNudge")){ snd("click"); goWL(); return; }
+    var kw = e.target.closest("[data-evkw]"); if(kw){ e.stopPropagation(); snd("click"); goEtimad(kw.dataset.evkw); return; }
+    var ev = e.target.closest("[data-evi]"); if(ev){ try{ if(typeof openDrawer === "function") openDrawer("events", +ev.dataset.evi); }catch(err){} return; }
+  }, true);
+
+  /* ---------- start ---------- */
+  try{ if(seed()) save(); }catch(e){}
+  try{ renderEvents(); renderWL(); }catch(e){ console.error(e); }
+  setInterval(function(){ try{ if(!document.getElementById("page-events") || !document.querySelector('.tab-btn[data-page="events"]')) renderEvents(); else evLabels(); if(!document.getElementById("wlSec")) renderWL(); else { decorateExpired(); nudge(); } }catch(e){} }, 1500);
+})();
+</script>
 </body>
 </html>

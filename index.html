@@ -7402,11 +7402,12 @@ async function exportPPTX(){
             : "The big recurring events and when their tenders usually appear — so Midwam prepares before they hit Etimad. “Tender window” is an estimate: about 75 days before exhibitions and 90 days before national and sports events.",
     add: ar ? "+ إضافة فعالية" : "+ Add event",
     list: ar ? "كل الفعاليات" : "All events",
-    cols: ar ? ["الفعالية", "المدينة", "البداية", "النهاية", "النوع", "فرصة Midwam", "راقب من", "المصدر"] : ["Event", "City", "Start", "End", "Type", "Midwam angle", "Watch from", "Source"],
+    cols: ar ? ["الفعالية", "المدينة", "البداية", "النهاية", "النوع", "فرصة Midwam", "راقب من", "المصدر", "الموقع"] : ["Event", "City", "Start", "End", "Type", "Midwam angle", "Watch from", "Source", "Website"],
     k: ar ? ["خلال 90 يومًا", "نافذة المنافسات مفتوحة", "فرص مرتبطة في اعتماد", "جارية الآن"] : ["Next 90 days", "Tender window open", "Related on Etimad", "Live now"],
     ks: ar ? ["فعاليات قادمة", "راقب اعتماد الآن", "منافسات مفتوحة تطابق الفعاليات", "فعاليات قائمة اليوم"] : ["upcoming events", "watch Etimad now", "open tenders matching an event", "running today"],
     expected: ar ? "تاريخ متوقع" : "Expected date",
     onEtimad: ar ? " في اعتماد" : " on Etimad",
+    web: ar ? "الموقع" : "Website",
     foot: ar ? "تواريخ مؤكدة فقط من مصادر رسمية وإعلامية (حتى 13 أكتوبر 2026). نافذة المنافسات تقدير. عدّل أي صف بوضع التحرير." : "Confirmed dates only, from official and press sources (as of 13 Oct 2026). The tender window is an estimate. Edit any row in edit mode.",
     none: ar ? "لا فعاليات قادمة — أضف واحدة." : "No upcoming events — add one."
   }; }
@@ -7431,9 +7432,9 @@ async function exportPPTX(){
     p.querySelector(".ev-head").innerHTML = T.cols.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + '<th class="actions"></th>';
     var pt = document.getElementById("pageTitle"); if(pt && p.classList.contains("active")) pt.textContent = T.tab; }
   function evItem(r, i){ var st = evStatus(r), rel = related(r), T = EL(); var range = r.end && r.end !== r.start ? fmtD(r.start) + " – " + fmtD(r.end) : fmtD(r.start);
-    return '<button type="button" class="ev-item" data-evi="' + i + '"><span class="ev-d">' + esc(range) + '</span><span class="ev-n">' + esc(evName(r)) + '</span><span class="ev-c">' + esc(evCity(r)) + (r.angle ? " · " + esc(evAngle(r)) : "") + "</span>"
+    return '<div role="button" tabindex="0" class="ev-item" data-evi="' + i + '"><span class="ev-d">' + esc(range) + '</span><span class="ev-n">' + esc(evName(r)) + '</span><span class="ev-c">' + esc(evCity(r)) + (r.angle ? " · " + esc(evAngle(r)) : "") + "</span>"
       + '<span class="ev-tags"><span class="ev-tag ' + st.k + '">' + esc(st.t) + "</span>" + (r.confirmed === "expected" ? '<span class="ev-tag exp">' + esc(T.expected) + "</span>" : "")
-      + (rel.n ? '<span class="ev-tag opp" data-evkw="' + esc(rel.kw) + '">' + rel.n + esc(T.onEtimad) + "</span>" : "") + "</span></button>"; }
+      + (rel.n ? '<span class="ev-tag opp" data-evkw="' + esc(rel.kw) + '">' + rel.n + esc(T.onEtimad) + "</span>" : "") + (/^https?:\/\//i.test(r.url || "") ? '<a class="ev-tag web ev-web" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(T.web) + " ↗</a>" : "") + "</span></div>"; }
   function renderEvents(){
     if(!evShell()) return; evLabels(true); var T = EL(), list = evs(), t = today0(), ar = AR();
     var upcoming = list.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var e = pd(x.r.end) || pd(x.r.start); return e && e >= t; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); });
@@ -7452,7 +7453,7 @@ async function exportPPTX(){
     var body = document.getElementById("eventsBody"); if(!body) return; body.innerHTML = "";
     list.forEach(function(r, i){ var e = pd(r.end) || pd(r.start), past = e && e < t;
       var td = function(f, val){ return '<td data-bind="events.' + i + "." + f + '">' + esc(val != null ? val : TX(r[f] || "")) + "</td>"; };
-      var tr = elTR('<tr class="' + (past ? "ev-past" : "") + '">' + td("name", evName(r)) + td("city", evCity(r)) + td("start", r.start || "") + td("end", r.end || "") + td("kind") + td("angle", evAngle(r)) + td("watchFrom", r.watchFrom || "") + td("source")
+      var tr = elTR('<tr class="' + (past ? "ev-past" : "") + '">' + td("name", evName(r)) + td("city", evCity(r)) + td("start", r.start || "") + td("end", r.end || "") + td("kind") + td("angle", evAngle(r)) + td("watchFrom", r.watchFrom || "") + td("source") + "<td>" + (/^https?:\/\//i.test(r.url || "") ? '<a class="view-only ev-web" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + (ar ? "الموقع" : "Website") + " ↗</a>" : "") + '<span class="edit-only" data-bind="events.' + i + '.url">' + esc(r.url || "") + "</span></td>"
         + '<td class="actions-cell edit-only">' + (typeof reorderBtns === "function" ? reorderBtns("events", i, list.length) : "") + '<button class="rowdel" type="button" data-evdel="' + i + '">✕</button></td></tr>');
       body.appendChild(tr); });
     [].forEach.call(body.querySelectorAll("[data-evdel]"), function(btn){ btn.addEventListener("click", function(){ var i = +btn.dataset.evdel; if(typeof confirmDelete === "function") confirmDelete(btn, function(){ removeRow("events", i); }); else removeRow("events", i); }); });
@@ -7479,6 +7480,7 @@ async function exportPPTX(){
   /* ---------- events ---------- */
   document.addEventListener("click", function(e){
     if(typeof CMT_MODE !== "undefined" && CMT_MODE) return;
+    if(e.target.closest("a[href]")) return;
     var a = e.target.closest("[data-wli]"); if(a){ e.preventDefault(); e.stopPropagation(); openEditor(a.dataset.wlsec, +a.dataset.wli); return; }
     var o = e.target.closest("[data-wlout]"); if(o && cur){ cur.out = o.dataset.wlout; [].forEach.call(document.querySelectorAll("#wlModal [data-wlout]"), function(b){ b.classList.toggle("on", b === o); }); snd("tick"); return; }
     var act = e.target.closest("[data-wlact]"); if(act){ var k = act.dataset.wlact; if(k === "save") saveEditor(false); else if(k === "clear") saveEditor(true); else closeEditor(); return; }
@@ -7634,6 +7636,62 @@ async function exportPPTX(){
   document.addEventListener("keydown", function(e){ if(e.key === "Enter" && e.target && e.target.id === "tsIn"){ e.preventDefault(); tryUnlock(); } });
   if(!TEAM){ setInterval(function(){ try{ renderCard(); }catch(e){} }, 2000); try{ renderCard(); }catch(e){} }
   window.teamSections = { setPassword:setPassword, clear:clearPassword };
+})();
+</script>
+<style id="v43css">
+  /* v43: electric lavender hover · website links on events · Etimad links on opportunities */
+  @keyframes lavZap{
+    0%,100%{box-shadow:0 0 0 1px rgba(185,167,255,.35), 0 0 14px rgba(185,167,255,.22), inset 0 0 10px rgba(185,167,255,.05);}
+    5%{box-shadow:0 0 0 1px rgba(214,202,255,.95), 0 0 26px rgba(185,167,255,.6), inset 0 0 18px rgba(185,167,255,.16);}
+    8%{box-shadow:0 0 0 1px rgba(185,167,255,.3), 0 0 10px rgba(185,167,255,.18), inset 0 0 8px rgba(185,167,255,.04);}
+    11%{box-shadow:0 0 0 1px rgba(214,202,255,.85), 0 0 22px rgba(185,167,255,.5), inset 0 0 16px rgba(185,167,255,.12);}
+    45%{box-shadow:0 0 0 1px rgba(185,167,255,.5), 0 0 18px rgba(185,167,255,.32), inset 0 0 12px rgba(185,167,255,.08);}
+  }
+  @keyframes lavSweep{ from{background-position:160% 0, 0 0;} to{background-position:-60% 0, 0 0;} }
+  .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover{
+    border-color:rgba(205,190,255,.75) !important;
+    background-image:linear-gradient(115deg, transparent 38%, rgba(200,185,255,.13) 47%, rgba(255,255,255,.09) 50%, rgba(200,185,255,.13) 53%, transparent 62%), linear-gradient(var(--lav-soft), var(--lav-soft)) !important;
+    background-size:250% 100%, auto !important; background-repeat:no-repeat !important;
+    animation:lavZap 2.2s ease-in-out infinite, lavSweep 1.8s linear infinite !important;}
+  #cursorRing.lav{box-shadow:0 0 12px rgba(185,167,255,.65), inset 0 0 8px rgba(185,167,255,.35); animation:lavZap 2.2s ease-in-out infinite;}
+  @media (prefers-reduced-motion: reduce){ .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover, #cursorRing.lav{animation:none !important;} }
+  .ev-tag.web{color:#d9cfff; border-color:rgba(185,167,255,.6); background:rgba(185,167,255,.08); text-decoration:none;}
+  .ev-tag.web:hover{background:rgba(185,167,255,.2);}
+  a.ev-web{color:#d9cfff; text-decoration:none;}
+  a.et-link{display:inline-flex; align-items:center; justify-content:center; margin-inline-start:6px; width:20px; height:20px; border-radius:6px; border:1px solid rgba(185,167,255,.45); color:#d9cfff; text-decoration:none; font-size:11px; line-height:1; vertical-align:middle;}
+  a.et-link:hover{background:rgba(185,167,255,.18);}
+  a.et-open{display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:11px; border:1px solid rgba(185,167,255,.5); color:#d9cfff; text-decoration:none; font-family:var(--mono, monospace); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;}
+  a.et-open:hover{background:rgba(185,167,255,.14);}
+</style>
+<script>
+/* v43 module: Etimad link on every opportunity (opens the tender on Etimad by its reference number) · website link on events (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  try{ ["url", "link"].forEach(function(f){ TR_SKIP_FIELDS.add(f); }); }catch(e){}
+  try{ if(DRAWER_FIELDS.events && !DRAWER_FIELDS.events.some(function(x){ return x[0] === "url"; })) DRAWER_FIELDS.events.push(["url", "Website"]); }catch(e){}
+  function etimadUrl(r){ var rn = String((r && r.rn) || "").replace(/[^0-9A-Za-z]/g, ""); if(!rn) return "";
+    return "https://tenders.etimad.sa/Tender/AllTendersForVisitor?TenderCategory=0&ReferenceNumber=" + rn + "&IsSearch=true&PageSize=24&PageNumber=1"; }
+  window.etimadUrl = etimadUrl;
+  function rowsOf(sec){ var s = ST(); return (s && Array.isArray(s[sec])) ? s[sec] : []; }
+  function decorate(bodyId, sec){
+    var body = document.getElementById(bodyId); if(!body) return; var ar = AR();
+    [].forEach.call(body.querySelectorAll('[data-bind^="' + sec + '."][data-bind$=".rn"]'), function(td){
+      var m = td.dataset.bind.match(/\.(\d+)\.rn$/); if(!m) return; var r = rowsOf(sec)[+m[1]], u = etimadUrl(r);
+      var a = td.querySelector("a.et-link"); if(!u){ if(a) a.remove(); return; }
+      if(a && a.getAttribute("href") === u) return; if(a) a.remove();
+      a = document.createElement("a"); a.className = "et-link view-only"; a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = "↗"; a.title = ar ? "افتح في اعتماد" : "Open on Etimad"; a.contentEditable = "false"; td.appendChild(a); });
+    if(sec !== "external") return;
+    [].forEach.call(body.querySelectorAll("tr.ext-detail"), function(tr){ var m = (tr.id || "").match(/^extDetail(\d+)$/); if(!m) return; var r = rowsOf("external")[+m[1]], u = etimadUrl(r), bar = tr.querySelector(".bd-bar"); if(!bar || !u) return;
+      var a = bar.querySelector("a.et-open"); if(a && a.getAttribute("href") === u) return; if(a) a.remove();
+      a = document.createElement("a"); a.className = "et-open"; a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = (ar ? "افتح في اعتماد" : "Open on Etimad") + " ↗"; bar.appendChild(a); });
+  }
+  function run(){ try{ decorate("externalBody", "external"); decorate("externalExcludedBody", "externalExcluded"); }catch(e){} }
+  document.addEventListener("click", function(e){ var a = e.target.closest && e.target.closest("a.et-link, a.et-open, a.ev-web"); if(a) e.stopPropagation(); }, true);
+  if(typeof renderAll === "function" && !renderAll.__v43){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); run(); return out; }; renderAll.__v43 = true; }
+  run(); setInterval(run, 1500);
 })();
 </script>
 </body>

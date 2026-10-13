@@ -6943,7 +6943,8 @@ async function exportPPTX(){
   async function teamPublish(opts){ opts = opts || {};
     if(!ready()) return { ok:false, reason:"not-connected" }; var c0 = cfg(false); if(c0 && c0.killed) return { ok:false, reason:"killed" }; if(busy) return { ok:false, reason:"busy" }; busy = true;
     try{
-      var c = cfg(true), file = await seal(snapshot(), c.key), res = await putFile(file);
+      var c = cfg(true), snap = snapshot(), sec = null; if(typeof window.__v42split === "function") sec = await window.__v42split(snap); else { snap.internal = []; snap.projects = []; snap.prototypes = []; }   /* v42: private sections never travel in the clear */
+      var file = await seal(snap, c.key); if(sec) file.sec = sec; var res = await putFile(file);
       c.lastTry = new Date().toISOString();
       if(res.ok){ c.lastPublishedAt = file.at; c.lastError = ""; c.blocked = false; }
       else { c.blocked = res.status === 403 || res.status === 404; c.lastError = c.blocked ? "permission" : ("HTTP " + res.status); }
@@ -6994,7 +6995,7 @@ async function exportPPTX(){
     var res = await fetch(FILE + "?t=" + Date.now(), { cache:"no-store" }); if(res.status === 404) throw new Error("nofile"); if(!res.ok) throw new Error("net"); return await res.json(); }
   function shutDown(msg){ AT = ""; try{ state = JSON.parse(JSON.stringify(DEFAULT_STATE)); }catch(e){} document.documentElement.classList.add("tm-locked"); var p = document.getElementById("tmPill"); if(p) p.remove(); var iv = document.getElementById("introV35"); if(iv) iv.remove(); screen(msg); }
   async function apply(f){ if(!f || f.killed) throw new Error("killed"); var data; try{ data = await unseal(f, KEY); }catch(e){ throw new Error("key"); }
-    AT = f.at; state = data; try{ renderAll(); }catch(e){ console.error(e); }
+    AT = f.at; state = data; try{ if(typeof window.__v42apply === "function") await window.__v42apply(f); }catch(e){} try{ renderAll(); }catch(e){ console.error(e); }
     var g = document.getElementById("tmGate"); if(g) g.remove(); document.documentElement.classList.remove("tm-locked"); pill();
     if(!introDone){ introDone = true; try{ if(typeof window.__v35intro === "function" && !/[?&]nointro/.test(location.search) && !navigator.webdriver) window.__v35intro(); }catch(e){} } }
   function why(k){ var ar = AR(); return k === "killed" || k === "key" ? (ar ? "هذا الرابط لم يعد يعمل — اطلب الرابط الجديد من الحارث." : "This link no longer works — ask Harith for the current one.")
@@ -7491,6 +7492,148 @@ async function exportPPTX(){
   try{ if(seed()) save(); }catch(e){}
   try{ renderEvents(); renderWL(); }catch(e){ console.error(e); }
   setInterval(function(){ try{ if(!document.getElementById("page-events") || !document.querySelector('.tab-btn[data-page="events"]')) renderEvents(); else evLabels(); if(!document.getElementById("wlSec")) renderWL(); else { decorateExpired(); nudge(); } }catch(e){} }, 1500);
+})();
+</script>
+<style id="v42css">
+  /* v42: lavender hover on cards + team view private sections */
+  :root{ --lav:#b9a7ff; --lav-soft:rgba(185,167,255,.07); --lav-line:rgba(185,167,255,.55); }
+  .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover{
+    border-color:var(--lav-line) !important; box-shadow:0 0 0 1px rgba(185,167,255,.18), 0 10px 26px rgba(185,167,255,.10) !important;
+    background-image:linear-gradient(var(--lav-soft), var(--lav-soft)) !important; transition:border-color .2s, box-shadow .2s, background-image .2s;}
+  #cursorRing.lav{border-color:var(--lav) !important; background:rgba(185,167,255,.10) !important;}
+  #cursorRing.lav::after{background:var(--lav) !important;}
+  /* team view: private sections stay hidden until the password is entered */
+  html.team-mode.ts-locked .tab-btn[data-page="internal"], html.team-mode.ts-locked .tab-btn[data-page="projects"],
+  html.team-mode.ts-locked #page-internal, html.team-mode.ts-locked #page-projects,
+  html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiRfpLabel"]), html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiOppValueLabel"]),
+  html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiProjectsLabel"]), html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiPrototypesLabel"]),
+  html.team-mode.ts-locked section:has(#pipelineChart), html.team-mode.ts-locked .bd-link[data-bgo="internal"]{display:none !important;}
+  #tsBtn{cursor:pointer; margin-inline-start:4px; padding:4px 9px; border-radius:999px; border:1px solid rgba(185,167,255,.45); background:transparent; color:#d9cfff; font:inherit; font-size:10.5px; letter-spacing:.06em;}
+  #tsBtn:hover{background:rgba(185,167,255,.12);}
+  #tsModal{position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(5,4,3,.66); backdrop-filter:blur(4px);}
+  #tsModal[hidden]{display:none;}
+  .ts-card{width:min(400px,100%); border-radius:18px; border:1px solid rgba(185,167,255,.4); background:var(--night2,#17171B); box-shadow:0 30px 80px rgba(0,0,0,.55); padding:22px 20px 16px; text-align:center;}
+  .ts-card h3{margin:0 0 4px; font-size:17px;}
+  .ts-card p{margin:0 0 14px; font-size:12.5px; color:var(--muted,#8E8A85);}
+  .ts-card input{width:100%; height:44px; border-radius:12px; border:1px solid rgba(185,167,255,.4); background:rgba(0,0,0,.4); color:#fff; text-align:center; font:inherit; font-size:15px; letter-spacing:.08em; outline:none;}
+  .ts-card input:focus{border-color:var(--lav); box-shadow:0 0 0 3px rgba(185,167,255,.18);}
+  .ts-acts{display:flex; gap:8px; justify-content:center; margin-top:12px;}
+  .ts-acts button{cursor:pointer; padding:9px 16px; border-radius:11px; border:1px solid rgba(255,255,255,.14); background:transparent; color:var(--sand,#D9D3CB); font:inherit; font-size:13px;}
+  .ts-acts .ts-go{background:var(--lav); border-color:var(--lav); color:#140f24; font-weight:700;}
+  .ts-msg{min-height:18px; margin-top:10px; font-size:12.5px; color:#ffb35c;}
+  .ts-card.shake{animation:tmShake .42s;}
+  #tsCard .ts-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  #tsCard .ts-row input{flex:1 1 150px; height:36px; border-radius:10px; border:1px solid var(--border); background:rgba(0,0,0,.35); color:#fff; padding:0 10px; font:inherit;}
+</style>
+<script>
+/* v42 module: lavender hover on cards · team view private sections (Internal Performance, Projects & Prototypes) only open with a password (Harith) */
+(function(){
+  "use strict";
+  var TEAM = !!window.__SAUD_TEAM__;
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var toast = function(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} };
+  var SEC_KEYS = ["internal", "projects", "prototypes"];
+  var SEC_SECTIONS = { internal:1, projects:1, prototypes:1 };
+  var SEC_PAGES = ["internal", "projects"];
+  var ITER = 250000;
+
+  /* ---------- 1) lavender cursor ring over cards ---------- */
+  var HOVER_SEL = ".stat-tile, .bb-item, .ev-item, .ev-month, .wl-item, .wl-box, .agenda-item, .kb-card, .cu-card, .overview-nav .navcard, .mission-strip [data-mi]";
+  document.addEventListener("mouseover", function(e){ var ring = document.getElementById("cursorRing"); if(!ring) return; var on = !!(e.target && e.target.closest && e.target.closest(HOVER_SEL)); if(ring.classList.contains("lav") !== on) ring.classList.toggle("lav", on); }, { passive:true });
+
+  /* ---------- crypto helpers (password → PBKDF2-SHA256 → AES-GCM-256, gzip first) ---------- */
+  function b64(u8){ var s = ""; for(var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+  function unb64(s){ var b = atob(s), u = new Uint8Array(b.length); for(var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function gz(u8, T){ return new Response(new Blob([u8]).stream().pipeThrough(new T("gzip"))).arrayBuffer().then(function(b){ return new Uint8Array(b); }); }
+  async function derive(pw, salt, iter){ var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(pw)), "PBKDF2", false, ["deriveBits"]);
+    return new Uint8Array(await crypto.subtle.deriveBits({ name:"PBKDF2", hash:"SHA-256", salt:unb64(salt), iterations:iter || ITER }, base, 256)); }
+  function aes(raw){ return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]); }
+  async function sealSec(obj, raw, salt, iter){ var pt = new TextEncoder().encode(JSON.stringify(obj)), z = 0; if(typeof CompressionStream !== "undefined"){ pt = await gz(pt, CompressionStream); z = 1; }
+    var iv = crypto.getRandomValues(new Uint8Array(12)); var ct = new Uint8Array(await crypto.subtle.encrypt({ name:"AES-GCM", iv:iv }, await aes(raw), pt));
+    return { v:1, salt:salt, iter:iter || ITER, iv:b64(iv), z:z, ct:b64(ct) }; }
+  async function openSec(sec, raw){ var pt = new Uint8Array(await crypto.subtle.decrypt({ name:"AES-GCM", iv:unb64(sec.iv) }, await aes(raw), unb64(sec.ct)));
+    if(sec.z) pt = await gz(pt, DecompressionStream); return JSON.parse(new TextDecoder().decode(pt)); }
+
+  /* ---------- 2) publisher side (Harith's dashboard): the team snapshot never carries the private sections in the clear ---------- */
+  function tv(){ return (typeof state !== "undefined" && state && state.teamView) || null; }
+  window.__v42split = async function(snap){
+    var priv = {}; SEC_KEYS.forEach(function(k){ priv[k] = Array.isArray(snap[k]) ? snap[k] : []; snap[k] = []; });
+    if(Array.isArray(snap.activity)){ priv.activity = snap.activity; snap.activity = snap.activity.filter(function(a){ return !(a && SEC_SECTIONS[a.section]); }); }
+    var c = tv(), s = c && c.sec; if(!s || !s.key || !s.salt) return null;   /* no password set → private sections are simply left out of the team view */
+    return sealSec(priv, unb64(s.key), s.salt, s.iter);
+  };
+  async function setPassword(pw){ var c = tv(); if(!c) return { ok:false, reason:"noteam" }; var salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+    var raw = await derive(pw, salt, ITER); c.sec = { salt:salt, iter:ITER, key:b64(raw), setAt:new Date().toISOString() };   /* only the derived key is kept (private data repo); the password itself is never stored */
+    try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){}
+    var r = null; try{ if(typeof window.teamPublish === "function" && !c.killed) r = await window.teamPublish({}); }catch(e){} return { ok:true, pub:r }; }
+  async function clearPassword(){ var c = tv(); if(!c) return; delete c.sec; try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} try{ if(typeof window.teamPublish === "function" && !c.killed) await window.teamPublish({}); }catch(e){} }
+
+  function renderCard(force){
+    if(TEAM || (typeof READONLY !== "undefined" && READONLY)) return; var grid = document.querySelector("#page-customize .cu-grid"); if(!grid) return;
+    var card = document.getElementById("tsCard"); if(!card){ card = document.createElement("div"); card.className = "cu-card"; card.id = "tsCard"; var tm = document.getElementById("tmCard"); if(tm) tm.insertAdjacentElement("afterend", card); else grid.appendChild(card); }
+    if(!force && card.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+    var c = tv(), ar = AR(), has = !!(c && c.sec && c.sec.key);
+    var st = !c ? (ar ? "فعّل نسخة الفريق أولًا." : "Set up the team view first.")
+      : has ? (ar ? "🔒 محميّة بكلمة مرور منذ " : "🔒 Password set ") + new Date(c.sec.setAt).toLocaleDateString(ar ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short" }) + (ar ? " — من يملكها يفتح القسمين." : " — people with it can open both sections.")
+      : (ar ? "مخفيّة تمامًا عن نسخة الفريق الآن (لا توجد كلمة مرور)." : "Fully hidden from the team view right now (no password set).");
+    var html = '<div class="cu-t">' + (ar ? "أقسام خاصة في نسخة الفريق" : "Private sections in the team view") + '</div><div class="cu-d">'
+      + (ar ? "«الأداء الداخلي» و«المشاريع والنماذج» لا تظهر في القائمة الجانبية لنسخة الفريق إلا بعد إدخال كلمة المرور (نفس الرابط). بياناتهما مشفّرة بكلمة المرور نفسها." : "Internal Performance and Projects & Prototypes stay off the team view's sidebar until someone enters the password (same link). Their data is encrypted with that password.")
+      + '</div><div class="tm-st' + (has ? " ok" : "") + '">' + esc(st) + "</div>"
+      + (c ? '<div class="ts-row"><input type="password" id="tsPw1" autocomplete="new-password" placeholder="' + (ar ? "كلمة مرور جديدة" : "New password") + '"><input type="password" id="tsPw2" autocomplete="new-password" placeholder="' + (ar ? "أعد كتابتها" : "Repeat it") + '"></div>'
+        + '<div class="cu-actions" style="margin:10px 0 0"><button class="editbtn" type="button" data-ts="set">' + (has ? (ar ? "تغيير كلمة المرور" : "Change password") : (ar ? "حفظ كلمة المرور" : "Save password")) + "</button>"
+        + (has ? '<button class="editbtn secondary" type="button" data-ts="clear">' + (ar ? "إزالة (إخفاء القسمين تمامًا)" : "Remove (hide both completely)") + "</button>" : "") + "</div>" : "");
+    if(force || card.__h !== html){ card.__h = html; card.innerHTML = html; }
+  }
+
+  /* ---------- 3) team view side ---------- */
+  var lastSec = null, unlocked = false;
+  function skey(sec){ return "saudTS_" + (sec && sec.salt ? sec.salt.slice(0, 12) : ""); }
+  function setLocked(on){ var h = document.documentElement; h.classList.toggle("ts-locked", on); h.classList.toggle("ts-open", !on);
+    try{ if(typeof PAGE_ORDER !== "undefined"){ SEC_PAGES.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(on && i >= 0) PAGE_ORDER.splice(i, 1); }); if(!on){ var at = PAGE_ORDER.indexOf("events"); if(at < 0) at = PAGE_ORDER.indexOf("external"); SEC_PAGES.forEach(function(p, k){ if(PAGE_ORDER.indexOf(p) < 0) PAGE_ORDER.splice(at + 1 + k, 0, p); }); } } }catch(e){}
+    try{ if(on && typeof currentPage === "function" && SEC_PAGES.indexOf(currentPage()) >= 0 && typeof switchPage === "function") switchPage("overview"); }catch(e){}
+    btn(); }
+  function merge(priv){ if(!priv || typeof state === "undefined" || !state) return; SEC_KEYS.forEach(function(k){ if(Array.isArray(priv[k])) state[k] = priv[k]; }); if(Array.isArray(priv.activity)) state.activity = priv.activity; }
+  window.__v42apply = async function(f){
+    if(!TEAM) return; lastSec = (f && f.sec) || null; unlocked = false;
+    if(lastSec){ var k = null; try{ k = sessionStorage.getItem(skey(lastSec)); }catch(e){}
+      if(k){ try{ merge(await openSec(lastSec, unb64(k))); unlocked = true; }catch(e){ try{ sessionStorage.removeItem(skey(lastSec)); }catch(err){} } } }
+    setLocked(!unlocked);
+  };
+  function btn(){ if(!TEAM) return; var p = document.getElementById("tmPill"); if(!p) return; var b = document.getElementById("tsBtn");
+    if(!lastSec){ if(b) b.remove(); return; }
+    if(!b){ b = document.createElement("button"); b.type = "button"; b.id = "tsBtn"; p.appendChild(b); }
+    var t = unlocked ? (AR() ? "🔓 قفل" : "🔓 Lock") : "🔒"; if(b.textContent !== t) b.textContent = t;
+    b.title = unlocked ? (AR() ? "إخفاء الأقسام الخاصة" : "Hide the private sections") : (AR() ? "أقسام إضافية بكلمة مرور" : "More sections (password)"); }
+  function modal(){ var m = document.getElementById("tsModal"); if(!m){ m = document.createElement("div"); m.id = "tsModal"; document.body.appendChild(m); } var ar = AR();
+    m.innerHTML = '<div class="ts-card"><h3>' + (ar ? "أقسام إضافية" : "More sections") + "</h3><p>" + (ar ? "أدخل كلمة المرور لفتح «الأداء الداخلي» و«المشاريع والنماذج»." : "Enter the password to open Internal Performance and Projects & Prototypes.") + '</p><input type="password" id="tsIn" autocomplete="off"><div class="ts-msg" id="tsMsg"></div><div class="ts-acts"><button type="button" data-tsm="x">' + (ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="ts-go" data-tsm="go">' + (ar ? "فتح" : "Unlock") + "</button></div></div>";
+    m.hidden = false; setTimeout(function(){ var i = document.getElementById("tsIn"); if(i) i.focus(); }, 30); }
+  async function tryUnlock(){ var i = document.getElementById("tsIn"), msg = document.getElementById("tsMsg"), card = document.querySelector("#tsModal .ts-card"); if(!i || !lastSec) return;
+    var pw = i.value; if(!pw) return; if(msg) msg.textContent = AR() ? "جارٍ التحقق…" : "Checking…";
+    try{ var raw = await derive(pw, lastSec.salt, lastSec.iter); var priv = await openSec(lastSec, raw);
+      merge(priv); unlocked = true; try{ sessionStorage.setItem(skey(lastSec), b64(raw)); }catch(e){}
+      document.getElementById("tsModal").hidden = true; setLocked(false); try{ renderAll(); }catch(e){} toast(AR() ? "فُتحت الأقسام الخاصة" : "Private sections unlocked");
+    }catch(e){ if(msg) msg.textContent = AR() ? "كلمة المرور غير صحيحة" : "Wrong password"; i.value = ""; i.focus(); if(card){ card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); } } }
+  function lockAgain(){ try{ sessionStorage.removeItem(skey(lastSec)); }catch(e){} unlocked = false; try{ SEC_KEYS.forEach(function(k){ state[k] = []; }); state.activity = (state.activity || []).filter(function(a){ return !(a && SEC_SECTIONS[a.section]); }); }catch(e){}
+    setLocked(true); try{ renderAll(); }catch(e){} toast(AR() ? "أُخفيت الأقسام الخاصة" : "Private sections hidden"); }
+
+  if(TEAM){ document.documentElement.classList.add("ts-locked"); setInterval(btn, 1000); }
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("#tsBtn"); if(b && TEAM){ if(unlocked) lockAgain(); else modal(); return; }
+    var m = e.target.closest && e.target.closest("[data-tsm]"); if(m){ if(m.dataset.tsm === "go") tryUnlock(); else document.getElementById("tsModal").hidden = true; return; }
+    if(e.target && e.target.id === "tsModal"){ e.target.hidden = true; return; }
+    var t = e.target.closest && e.target.closest("[data-ts]"); if(!t || TEAM) return; var ar = AR();
+    if(t.dataset.ts === "set"){ var a = (document.getElementById("tsPw1") || {}).value || "", c2 = (document.getElementById("tsPw2") || {}).value || "";
+      if(a.length < 6){ toast(ar ? "كلمة المرور قصيرة — 6 أحرف على الأقل" : "Too short — at least 6 characters"); return; }
+      if(a !== c2){ toast(ar ? "الكلمتان غير متطابقتين" : "The two passwords don't match"); return; }
+      t.disabled = true; t.textContent = ar ? "جارٍ الحفظ…" : "Saving…";
+      setPassword(a).then(function(r){ renderCard(true); toast(r.ok ? (r.pub && r.pub.ok ? (ar ? "حُفظت كلمة المرور ونُشرت نسخة الفريق" : "Password saved and team view published") : (ar ? "حُفظت كلمة المرور" : "Password saved")) : (ar ? "فعّل نسخة الفريق أولًا" : "Set up the team view first")); }); return; }
+    if(t.dataset.ts === "clear"){ t.disabled = true; clearPassword().then(function(){ renderCard(true); toast(ar ? "أُزيلت كلمة المرور — القسمان مخفيّان تمامًا الآن" : "Password removed — both sections are fully hidden now"); }); return; }
+  });
+  document.addEventListener("keydown", function(e){ if(e.key === "Enter" && e.target && e.target.id === "tsIn"){ e.preventDefault(); tryUnlock(); } });
+  if(!TEAM){ setInterval(function(){ try{ renderCard(); }catch(e){} }, 2000); try{ renderCard(); }catch(e){} }
+  window.teamSections = { setPassword:setPassword, clear:clearPassword };
 })();
 </script>
 </body>

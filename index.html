@@ -7117,5 +7117,26 @@ async function exportPPTX(){
   setInterval(function(){ try{ if(!document.getElementById("page-brand") || !document.querySelector('.tab-btn[data-page="brand"]')) renderBrand(); else labels(); }catch(e){} }, 1500);
 })();
 </script>
+<script>
+/* v40 module: Saud Program removed from the sidebar + "Sections" block removed from the Overview (Harith's comment "delete this") */
+(function(){
+  "use strict";
+  var css = document.createElement("style"); css.id = "v40css";
+  css.textContent = '.tab-btn[data-page="program"]{display:none !important;} #page-overview > section:has(#overviewNav){display:none !important;}';
+  document.head.appendChild(css);
+  try{ if(typeof PAGE_ORDER !== "undefined"){ var i = PAGE_ORDER.indexOf("program"); if(i >= 0) PAGE_ORDER.splice(i, 1); } }catch(e){}
+  try{ if(typeof currentPage === "function" && currentPage() === "program" && typeof switchPage === "function") switchPage("overview"); }catch(e){}
+  function migrateV40(){
+    if(typeof state === "undefined" || !state || state._v40secs || (typeof READONLY !== "undefined" && READONLY)) return false; state._v40secs = true;
+    var isIt = function(s){ return /^#page-overview > section:nth-of-type\(3\)/.test(s || ""); };
+    try{ devRequests().forEach(function(r){ if(r.status === "open" && isIt(r.sel) && /SECTIONS/i.test(r.snippet || "")){ r.status = "done"; r.doneAt = new Date().toISOString(); r.doneNote = "Sections block removed from the Overview and Saud Program removed from the sidebar (v40)."; } }); }catch(e){}
+    try{ state.styleOverrides = (state.styleOverrides || []).filter(function(o){ return !isIt(o.sel); }); }catch(e){}
+    try{ cmtList().forEach(function(c){ if(!c.resolved && isIt(c.sel) && /SECTIONS/i.test(c.snippet || "") && !(c.replies || []).some(function(x){ return /^Claude:/.test(x.text || ""); })){
+        c.replies = c.replies || []; c.replies.push({ ai:true, text:"Claude: done — the Sections block is removed from the Overview, and Saud Program is removed from the sidebar.", at:new Date().toISOString() }); } }); }catch(e){}
+    return true; }
+  if(typeof renderAll === "function" && !renderAll.__v40){ var baseRA = renderAll; renderAll = function(){ var changed = false; try{ changed = migrateV40(); }catch(e){} var out = baseRA.apply(this, arguments); if(changed){ try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} } return out; }; renderAll.__v40 = true; }
+  try{ if(migrateV40() && typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){}
+})();
+</script>
 </body>
 </html>

@@ -7694,5 +7694,32 @@ async function exportPPTX(){
   run(); setInterval(run, 1500);
 })();
 </script>
+<script>
+/* v44 module: "Last updated" shows the date only and updates itself whenever anything in the dashboard changes (Harith) */
+(function(){
+  "use strict";
+  var SKIP = { lastUpdated:1, i18n:1, teamView:1, _teamSnapshotAt:1 };
+  function sig(s){ var str; try{ str = JSON.stringify(s, function(k, v){ return (this === s && SKIP[k]) ? undefined : v; }); }catch(e){ return ""; } var h = 5381; for(var i = 0; i < str.length; i++){ h = ((h * 33) ^ str.charCodeAt(i)) >>> 0; } return h + ":" + str.length; }
+  function dateOnly(v){ var s = String(v == null ? "" : v); if(/^\d{4}-\d{2}-\d{2}T/.test(s)){ var d = new Date(s); if(!isNaN(d)) return d.toLocaleDateString("en-CA", { year:"numeric", month:"2-digit", day:"2-digit" }); return s.slice(0, 10); } return s; }
+  window.__lastUpdatedText = dateOnly;
+  if(typeof renderLastUpdated === "function" && !renderLastUpdated.__v44){
+    renderLastUpdated = function(){ var el = document.getElementById("lastUpdatedText"); if(!el || typeof state === "undefined" || !state) return; var t = dateOnly(state.lastUpdated); try{ if(!/^\d{4}-\d{2}-\d{2}$/.test(t) && typeof tx === "function") t = tx(t); }catch(e){} if(el.innerText !== t) el.innerText = t; };
+    renderLastUpdated.__v44 = true; }
+  var ref = null, base = "", quietUntil = Date.now() + 8000;   /* start-up and remote syncs settle without counting as edits */
+  function rebase(){ if(typeof state === "undefined" || !state) return; ref = state; base = sig(state); }
+  if(typeof saveLocalDraft === "function" && !saveLocalDraft.__v44){ var baseSave = saveLocalDraft;
+    saveLocalDraft = function(){
+      try{ var ro = (typeof READONLY !== "undefined" && READONLY) || window.__skipSave;
+        if(!ro && typeof state !== "undefined" && state){
+          if(state !== ref){ rebase(); quietUntil = Math.max(quietUntil, Date.now() + 3000); }   /* state was replaced (load / remote sync) — not an edit */
+          else if(Date.now() < quietUntil){ rebase(); }
+          else { var now = sig(state); if(now !== base){ state.lastUpdated = new Date().toISOString(); base = now; try{ renderLastUpdated(); }catch(e){} } } } }catch(e){}
+      return baseSave.apply(this, arguments); };
+    saveLocalDraft.__v44 = true; }
+  setTimeout(rebase, 0);
+  try{ renderLastUpdated(); }catch(e){}
+  setInterval(function(){ try{ renderLastUpdated(); }catch(e){} }, 3000);
+})();
+</script>
 </body>
 </html>

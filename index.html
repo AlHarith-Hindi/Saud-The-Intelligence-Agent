@@ -7035,5 +7035,87 @@ async function exportPPTX(){
   setInterval(function(){ try{ renderCard(); }catch(e){} }, 2000); try{ renderCard(); }catch(e){}
 })();
 </script>
+<script>
+/* v39 module: "Marketing" page above KNKT — Midwam's OWN marketing (brand, social, website, awards, events); KNKT stays for client work (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s; };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var COLORS = (typeof MARKETING_STATUS_COLOR !== "undefined") ? MARKETING_STATUS_COLOR : { "Not started":"#a79a82", "In progress":"#3987e5", Done:"#0ca30c", Blocked:"#d03b3b" };
+  var TPL = { initiative:"New initiative", channel:"", owner:"Faisal Almadani", status:"Not started", targetDate:"", notes:"" };
+  function rows(){ var s = ST(); if(!s) return []; if(!Array.isArray(s.brand)) s.brand = []; return s.brand; }
+  function lab(){ var ar = AR(); return {
+    tab: ar ? "التسويق" : "Marketing",
+    title: ar ? "تسويق Midwam" : "Midwam marketing",
+    add: ar ? "+ إضافة مبادرة" : "+ Add initiative",
+    owner: ar ? "المسؤول: فيصل المدني — مدير التسويق · تسويق Midwam نفسها: الهوية، التواصل الاجتماعي، الموقع، الجوائز والفعاليات. أعمال العملاء التسويقية في KNKT." : "Owner: Faisal Almadani — Head of Marketing · Midwam's own marketing: brand, social media, website, awards and events. Client marketing work lives in KNKT.",
+    cols: ar ? ["المبادرة", "القناة", "المسؤول", "الحالة", "التاريخ المستهدف", "ملاحظات"] : ["Initiative", "Channel", "Owner", "Status", "Target date", "Notes"],
+    k: ar ? ["المبادرات", "قيد التنفيذ", "منجزة", "خلال 30 يومًا"] : ["Initiatives", "In progress", "Done", "Due in 30 days"],
+    ks: ar ? ["كل ما يُسجَّل هنا", "تعمل الآن", "اكتملت", "مواعيد قريبة"] : ["everything logged here", "being worked on", "completed", "coming up"] }; }
+
+  /* ---------- sidebar button + page shell ---------- */
+  function shell(){
+    var knkt = document.querySelector('.tab-btn[data-page="marketing"]'), kpage = document.getElementById("page-marketing"); if(!knkt || !kpage) return false;
+    var b = document.querySelector('.tab-btn[data-page="brand"]');
+    if(!b){ b = document.createElement("button"); b.className = "tab-btn"; b.dataset.page = "brand"; b.setAttribute("onclick", "switchPage('brand')");
+      b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg><span class="bm-tab"></span>';
+      knkt.parentNode.insertBefore(b, knkt); }
+    var p = document.getElementById("page-brand");
+    if(!p){ p = document.createElement("div"); p.className = "page"; p.id = "page-brand";
+      p.innerHTML = '<section><div class="sechead"><h2 class="bm-title"></h2><button class="addbtn bm-add" type="button"></button></div><div class="subhead bm-owner"></div><div class="kpi-row" id="brandKpis"></div>'
+        + '<div class="table-scroll"><table class="wide-table"><thead><tr class="bm-head"></tr></thead><tbody id="brandBody"></tbody></table></div></section>';
+      kpage.parentNode.insertBefore(p, kpage);
+      p.querySelector(".bm-add").addEventListener("click", function(){ if(typeof addRow === "function") addRow("brand", TPL); }); }
+    try{ if(typeof PAGE_ORDER !== "undefined" && PAGE_ORDER.indexOf("brand") < 0){ var i = PAGE_ORDER.indexOf("marketing"); PAGE_ORDER.splice(i < 0 ? PAGE_ORDER.length : i, 0, "brand"); } }catch(e){}
+    return true; }
+  var lastLang = "";
+  function labels(force){ var p0 = document.getElementById("page-brand"); if(!force && p0 && lastLang === String(typeof LANG !== "undefined" ? LANG : "") && p0.querySelector(".bm-head").children.length) return; lastLang = String(typeof LANG !== "undefined" ? LANG : "");
+    var L2 = lab(), b = document.querySelector('.tab-btn[data-page="brand"] .bm-tab'); if(b && b.textContent !== L2.tab) b.textContent = L2.tab;
+    var p = document.getElementById("page-brand"); if(!p) return;
+    p.querySelector(".bm-title").textContent = L2.title; p.querySelector(".bm-add").textContent = L2.add; p.querySelector(".bm-owner").textContent = L2.owner;
+    p.querySelector(".bm-head").innerHTML = L2.cols.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + '<th class="actions"></th>';
+    var pt = document.getElementById("pageTitle"); if(pt && p.classList.contains("active")) pt.textContent = L2.tab; }
+
+  /* ---------- render ---------- */
+  function renderBrand(){
+    if(!shell()) return; labels(true);
+    var list = rows(), body = document.getElementById("brandBody"), kp = document.getElementById("brandKpis"), L2 = lab(); if(!body) return;
+    var now = new Date(); now.setHours(0, 0, 0, 0); var end = now.getTime() + 30 * 864e5;
+    var dueN = list.filter(function(r){ var d = typeof parseDeadline === "function" ? parseDeadline(r.targetDate) : null; return d && d >= now && d <= end && r.status !== "Done"; }).length;
+    var vals = [list.length, list.filter(function(r){ return r.status === "In progress"; }).length, list.filter(function(r){ return r.status === "Done"; }).length, dueN];
+    if(kp) kp.innerHTML = vals.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(L2.k[i]) + '</div><div class="value" style="font-size:18px;">' + v + '</div><div class="sub">' + esc(L2.ks[i]) + "</div></div>"; }).join("");
+    body.innerHTML = "";
+    list.forEach(function(r, i){
+      var color = COLORS[r.status] || COLORS["Not started"];
+      var td = function(f){ return '<td data-bind="brand.' + i + "." + f + '">' + esc(TX(r[f] || "")) + "</td>"; };
+      var tr = elTR("<tr>" + td("initiative") + td("channel") + td("owner")
+        + '<td><span class="status-pill view-only" style="background:' + color + "22; color:" + color + ';">' + esc(typeof disp === "function" ? disp(r.status) : r.status) + "</span>"
+        + '<input class="status-select edit-only" list="brandStatusList" data-brandstatus="' + i + '" style="background:' + color + "22; color:" + color + ';" value="' + esc(r.status) + '"></td>'
+        + td("targetDate") + td("notes")
+        + '<td class="actions-cell edit-only">' + (typeof reorderBtns === "function" ? reorderBtns("brand", i, list.length) : "") + '<button class="rowdel" type="button" data-brdel="' + i + '">✕</button></td></tr>');
+      body.appendChild(tr); });
+    if(typeof ensureDatalist === "function") ensureDatalist("brandStatusList", Object.keys(COLORS).map(function(k){ return '<option value="' + k + '">' + k + "</option>"; }).join(""));
+    [].forEach.call(body.querySelectorAll("[data-brandstatus]"), function(s){ s.addEventListener("change", function(e){ if(typeof pushHistory === "function") pushHistory(); rows()[+e.target.dataset.brandstatus].status = e.target.value; renderBrand(); if(typeof applyEditMode === "function") applyEditMode(); if(typeof saveLocalDraft === "function") saveLocalDraft(); }); });
+    [].forEach.call(body.querySelectorAll("[data-brdel]"), function(btn){ btn.addEventListener("click", function(){ var i = +btn.dataset.brdel; if(typeof confirmDelete === "function") confirmDelete(btn, function(){ removeRow("brand", i); }); else removeRow("brand", i); }); });
+    if(typeof applyEditMode === "function" && typeof editing !== "undefined") { try{ applyEditMode(); }catch(e){} }
+  }
+  window.renderBrand = renderBrand;
+  try{ RENDER_FN.brand = renderBrand; }catch(e){}
+  try{ DRAWER_FIELDS.brand = [["channel","Channel"],["owner","Owner"],["status","Status"],["targetDate","Target date"],["notes","Notes"]]; KIND_SECTION["Brand"] = "brand"; SECTION_PAGE.brand = "brand"; }catch(e){}
+  try{ SECTION_NAME_KEY.brand = "tabBrand"; TITLES_AR.tabBrand = "التسويق"; }catch(e){}
+  try{ GLOBAL_SEARCH_SOURCES.push({ section:"brand", page:"brand", kind:"Brand", fields:["initiative","channel","owner"], label:function(r){ return r.initiative; }, sub:function(r){ return r.status; } }); }catch(e){}
+
+  /* ---------- dated items reach the ball, timeline and upcoming list ---------- */
+  if(typeof upcomingItems === "function" && !upcomingItems.__v39){ var baseUp = upcomingItems; upcomingItems = function(days){ var out = baseUp(days); try{
+      var today = new Date(); today.setHours(0, 0, 0, 0); var end = new Date(today.getTime() + days * 864e5);
+      rows().forEach(function(r){ if(r.status === "Done") return; var d = parseDeadline(r.targetDate); if(d && d >= today && d <= end) out.push({ d:d, kind:"Brand", title:r.initiative, page:"brand", s:r.targetDate }); });
+      out.sort(function(a, b){ return a.d - b.d; }); }catch(e){} return out; }; upcomingItems.__v39 = true; }
+  if(typeof renderAll === "function" && !renderAll.__v39){ var baseRA = renderAll; renderAll = function(){ try{ var s = ST(); if(s){ s.titles = s.titles || {}; if(typeof s.titles.tabBrand !== "string") s.titles.tabBrand = "Marketing"; rows(); } }catch(e){} var out = baseRA.apply(this, arguments); try{ renderBrand(); }catch(e){ console.error(e); } return out; }; renderAll.__v39 = true; }
+  renderBrand();
+  setInterval(function(){ try{ if(!document.getElementById("page-brand") || !document.querySelector('.tab-btn[data-page="brand"]')) renderBrand(); else labels(); }catch(e){} }, 1500);
+})();
+</script>
 </body>
 </html>

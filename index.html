@@ -8134,12 +8134,18 @@ async function exportPPTX(){
   .topbar h1, .page-title, section h2, .hero-greet, .stat-tile .value, .ring text, .agenda-date b, .oc-card .oc-n, .ov-big, .ov-bar-val{font-family:var(--font-display) !important; font-weight:400 !important; font-synthesis:none;}
   [dir="rtl"] .stat-tile .value, [dir="rtl"] .ov-big, [dir="rtl"] .ov-bar-val{font-family:"Fjalla One", "IBM Plex Sans Arabic", sans-serif !important;}
   [dir="rtl"] .topbar h1, [dir="rtl"] .page-title, [dir="rtl"] section h2, [dir="rtl"] .hero-greet{font-family:"IBM Plex Sans Arabic", sans-serif !important; font-weight:700 !important;}
-  .topbar h1{font-size:36px; letter-spacing:.015em; color:#fff;}
-  .page-title{font-size:26px; letter-spacing:.05em; color:#fff;}
-  .page-head::before{width:4px; height:26px; border-radius:2px; background:var(--copper);}
-  section h2{font-size:20px; letter-spacing:.04em; color:#fff;}
-  .sechead h2::before{width:4px; height:18px; border-radius:2px; transform:none; background:var(--copper);}
-  .stat-tile .label, .nav-label, .brand{letter-spacing:.18em !important;}
+  .topbar h1{font-size:30px; letter-spacing:.015em; color:#fff;}
+  .page-title{font-size:22px; letter-spacing:.05em; color:#fff;}
+  .page-head::before{width:4px; height:22px; border-radius:2px; background:var(--copper);}
+  section h2{font-size:17px; letter-spacing:.05em; color:#fff;}
+  .sechead h2::before{width:4px; height:16px; border-radius:2px; transform:none; background:var(--copper);}
+  .nav-label, .brand{letter-spacing:.18em !important;}
+  .stat-tile .label{letter-spacing:.12em !important;}
+  #rcKpis{grid-template-columns:repeat(6, minmax(0, 1fr));}
+  @media (max-width:1250px){ #rcKpis{grid-template-columns:repeat(3, minmax(0, 1fr));} }
+  .rc-bar{grid-template-columns:minmax(0, 42%) 1fr 30px;}
+  .rc-bar span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rc-row span em{font-family:var(--font-body) !important; letter-spacing:0;}
   .nav-label{color:var(--copper) !important;}
   .stat-tile .value{letter-spacing:.01em;}
   .hero{isolation:isolate;}
@@ -8147,22 +8153,23 @@ async function exportPPTX(){
   .brief.show{box-shadow:inset 4px 0 0 var(--copper), var(--shadow) !important;}
   /* official logo (orange, as on the template cover) */
   .sb-logo .sb-logo-mark, .sb-logo .sb-logo-text{display:none !important;}
-  .mw-logo{display:block; flex:0 0 auto; width:150px; height:25px; background:var(--copper); -webkit-mask:var(--mw-logo) left center / contain no-repeat; mask:var(--mw-logo) left center / contain no-repeat;}
-  .mw-tag{display:block; margin-top:6px; font-family:"Century Gothic", "Questrial", sans-serif; font-size:9.5px; letter-spacing:.26em; color:var(--sand); text-transform:uppercase; white-space:nowrap;}
+  .sb-logo{gap:8px !important; flex-wrap:nowrap !important;}
+  .sb-logo .lang-pill{flex:0 0 auto; margin-inline-start:auto;}
+  .mw-logo{display:block; flex:0 0 auto; width:132px; height:22px; background:var(--copper); -webkit-mask:var(--mw-logo) left center / contain no-repeat; mask:var(--mw-logo) left center / contain no-repeat;}
+  .mw-tag{display:none !important;}
   .tm-brand .tm-mark{display:none !important;}
   .tm-brand{font-size:0 !important; display:flex; justify-content:center;}
   .tm-brand::before{content:""; display:block; width:190px; height:32px; background:var(--copper); -webkit-mask:var(--mw-logo) center / contain no-repeat; mask:var(--mw-logo) center / contain no-repeat;}
 </style>
 <script>
-/* v49 module: Midwam brand template — official logo, brand colours and fonts (Harith, from Presentation1.pptx) */
+/* v49 module (v49.1 fit) : Midwam brand template — official logo, brand colours and fonts (Harith, from Presentation1.pptx) */
 (function(){
   "use strict";
   var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
   var BRAND = { accent:"#F36D2F", bg:"#0A0A0B", text:"#F5F5F5" };
   try{ MIDWAM_DEFAULT_THEME.accent = BRAND.accent; MIDWAM_DEFAULT_THEME.bg = BRAND.bg; MIDWAM_DEFAULT_THEME.text = BRAND.text; }catch(e){}
   try{ if(THEME_PRESETS[0]){ THEME_PRESETS[0].name = "Midwam (brand template)"; THEME_PRESETS[0].accent = BRAND.accent; THEME_PRESETS[0].bg = BRAND.bg; THEME_PRESETS[0].text = BRAND.text; } }catch(e){}
-  function logo(){ var b = document.getElementById("brandLogo"); if(!b) return; if(!b.querySelector(".mw-logo")){ var s = document.createElement("span"); s.className = "mw-logo"; s.setAttribute("role", "img"); s.setAttribute("aria-label", "Midwam"); b.insertBefore(s, b.firstChild); }
-    var sb = b.parentNode; if(sb && !sb.querySelector(".mw-tag")){ var t = document.createElement("span"); t.className = "mw-tag"; t.textContent = "Experience Design Company"; b.insertAdjacentElement("afterend", t); } }
+  function logo(){ var b = document.getElementById("brandLogo"); if(!b) return; if(!b.querySelector(".mw-logo")){ var s = document.createElement("span"); s.className = "mw-logo"; s.setAttribute("role", "img"); s.setAttribute("aria-label", "Midwam"); b.insertBefore(s, b.firstChild); } }
   function theme(){ var s = (typeof state !== "undefined" && state) ? state : null; if(!s) return;
     var old = !s.theme || /^#f26522$/i.test(s.theme.accent || "") || !s._v49brand;
     if(!old) return;

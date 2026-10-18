@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0E0E11">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Midwam">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<script>
+/* v46: installable phone app — the manifest is linked for Harith's dashboard only; the team link is installed as-is so its secret key stays in the saved address */
+(function(){ try{ if(!/[?&]team(=|&|$)/.test(location.search)){ var l = document.createElement("link"); l.rel = "manifest"; l.href = "manifest.webmanifest"; document.head.appendChild(l); } }catch(e){} })();
+</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -7719,6 +7730,192 @@ async function exportPPTX(){
   setTimeout(rebase, 0);
   try{ renderLastUpdated(); }catch(e){}
   setInterval(function(){ try{ renderLastUpdated(); }catch(e){} }, 3000);
+})();
+</script>
+<style id="v45css">
+  /* v45: Top buyers (Etimad page) */
+  #tbSec .tb-table{width:100%; border-collapse:collapse; font-size:13px;}
+  #tbSec .tb-table th{text-align:start; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  #tbSec .tb-table td{padding:9px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  #tbSec tr.tb-row{cursor:pointer;}
+  #tbSec tr.tb-row:hover td{background:rgba(185,167,255,.05);}
+  .tb-rank{font-family:var(--mono, monospace); color:var(--muted); width:28px;}
+  .tb-name b{display:block; font-size:13px; color:var(--cream);}
+  .tb-name span{font-size:11px; color:var(--muted);}
+  .tb-bar{display:flex; align-items:center; gap:8px; min-width:120px;}
+  .tb-bar i{display:block; height:8px; border-radius:4px; background:linear-gradient(90deg, var(--copper), var(--accent2));}
+  .tb-bar b{font-family:var(--mono, monospace); font-size:12px;}
+  .tb-heat{display:grid; grid-template-columns:repeat(12, 13px); gap:2px;}
+  .tb-heat i{display:block; width:13px; height:13px; border-radius:3px; background:rgba(255,255,255,.05);}
+  .tb-heat-head{display:grid; grid-template-columns:repeat(12, 13px); gap:2px; font-size:8.5px; color:var(--muted); text-align:center; font-family:var(--mono, monospace);}
+  .tb-us{display:inline-flex; padding:2px 8px; border-radius:999px; font-size:11px; border:1px solid rgba(60,203,127,.5); color:#3ccb7f; white-space:nowrap;}
+  .tb-us.none{border-color:var(--border); color:var(--muted);}
+  tr.tb-detail td{background:rgba(0,0,0,.18);}
+  .tb-recent{display:flex; flex-direction:column; gap:6px; padding:4px 0;}
+  .tb-recent div{display:flex; gap:10px; align-items:center; font-size:12.5px;}
+  .tb-recent em{font-style:normal; font-family:var(--mono, monospace); font-size:11px; color:var(--muted); min-width:84px;}
+  .tb-more{margin-top:10px;}
+  .tb-empty{font-size:12.5px; color:var(--muted); padding:8px 2px;}
+</style>
+<script>
+/* v45 module: Top buyers — which government entities publish the most events & exhibitions tenders on Etimad, and when (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  try{ TR_SKIP_KEYS.add("buyers"); }catch(e){}   /* entity names stay as published on Etimad; never sent to the translator */
+  var MON_EN = ["J","F","M","A","M","J","J","A","S","O","N","D"], MON_AR = ["١","٢","٣","٤","٥","٦","٧","٨","٩","١٠","١١","١٢"];
+  var MON_FULL_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], MON_FULL_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  var showAll = false, open = {};
+  /* state.buyers.raw = [[rn, agency, publishedDate, bookletPrice, title], …] — every tender Etimad files under "أنشطة المعارض والمؤتمرات"; the 8:30 run appends new ones (rolling 12 months) */
+  var cache = { key:"", val:null };
+  function data(){ var s = ST(), b = s && s.buyers; if(!b) return null; if(Array.isArray(b.list) && !Array.isArray(b.raw)) return b; if(!Array.isArray(b.raw) || !b.raw.length) return null;
+    var key = b.raw.length + "|" + (b.at || ""); if(cache.key === key) return cache.val;
+    var g = {}, from = "", to = "";
+    b.raw.forEach(function(x){ if(!x) return; var a = norm(x[1]) || "—", d = String(x[2] || ""), m = +d.slice(5, 7); if(d && (!from || d < from)) from = d; if(d > to) to = d;
+      var e = g[a] || (g[a] = { agency:a, n:0, months:[0,0,0,0,0,0,0,0,0,0,0,0], last:"", prices:[], recent:[] }); e.n++; if(m >= 1 && m <= 12) e.months[m - 1]++; if(d > e.last) e.last = d; if(+x[3] > 0) e.prices.push(+x[3]); e.recent.push({ rn:x[0], date:d, name:x[4] }); });
+    var list = Object.keys(g).map(function(k){ var e = g[k]; e.prices.sort(function(p, q){ return p - q; }); e.price = e.prices.length ? e.prices[Math.floor(e.prices.length / 2)] : 0; e.recent.sort(function(p, q){ return String(q.date).localeCompare(String(p.date)); }); e.recent = e.recent.slice(0, 5); delete e.prices; return e; });
+    cache = { key:key, val:{ at:b.at, from:from, to:to, tenders:b.raw.length, list:list } }; return cache.val; }
+  function norm(a){ return String(a || "").replace(/\s+/g, " ").trim(); }
+  function ours(agency){ var s = ST(), a = norm(agency), n = 0, won = 0; if(!s || !a) return { n:0, won:0 };
+    (s.external || []).concat(s.externalExcluded || []).forEach(function(r){ if(r && norm(r.agency) === a){ n++; if(r.outcome === "won") won++; } }); return { n:n, won:won }; }
+  function etUrl(rn){ try{ if(typeof window.etimadUrl === "function") return window.etimadUrl({ rn:rn }); }catch(e){} return ""; }
+  function fmtD(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return String(s || ""); var d = new Date(+m[1], +m[2] - 1, +m[3]); return d.toLocaleDateString(AR() ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short", year:"numeric" }); }
+  function sar(v){ var n = +v; if(!isFinite(n) || n <= 0) return "—"; return AR() ? n.toLocaleString("en") + " ر.س" : "SAR " + n.toLocaleString("en"); }
+  function L(){ var ar = AR(); return {
+    title: ar ? "أكبر الجهات المشترية" : "Top buyers",
+    sub: function(d){ return ar ? ("الجهات الحكومية التي تطرح أكثر منافسات الفعاليات والمعارض والمؤتمرات في اعتماد — " + (d.tenders || 0) + " منافسة من " + fmtD(d.from) + " إلى " + fmtD(d.to) + ". آخر تحديث " + fmtD(d.at) + ".")
+      : ("Government entities that publish the most events, exhibitions and conferences tenders on Etimad — " + (d.tenders || 0) + " tenders from " + fmtD(d.from) + " to " + fmtD(d.to) + ". Updated " + fmtD(d.at) + "."); },
+    empty: ar ? "يجري جمع البيانات — تملؤها مهمة اعتماد الصباحية تلقائيًا." : "Collecting data — the morning Etimad run fills this in automatically.",
+    k: ar ? ["جهات", "منافسات محسوبة", "أنشط شهر", "جهات في قائمتنا"] : ["Entities", "Tenders counted", "Busiest month", "Already on our list"],
+    ks: ar ? ["تطرح منافسات فعاليات", "في الفترة", "أكثر شهر طرحًا", "من أعلى 15 جهة"] : ["publishing events tenders", "in the period", "most tenders published", "of the top 15 buyers"],
+    cols: ar ? ["#", "الجهة", "منافسات", "الأشهر المعتادة", "آخر منافسة", "قيمة الكراسة المعتادة", "معنا"] : ["#", "Entity", "Tenders", "Usual months", "Last tender", "Typical booklet", "With us"],
+    all: ar ? "عرض كل الجهات" : "Show all entities", top: ar ? "عرض أعلى 15 فقط" : "Show top 15 only",
+    recent: ar ? "أحدث منافساتها" : "Recent tenders",
+    us: function(o){ return o.n ? ((ar ? o.n + " في قائمتنا" : o.n + " on our list") + (o.won ? (ar ? " · " + o.won + " فوز" : " · " + o.won + " won") : "")) : (ar ? "لا شيء بعد" : "none yet"); }
+  }; }
+  function ensure(){ var page = document.getElementById("page-external"); if(!page) return null; var sec = document.getElementById("tbSec"); if(sec) return sec;
+    var anchor = document.getElementById("wlSec") || page.querySelector("section"); if(!anchor) return null;
+    sec = document.createElement("section"); sec.id = "tbSec";
+    sec.innerHTML = '<div class="sechead"><h2 class="tb-title"></h2></div><div class="subhead tb-sub"></div><div class="kpi-row" id="tbKpis"></div><div class="table-scroll" id="tbWrap"></div><div class="tb-more" id="tbMore"></div>';
+    anchor.insertAdjacentElement("afterend", sec); return sec; }
+  function render(){
+    var sec = ensure(); if(!sec) return; var T = L(), d = data(), ar = AR();
+    sec.querySelector(".tb-title").textContent = T.title;
+    if(!d || !d.list.length){ sec.querySelector(".tb-sub").textContent = T.empty; document.getElementById("tbKpis").innerHTML = ""; document.getElementById("tbWrap").innerHTML = ""; document.getElementById("tbMore").innerHTML = ""; return; }
+    sec.querySelector(".tb-sub").textContent = T.sub(d);
+    var list = d.list.slice().sort(function(a, b){ return (b.n - a.n) || String(b.last || "").localeCompare(String(a.last || "")); });
+    var monthTot = [0,0,0,0,0,0,0,0,0,0,0,0]; list.forEach(function(g){ (g.months || []).forEach(function(v, i){ monthTot[i] += +v || 0; }); });
+    var bm = monthTot.indexOf(Math.max.apply(null, monthTot)), top15 = list.slice(0, 15), onList = top15.filter(function(g){ return ours(g.agency).n > 0; }).length;
+    var vals = [list.length, d.tenders || list.reduce(function(s, g){ return s + g.n; }, 0), (ar ? MON_FULL_AR : MON_FULL_EN)[bm] || "—", onList + " / " + top15.length];
+    document.getElementById("tbKpis").innerHTML = vals.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value" style="font-size:18px;">' + esc(v) + '</div><div class="sub">' + esc(T.ks[i]) + "</div></div>"; }).join("");
+    var shown = showAll ? list : top15, max = list[0] ? list[0].n : 1, mon = ar ? MON_AR : MON_EN, full = ar ? MON_FULL_AR : MON_FULL_EN;
+    var head = "<tr>" + T.cols.map(function(c, i){ return i === 3 ? '<th><div class="tb-heat-head">' + mon.map(function(m){ return "<span>" + m + "</span>"; }).join("") + "</div></th>" : "<th>" + esc(c) + "</th>"; }).join("") + "</tr>";
+    var body = shown.map(function(g, k){ var o = ours(g.agency), mx = Math.max.apply(null, (g.months || [0]).concat([1])), key = norm(g.agency);
+      var heat = '<div class="tb-heat">' + (g.months || []).map(function(v, i){ var a = v ? 0.18 + 0.82 * (v / mx) : 0; return '<i title="' + esc(full[i] + ": " + v) + '" style="' + (v ? "background:rgba(242,101,34," + a.toFixed(2) + ")" : "") + '"></i>'; }).join("") + "</div>";
+      var row = '<tr class="tb-row" data-tb="' + esc(key) + '"><td class="tb-rank">' + (k + 1) + '</td><td class="tb-name"><b>' + esc(g.agency) + "</b></td>"
+        + '<td><div class="tb-bar"><i style="width:' + Math.max(6, Math.round(110 * g.n / max)) + 'px"></i><b>' + g.n + "</b></div></td><td>" + heat + "</td><td>" + esc(fmtD(g.last)) + "</td><td>" + esc(sar(g.price)) + '</td><td><span class="tb-us' + (o.n ? "" : " none") + '">' + esc(T.us(o)) + "</span></td></tr>";
+      if(open[key]){ row += '<tr class="tb-detail"><td></td><td colspan="6"><div class="tb-recent"><b style="font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);">' + esc(T.recent) + "</b>"
+        + (g.recent || []).map(function(r){ var u = etUrl(r.rn); return "<div><em>" + esc(fmtD(r.date)) + "</em><span>" + esc(r.name || r.rn) + "</span>" + (u ? '<a class="et-link" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a>' : "") + "</div>"; }).join("") + "</div></td></tr>"; }
+      return row; }).join("");
+    document.getElementById("tbWrap").innerHTML = '<table class="tb-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>";
+    document.getElementById("tbMore").innerHTML = list.length > 15 ? '<button class="editbtn secondary" type="button" data-tball="1">' + esc(showAll ? T.top : T.all + " (" + list.length + ")") + "</button>" : "";
+  }
+  window.topBuyers = { render:render };
+  document.addEventListener("click", function(e){ if(typeof CMT_MODE !== "undefined" && CMT_MODE) return; if(e.target.closest("a[href]")) return;
+    var a = e.target.closest("[data-tball]"); if(a){ showAll = !showAll; render(); return; }
+    var r = e.target.closest("tr.tb-row"); if(r){ var k = r.dataset.tb; open[k] = !open[k]; render(); } });
+  if(typeof renderAll === "function" && !renderAll.__v45){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ render(); }catch(e){ console.error(e); } return out; }; renderAll.__v45 = true; }
+  try{ render(); }catch(e){}
+  var lastLang = ""; setInterval(function(){ try{ var lg = String(typeof LANG !== "undefined" ? LANG : ""); if(!document.getElementById("tbSec") || lg !== lastLang){ lastLang = lg; render(); } }catch(e){} }, 1500);
+})();
+</script>
+<style id="v46css">
+  /* v46: phone app — bottom tab bar + Today screen (phones only) */
+  .td-panel{display:none;}
+  @media (max-width:760px){
+    .sidebar{backdrop-filter:none !important; -webkit-backdrop-filter:none !important;}
+    .tabs-nav{position:fixed !important; left:0; right:0; bottom:0; z-index:9000; flex-direction:row !important; gap:2px !important; overflow-x:auto !important; overflow-y:hidden; padding:6px 6px calc(8px + env(safe-area-inset-bottom)); background:rgba(14,14,17,.97); border-top:1px solid var(--border); scrollbar-width:none;}
+    .tabs-nav::-webkit-scrollbar{display:none;}
+    .tabs-nav .tab-btn{flex:0 0 auto; flex-direction:column; gap:4px; min-width:68px; padding:6px 8px !important; font-size:10.5px; text-align:center; justify-content:center; border-radius:12px;}
+    .tabs-nav .tab-btn svg{width:22px; height:22px;}
+    .tabs-nav .tab-btn .sb-alert{position:absolute; top:2px; right:10px;}
+    .main{padding-bottom:120px !important;}
+    #tmPill{bottom:calc(84px + env(safe-area-inset-bottom)) !important; left:12px; right:12px; justify-content:center; flex-wrap:wrap;}
+    .td-panel{display:block;}
+    .topbar h1{font-size:22px !important; line-height:1.15;}
+    #subtitleEl{display:none;}
+    .topbar{gap:10px !important; margin-bottom:12px !important;}
+  }
+  .td-panel{margin:0 0 16px; padding:16px 14px; border-radius:18px; border:1px solid rgba(242,101,34,.28); background:linear-gradient(180deg, rgba(242,101,34,.08), rgba(0,0,0,.25));}
+  .td-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px;}
+  .td-head h2{margin:0; font-family:var(--font-display); font-size:22px; letter-spacing:.06em; text-transform:uppercase; color:var(--cream);}
+  .td-head span{font-family:var(--mono, monospace); font-size:11px; color:var(--muted);}
+  .td-alarm{margin:0 0 12px; padding:10px 12px; border-radius:12px; background:rgba(229,72,77,.12); border:1px solid rgba(229,72,77,.4); font-size:13px; color:#ffb3ad;}
+  .td-h{margin:14px 0 8px; font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--copper);}
+  .td-card{padding:12px; border-radius:14px; border:1px solid var(--border); background:var(--night2); margin-bottom:10px;}
+  .td-card b{display:block; font-size:14px; line-height:1.35; color:var(--cream);}
+  .td-meta{display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:4px; font-size:12px; color:var(--muted);}
+  .td-left{font-family:var(--mono, monospace); color:#ffb35c;}
+  .td-left.crit{color:#ff7a70;}
+  .td-btns{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px;}
+  .td-btns button{height:46px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.3); font:inherit; font-size:14px; font-weight:700; cursor:pointer;}
+  .td-btns .p{color:#3ccb7f; border-color:rgba(60,203,127,.5);} .td-btns .w{color:#ffc857; border-color:rgba(255,200,87,.45);} .td-btns .x{color:#b3a89c;}
+  .td-btns button.on.p{background:#3ccb7f; color:#0d1a12;} .td-btns button.on.w{background:#ffc857; color:#241a04;} .td-btns button.on.x{background:#8f857b; color:#140f0b;}
+  .td-open{display:inline-flex; margin-top:8px; font-size:12px; color:#d9cfff; text-decoration:none;}
+  .td-ev{display:flex; justify-content:space-between; gap:10px; padding:8px 2px; border-bottom:1px solid var(--border); font-size:13px;}
+  .td-ev:last-child{border-bottom:none;}
+  .td-ev em{font-style:normal; font-family:var(--mono, monospace); font-size:11.5px; color:var(--copper); white-space:nowrap;}
+  .td-clear{font-size:13px; color:var(--muted);}
+</style>
+<script>
+/* v46 module: phone app — installable (manifest + service worker), bottom tab bar and a "Today" screen on phones (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  try{ if("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function(){}); }catch(e){}
+  function due(s){ try{ return typeof dueTarget === "function" ? dueTarget(s) : null; }catch(e){ return null; } }
+  function pd(s){ try{ return typeof parseDeadline === "function" ? parseDeadline(s) : null; }catch(e){ return null; } }
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function fmtDue(s){ var d = due(s); if(!d) return String(s || ""); var t = /\d{1,2}:\d{2}/.test(String(s)); return d.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) + (t ? " " + d.toLocaleTimeString(loc(), { hour:"2-digit", minute:"2-digit", hour12:false }) : ""); }
+  function left(s){ var d = due(s); if(!d) return { t:"", crit:false }; var h = (d - Date.now()) / 36e5, ar = AR();
+    if(h < 24) return { t:ar ? "تُغلق خلال " + Math.max(1, Math.round(h)) + " س" : "closes in " + Math.max(1, Math.round(h)) + "h", crit:true };
+    var dd = Math.floor(h / 24); return { t:ar ? "تُغلق خلال " + dd + " ي" : "closes in " + dd + "d", crit:dd <= 2 }; }
+  function fitOk(r){ return /^(strong|medium)/i.test(r.fit || ""); }
+  function etUrl(r){ try{ return typeof window.etimadUrl === "function" ? window.etimadUrl(r) : ""; }catch(e){ return ""; } }
+  function card(r, i, withBtns){ var l = left(r.bidDeadline), ar = AR(), dec = r.decision || "", u = etUrl(r);
+    var btn = function(k, cls, en, a){ return '<button type="button" class="' + cls + (dec === k ? " on" : "") + '" data-tdd="' + k + '" data-tdi="' + i + '">' + (ar ? a : en) + "</button>"; };
+    return '<div class="td-card"><b>' + esc(TX(r.name || r.rn)) + '</b><div class="td-meta"><span>' + esc(TX(r.agency || "")) + '</span><span class="td-left' + (l.crit ? " crit" : "") + '">' + esc(l.t) + "</span><span>" + esc(fmtDue(r.bidDeadline)) + "</span>" + (r.fit ? "<span>" + esc(r.fit) + "</span>" : "") + "</div>"
+      + (withBtns && !RO() ? '<div class="td-btns">' + btn("pursue", "p", "▲ Pursue", "▲ نتقدّم") + btn("watch", "w", "◐ Watch", "◐ نراقب") + btn("pass", "x", "✕ Pass", "✕ نتخطّى") + "</div>" : "")
+      + (u ? '<a class="td-open" href="' + esc(u) + '" target="_blank" rel="noopener">' + (ar ? "افتح في اعتماد ↗" : "Open on Etimad ↗") + "</a>" : "") + "</div>"; }
+  function render(){
+    var ov = document.getElementById("page-overview"), s = ST(); if(!ov || !s) return; var p = document.getElementById("tdPanel");
+    if(!p){ p = document.createElement("section"); p.id = "tdPanel"; p.className = "td-panel"; ov.insertBefore(p, ov.firstChild); }
+    if(window.innerWidth > 760){ if(p.innerHTML) p.innerHTML = ""; return; }
+    var ar = AR(), now = Date.now(), ext = Array.isArray(s.external) ? s.external : [], html = "";
+    var open = ext.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var d = due(x.r.bidDeadline); return d && d > now; }).sort(function(a, b){ return due(a.r.bidDeadline) - due(b.r.bidDeadline); });
+    var und = open.filter(function(x){ return !x.r.decision && fitOk(x.r); }), hot = open.filter(function(x){ return (x.r.decision === "pursue" || x.r.decision === "watch") && (due(x.r.bidDeadline) - now) / 864e5 <= 7; });
+    html += '<div class="td-head"><h2>' + (ar ? "اليوم" : "Today") + "</h2><span>" + esc(new Date().toLocaleDateString(loc(), { weekday:"long", day:"numeric", month:"short" })) + "</span></div>";
+    var al = (s.alarmLog || [])[0]; if(al && String(al.at || "").slice(0, 10) === new Date().toISOString().slice(0, 10)) html += '<div class="td-alarm">⏰ ' + esc(al.text) + "</div>";
+    if(und.length){ html += '<div class="td-h">⚑ ' + (ar ? "بحاجة إلى قرار" : "Needs a decision") + " · " + und.length + "</div>" + und.slice(0, 8).map(function(x){ return card(x.r, x.i, true); }).join(""); }
+    if(hot.length){ html += '<div class="td-h">▲ ' + (ar ? "تُغلق هذا الأسبوع" : "Closing this week") + "</div>" + hot.map(function(x){ return card(x.r, x.i, false); }).join(""); }
+    var t0 = new Date(); t0.setHours(0, 0, 0, 0); var evs = (Array.isArray(s.events) ? s.events : []).filter(function(r){ var d = pd(r.start); return d && d >= t0 && (d - t0) / 864e5 <= 14; }).sort(function(a, b){ return pd(a.start) - pd(b.start); });
+    if(evs.length){ html += '<div class="td-h">◆ ' + (ar ? "فعاليات قادمة" : "Events in the next 2 weeks") + "</div>" + evs.map(function(r){ var d = pd(r.start); return '<div class="td-ev"><span>' + esc(ar && r.nameAr ? r.nameAr : TX(r.name)) + "</span><em>" + esc(d.toLocaleDateString(loc(), { day:"numeric", month:"short" })) + "</em></div>"; }).join(""); }
+    if(!und.length && !hot.length && !evs.length) html += '<div class="td-clear">' + (ar ? "لا شيء عاجل اليوم." : "Nothing urgent today.") + "</div>";
+    if(p.__h !== html){ p.__h = html; p.innerHTML = html; }
+  }
+  window.todayPanel = { render:render };
+  document.addEventListener("click", function(e){ var b = e.target.closest && e.target.closest("[data-tdd]"); if(!b || RO()) return; e.preventDefault(); e.stopPropagation();
+    try{ if(window.bidDecision && typeof window.bidDecision.set === "function") window.bidDecision.set(+b.dataset.tdi, b.dataset.tdd, b); }catch(err){} try{ render(); }catch(err){} }, true);
+  if(typeof renderAll === "function" && !renderAll.__v46){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ render(); }catch(e){} return out; }; renderAll.__v46 = true; }
+  window.addEventListener("resize", function(){ try{ render(); }catch(e){} });
+  try{ render(); }catch(e){} setInterval(function(){ try{ render(); }catch(e){} }, 30000);
 })();
 </script>
 </body>

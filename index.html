@@ -6571,7 +6571,7 @@ async function exportPPTX(){
   .bp-spin{width:18px; height:18px; border-radius:50%; border:2px solid rgba(242,101,34,.25); border-top-color:var(--copper,#F26522); animation:bpSpin 1s linear infinite; flex:none;}
   @keyframes bpSpin{to{transform:rotate(360deg)}}
   /* overview bid board */
-  #bdBoard{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0 0 18px;}
+  #bdBoard{display:grid; grid-template-columns:1fr; gap:14px; margin:0 0 18px;}
   #bdBoard[hidden]{display:none;}
   @media (max-width:900px){ #bdBoard{grid-template-columns:1fr;} }
   .bb-col{border-radius:16px; padding:14px 16px; border:1px solid rgba(242,101,34,.2); background:rgba(20,15,12,.55);}
@@ -6790,7 +6790,7 @@ async function exportPPTX(){
     var pct = function(r){ try{ return typeof missionPct === "function" ? missionPct(r) : 0; }catch(e){ return 0; } };
     var left = '<div class="bb-col"><h4>⚑ ' + (ar ? "بحاجة إلى قرار" : "Needs a decision") + "<i>" + und.length + "</i></h4>" + (und.length ? '<div class="bb-list">' + und.slice(0, 5).map(function(r){ return item(r, ""); }).join("") + "</div>" + (und.length > 5 ? '<div class="bb-more">+' + (und.length - 5) + (ar ? " أخرى في صفحة اعتماد" : " more on the Etimad page") + "</div>" : "") : '<div class="bb-empty">' + (ar ? "لا شيء معلّق — كل المنافسات المفتوحة لها قرار." : "Nothing waiting — every open tender has a decision.") + "</div>") + "</div>";
     var right = '<div class="bb-col"><h4>▲ ' + (ar ? "نتقدّم لها" : "Pursuing") + "<i>" + pur.length + (wat.length ? " · ◐ " + wat.length + (ar ? " نراقبها" : " watching") : "") + "</i></h4>" + (pur.length ? '<div class="bb-list">' + pur.slice(0, 5).map(function(r){ var sub = [r.owner ? firstName(r.owner) : "", pct(r) + "%", r.bidPack ? (ar ? "الحزمة جاهزة" : "pack ✓") : (ar ? "الحزمة قيد الإعداد" : "pack pending")].filter(Boolean).join(" · "); return item(r, sub); }).join("") + "</div>" : '<div class="bb-empty">' + (ar ? "لا توجد منافسات بقرار «نتقدّم» بعد. افتح أي فرصة في صفحة اعتماد واختر قرارًا." : "Nothing marked Pursue yet. Open any opportunity on the Etimad page and pick a decision.") + "</div>") + "</div>";
-    box.innerHTML = left + right;
+    box.innerHTML = right; /* v50: "Needs a decision" box removed from the Overview (Harith) */
     try{ if(typeof tickCountdowns === "function") tickCountdowns(); }catch(e){}
   }
   function goToRow(rn){

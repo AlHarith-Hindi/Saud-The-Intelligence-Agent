@@ -8160,6 +8160,15 @@ async function exportPPTX(){
   .tm-brand .tm-mark{display:none !important;}
   .tm-brand{font-size:0 !important; display:flex; justify-content:center;}
   .tm-brand::before{content:""; display:block; width:190px; height:32px; background:var(--copper); -webkit-mask:var(--mw-logo) center / contain no-repeat; mask:var(--mw-logo) center / contain no-repeat;}
+  /* v49.2 fit: no sideways scrolling + slim dark scrollbars that match the brand */
+  html, body{overflow-x:clip !important; max-width:100%;}
+  #bgCanvas, #fxCanvas, #pageWipe{width:auto !important; right:0;}
+  html{scrollbar-width:thin; scrollbar-color:rgba(243,109,47,.45) #0A0A0B;}
+  *{scrollbar-width:thin; scrollbar-color:rgba(243,109,47,.35) transparent;}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-track{background:#0A0A0B;}
+  ::-webkit-scrollbar-thumb{background:rgba(243,109,47,.4); border-radius:8px;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(243,109,47,.7);}
 </style>
 <script>
 /* v49 module (v49.1 fit) : Midwam brand template — official logo, brand colours and fonts (Harith, from Presentation1.pptx) */

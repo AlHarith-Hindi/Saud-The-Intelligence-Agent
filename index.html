@@ -3,16 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0E0E11">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Midwam">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <script>
-/* v46: installable phone app — the manifest is linked for Harith's dashboard only; the team link is installed as-is so its secret key stays in the saved address */
-(function(){ try{ if(!/[?&]team(=|&|$)/.test(location.search)){ var l = document.createElement("link"); l.rel = "manifest"; l.href = "manifest.webmanifest"; document.head.appendChild(l); } }catch(e){} })();
+/* v47: phone app removed (Harith) — unregister the old service worker and clear its cache */
+(function(){ try{ if("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }).catch(function(){}); if(window.caches) caches.keys().then(function(ks){ ks.forEach(function(k){ if(/^midwam-app/.test(k)) caches.delete(k); }); }).catch(function(){}); }catch(e){} })();
 </script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -7830,92 +7823,6 @@ async function exportPPTX(){
   if(typeof renderAll === "function" && !renderAll.__v45){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ render(); }catch(e){ console.error(e); } return out; }; renderAll.__v45 = true; }
   try{ render(); }catch(e){}
   var lastLang = ""; setInterval(function(){ try{ var lg = String(typeof LANG !== "undefined" ? LANG : ""); if(!document.getElementById("tbSec") || lg !== lastLang){ lastLang = lg; render(); } }catch(e){} }, 1500);
-})();
-</script>
-<style id="v46css">
-  /* v46: phone app — bottom tab bar + Today screen (phones only) */
-  .td-panel{display:none;}
-  @media (max-width:760px){
-    .sidebar{backdrop-filter:none !important; -webkit-backdrop-filter:none !important;}
-    .tabs-nav{position:fixed !important; left:0; right:0; bottom:0; z-index:9000; flex-direction:row !important; gap:2px !important; overflow-x:auto !important; overflow-y:hidden; padding:6px 6px calc(8px + env(safe-area-inset-bottom)); background:rgba(14,14,17,.97); border-top:1px solid var(--border); scrollbar-width:none;}
-    .tabs-nav::-webkit-scrollbar{display:none;}
-    .tabs-nav .tab-btn{flex:0 0 auto; flex-direction:column; gap:4px; min-width:68px; padding:6px 8px !important; font-size:10.5px; text-align:center; justify-content:center; border-radius:12px;}
-    .tabs-nav .tab-btn svg{width:22px; height:22px;}
-    .tabs-nav .tab-btn .sb-alert{position:absolute; top:2px; right:10px;}
-    .main{padding-bottom:120px !important;}
-    #tmPill{bottom:calc(84px + env(safe-area-inset-bottom)) !important; left:12px; right:12px; justify-content:center; flex-wrap:wrap;}
-    .td-panel{display:block;}
-    .topbar h1{font-size:22px !important; line-height:1.15;}
-    #subtitleEl{display:none;}
-    .topbar{gap:10px !important; margin-bottom:12px !important;}
-  }
-  .td-panel{margin:0 0 16px; padding:16px 14px; border-radius:18px; border:1px solid rgba(242,101,34,.28); background:linear-gradient(180deg, rgba(242,101,34,.08), rgba(0,0,0,.25));}
-  .td-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px;}
-  .td-head h2{margin:0; font-family:var(--font-display); font-size:22px; letter-spacing:.06em; text-transform:uppercase; color:var(--cream);}
-  .td-head span{font-family:var(--mono, monospace); font-size:11px; color:var(--muted);}
-  .td-alarm{margin:0 0 12px; padding:10px 12px; border-radius:12px; background:rgba(229,72,77,.12); border:1px solid rgba(229,72,77,.4); font-size:13px; color:#ffb3ad;}
-  .td-h{margin:14px 0 8px; font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--copper);}
-  .td-card{padding:12px; border-radius:14px; border:1px solid var(--border); background:var(--night2); margin-bottom:10px;}
-  .td-card b{display:block; font-size:14px; line-height:1.35; color:var(--cream);}
-  .td-meta{display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:4px; font-size:12px; color:var(--muted);}
-  .td-left{font-family:var(--mono, monospace); color:#ffb35c;}
-  .td-left.crit{color:#ff7a70;}
-  .td-btns{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px;}
-  .td-btns button{height:46px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.3); font:inherit; font-size:14px; font-weight:700; cursor:pointer;}
-  .td-btns .p{color:#3ccb7f; border-color:rgba(60,203,127,.5);} .td-btns .w{color:#ffc857; border-color:rgba(255,200,87,.45);} .td-btns .x{color:#b3a89c;}
-  .td-btns button.on.p{background:#3ccb7f; color:#0d1a12;} .td-btns button.on.w{background:#ffc857; color:#241a04;} .td-btns button.on.x{background:#8f857b; color:#140f0b;}
-  .td-open{display:inline-flex; margin-top:8px; font-size:12px; color:#d9cfff; text-decoration:none;}
-  .td-ev{display:flex; justify-content:space-between; gap:10px; padding:8px 2px; border-bottom:1px solid var(--border); font-size:13px;}
-  .td-ev:last-child{border-bottom:none;}
-  .td-ev em{font-style:normal; font-family:var(--mono, monospace); font-size:11.5px; color:var(--copper); white-space:nowrap;}
-  .td-clear{font-size:13px; color:var(--muted);}
-</style>
-<script>
-/* v46 module: phone app — installable (manifest + service worker), bottom tab bar and a "Today" screen on phones (Harith) */
-(function(){
-  "use strict";
-  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
-  var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
-  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
-  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
-  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
-  try{ if("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function(){}); }catch(e){}
-  function due(s){ try{ return typeof dueTarget === "function" ? dueTarget(s) : null; }catch(e){ return null; } }
-  function pd(s){ try{ return typeof parseDeadline === "function" ? parseDeadline(s) : null; }catch(e){ return null; } }
-  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
-  function fmtDue(s){ var d = due(s); if(!d) return String(s || ""); var t = /\d{1,2}:\d{2}/.test(String(s)); return d.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) + (t ? " " + d.toLocaleTimeString(loc(), { hour:"2-digit", minute:"2-digit", hour12:false }) : ""); }
-  function left(s){ var d = due(s); if(!d) return { t:"", crit:false }; var h = (d - Date.now()) / 36e5, ar = AR();
-    if(h < 24) return { t:ar ? "تُغلق خلال " + Math.max(1, Math.round(h)) + " س" : "closes in " + Math.max(1, Math.round(h)) + "h", crit:true };
-    var dd = Math.floor(h / 24); return { t:ar ? "تُغلق خلال " + dd + " ي" : "closes in " + dd + "d", crit:dd <= 2 }; }
-  function fitOk(r){ return /^(strong|medium)/i.test(r.fit || ""); }
-  function etUrl(r){ try{ return typeof window.etimadUrl === "function" ? window.etimadUrl(r) : ""; }catch(e){ return ""; } }
-  function card(r, i, withBtns){ var l = left(r.bidDeadline), ar = AR(), dec = r.decision || "", u = etUrl(r);
-    var btn = function(k, cls, en, a){ return '<button type="button" class="' + cls + (dec === k ? " on" : "") + '" data-tdd="' + k + '" data-tdi="' + i + '">' + (ar ? a : en) + "</button>"; };
-    return '<div class="td-card"><b>' + esc(TX(r.name || r.rn)) + '</b><div class="td-meta"><span>' + esc(TX(r.agency || "")) + '</span><span class="td-left' + (l.crit ? " crit" : "") + '">' + esc(l.t) + "</span><span>" + esc(fmtDue(r.bidDeadline)) + "</span>" + (r.fit ? "<span>" + esc(r.fit) + "</span>" : "") + "</div>"
-      + (withBtns && !RO() ? '<div class="td-btns">' + btn("pursue", "p", "▲ Pursue", "▲ نتقدّم") + btn("watch", "w", "◐ Watch", "◐ نراقب") + btn("pass", "x", "✕ Pass", "✕ نتخطّى") + "</div>" : "")
-      + (u ? '<a class="td-open" href="' + esc(u) + '" target="_blank" rel="noopener">' + (ar ? "افتح في اعتماد ↗" : "Open on Etimad ↗") + "</a>" : "") + "</div>"; }
-  function render(){
-    var ov = document.getElementById("page-overview"), s = ST(); if(!ov || !s) return; var p = document.getElementById("tdPanel");
-    if(!p){ p = document.createElement("section"); p.id = "tdPanel"; p.className = "td-panel"; ov.insertBefore(p, ov.firstChild); }
-    if(window.innerWidth > 760){ if(p.innerHTML) p.innerHTML = ""; return; }
-    var ar = AR(), now = Date.now(), ext = Array.isArray(s.external) ? s.external : [], html = "";
-    var open = ext.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var d = due(x.r.bidDeadline); return d && d > now; }).sort(function(a, b){ return due(a.r.bidDeadline) - due(b.r.bidDeadline); });
-    var und = open.filter(function(x){ return !x.r.decision && fitOk(x.r); }), hot = open.filter(function(x){ return (x.r.decision === "pursue" || x.r.decision === "watch") && (due(x.r.bidDeadline) - now) / 864e5 <= 7; });
-    html += '<div class="td-head"><h2>' + (ar ? "اليوم" : "Today") + "</h2><span>" + esc(new Date().toLocaleDateString(loc(), { weekday:"long", day:"numeric", month:"short" })) + "</span></div>";
-    var al = (s.alarmLog || [])[0]; if(al && String(al.at || "").slice(0, 10) === new Date().toISOString().slice(0, 10)) html += '<div class="td-alarm">⏰ ' + esc(al.text) + "</div>";
-    if(und.length){ html += '<div class="td-h">⚑ ' + (ar ? "بحاجة إلى قرار" : "Needs a decision") + " · " + und.length + "</div>" + und.slice(0, 8).map(function(x){ return card(x.r, x.i, true); }).join(""); }
-    if(hot.length){ html += '<div class="td-h">▲ ' + (ar ? "تُغلق هذا الأسبوع" : "Closing this week") + "</div>" + hot.map(function(x){ return card(x.r, x.i, false); }).join(""); }
-    var t0 = new Date(); t0.setHours(0, 0, 0, 0); var evs = (Array.isArray(s.events) ? s.events : []).filter(function(r){ var d = pd(r.start); return d && d >= t0 && (d - t0) / 864e5 <= 14; }).sort(function(a, b){ return pd(a.start) - pd(b.start); });
-    if(evs.length){ html += '<div class="td-h">◆ ' + (ar ? "فعاليات قادمة" : "Events in the next 2 weeks") + "</div>" + evs.map(function(r){ var d = pd(r.start); return '<div class="td-ev"><span>' + esc(ar && r.nameAr ? r.nameAr : TX(r.name)) + "</span><em>" + esc(d.toLocaleDateString(loc(), { day:"numeric", month:"short" })) + "</em></div>"; }).join(""); }
-    if(!und.length && !hot.length && !evs.length) html += '<div class="td-clear">' + (ar ? "لا شيء عاجل اليوم." : "Nothing urgent today.") + "</div>";
-    if(p.__h !== html){ p.__h = html; p.innerHTML = html; }
-  }
-  window.todayPanel = { render:render };
-  document.addEventListener("click", function(e){ var b = e.target.closest && e.target.closest("[data-tdd]"); if(!b || RO()) return; e.preventDefault(); e.stopPropagation();
-    try{ if(window.bidDecision && typeof window.bidDecision.set === "function") window.bidDecision.set(+b.dataset.tdi, b.dataset.tdd, b); }catch(err){} try{ render(); }catch(err){} }, true);
-  if(typeof renderAll === "function" && !renderAll.__v46){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ render(); }catch(e){} return out; }; renderAll.__v46 = true; }
-  window.addEventListener("resize", function(){ try{ render(); }catch(e){} });
-  try{ render(); }catch(e){} setInterval(function(){ try{ render(); }catch(e){} }, 30000);
 })();
 </script>
 </body>

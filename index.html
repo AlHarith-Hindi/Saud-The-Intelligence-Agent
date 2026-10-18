@@ -7825,5 +7825,304 @@ async function exportPPTX(){
   var lastLang = ""; setInterval(function(){ try{ var lg = String(typeof LANG !== "undefined" ? LANG : ""); if(!document.getElementById("tbSec") || lg !== lastLang){ lastLang = lg; render(); } }catch(e){} }, 1500);
 })();
 </script>
+<style id="v48css">
+  /* v48: new events announced · national occasions · tender changes · why it fits · since your last visit · quarter recap */
+  .nw-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px;}
+  .nw-card{position:relative; padding:14px; border-radius:14px; border:1px solid var(--border); background:var(--night2); display:flex; flex-direction:column; gap:6px;}
+  .nw-card .nw-k{font-family:var(--mono, monospace); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper);}
+  .nw-card b{font-size:14px; line-height:1.35; color:var(--cream);}
+  .nw-card .nw-d{font-family:var(--mono, monospace); font-size:12px; color:#ffc857;}
+  .nw-card .nw-m{font-size:12px; color:var(--muted); line-height:1.5;}
+  .nw-acts{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:6px;}
+  .nw-acts a, .nw-acts button{font:inherit; font-size:11.5px; padding:4px 10px; border-radius:999px; border:1px solid rgba(185,167,255,.45); background:transparent; color:#d9cfff; text-decoration:none; cursor:pointer;}
+  .nw-acts button.nw-in{border-color:rgba(60,203,127,.5); color:#3ccb7f; cursor:default;}
+  .nw-new{position:absolute; top:12px; inset-inline-end:12px; font-size:10px; padding:2px 7px; border-radius:999px; background:rgba(242,101,34,.18); color:var(--copper); border:1px solid rgba(242,101,34,.4);}
+  .oc-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;}
+  .oc-card{padding:16px; border-radius:14px; border:1px solid var(--border); background:linear-gradient(180deg, rgba(60,203,127,.06), rgba(0,0,0,.18));}
+  .oc-card h4{margin:0; font-size:15px; color:var(--cream);}
+  .oc-card .oc-date{font-family:var(--mono, monospace); font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .oc-card .oc-n{font-family:var(--font-display); font-size:34px; line-height:1.1; color:#3ccb7f; margin-top:10px;}
+  .oc-card .oc-n small{font-size:12px; color:var(--muted); font-family:var(--mono, monospace); letter-spacing:.08em; margin-inline-start:6px;}
+  .oc-card .oc-rec{font-size:12px; color:var(--sand, #D9D3CB); line-height:1.55; margin-top:8px;}
+  .oc-card .oc-rec em{font-style:normal; color:#ffc857;}
+  .tc-badge{display:inline-flex; align-items:center; gap:4px; margin-inline-start:8px; padding:1px 8px; border-radius:999px; font-size:10.5px; font-weight:600; background:rgba(255,200,87,.14); color:#ffc857; border:1px solid rgba(255,200,87,.45); white-space:nowrap; vertical-align:middle;}
+  .tc-list{margin-top:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,200,87,.35); background:rgba(255,200,87,.06);}
+  .tc-list div{font-size:12.5px; color:var(--sand, #D9D3CB);}
+  .tc-list s{color:var(--muted);}
+  .fw-why{margin-bottom:10px; padding:9px 12px; border-radius:10px; border:1px solid rgba(185,167,255,.32); background:rgba(185,167,255,.06); font-size:12.5px; color:var(--sand, #D9D3CB); line-height:1.6;}
+  .fw-why b{color:#d9cfff;}
+  .fw-why .fw-w{color:#ffb35c;}
+  #slvStrip{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:0 0 16px; padding:11px 14px; border-radius:14px; border:1px solid rgba(185,167,255,.35); background:rgba(185,167,255,.06); font-size:13px; color:var(--sand, #D9D3CB);}
+  #slvStrip .slv-h{font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#d9cfff;}
+  #slvStrip .slv-i{display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; border:1px solid var(--border); background:rgba(0,0,0,.25); cursor:pointer; font:inherit; font-size:12.5px; color:var(--cream);}
+  #slvStrip .slv-i b{color:var(--copper);}
+  #slvStrip .slv-x{margin-inline-start:auto; border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:15px; padding:0 4px;}
+  #slvStrip.quiet{border-color:var(--border); background:transparent;}
+  .rc-q{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 14px;}
+  .rc-q button{font:inherit; font-size:12px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer;}
+  .rc-q button.on{border-color:var(--copper); color:var(--cream); background:rgba(242,101,34,.12);}
+  .rc-cols{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; margin-top:16px;}
+  .rc-box{padding:14px; border-radius:14px; border:1px solid var(--border); background:var(--night2);}
+  .rc-box h4{margin:0 0 10px; font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper); font-weight:600;}
+  .rc-bar{display:grid; grid-template-columns:minmax(90px, 40%) 1fr 30px; align-items:center; gap:8px; font-size:12.5px; margin:5px 0;}
+  .rc-bar i{display:block; height:8px; border-radius:4px; background:linear-gradient(90deg, var(--copper), var(--accent2, #ffb35c));}
+  .rc-bar b{font-family:var(--mono, monospace); font-size:12px; text-align:end;}
+  .rc-row{display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+  .rc-row:last-child{border-bottom:none;}
+  .rc-row em{font-style:normal; font-family:var(--mono, monospace); font-size:11px; color:var(--muted); white-space:nowrap;}
+  .rc-tag{font-size:10.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); white-space:nowrap;}
+  .rc-tag.won{color:#3ccb7f; border-color:rgba(60,203,127,.5);} .rc-tag.lost{color:#ff7a70; border-color:rgba(255,122,112,.5);} .rc-tag.pursue{color:#ffc857; border-color:rgba(255,200,87,.5);}
+  .rc-empty{font-size:12.5px; color:var(--muted);}
+  .rc-print{margin-inline-start:auto;}
+  @media print{
+    body.rc-printing .sidebar, body.rc-printing .topbar, body.rc-printing .page:not(#page-recap), body.rc-printing #slvStrip, body.rc-printing .rc-q, body.rc-printing .rc-print{display:none !important;}
+    body.rc-printing #page-recap{display:block !important;}
+  }
+</style>
+<script>
+/* v48 module: new events announced + national occasions (Events page) · tender changes alert + why it fits (Etimad page) · since your last visit (Overview) · Quarter recap page (Harith) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var arr = function(k){ var s = ST(); return (s && Array.isArray(s[k])) ? s[k] : []; };
+  function pd(s){ try{ return typeof parseDeadline === "function" ? parseDeadline(s) : null; }catch(e){ return null; } }
+  function today0(){ var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function fmtD(s, y){ var d = s instanceof Date ? s : pd(s); if(!d) return String(s || ""); var o = { day:"numeric", month:"short" }; if(y !== false) o.year = "numeric"; return d.toLocaleDateString(loc(), o); }
+  function save(){ try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} }
+  function hist(){ try{ if(typeof pushHistory === "function") pushHistory(); }catch(e){} }
+  function toast(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} }
+  function norm(a){ return String(a || "").replace(/\s+/g, " ").trim(); }
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function ssGet(k){ try{ return JSON.parse(sessionStorage.getItem(k) || "null"); }catch(e){ return null; } }
+  function ssSet(k, v){ try{ sessionStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  try{ TR_SKIP_KEYS.add("eventsNews"); }catch(e){}
+  try{ ["changes", "announced", "addedAt", "inCalendar"].forEach(function(f){ TR_SKIP_FIELDS.add(f); }); }catch(e){}
+  /* month the tender was published, read from its Etimad reference number (YYMM…) */
+  function rnMonth(rn){ var m = String(rn || "").match(/^(\d{2})(\d{2})\d{4,}/); if(!m) return null; var y = 2000 + +m[1], mo = +m[2]; if(mo < 1 || mo > 12 || y < 2018 || y > 2040) return null; return new Date(y, mo - 1, 15); }
+  function allTenders(){ return arr("external").map(function(r, i){ return { r:r, i:i, sec:"external" }; }).concat(arr("externalExcluded").map(function(r, i){ return { r:r, i:i, sec:"externalExcluded" }; })); }
+
+  /* =========================================================
+     1) NEW EVENTS ANNOUNCED  (state.eventsNews — filled by the 9:00 run; official dates + websites only)
+     ========================================================= */
+  function NL(){ var ar = AR(); return {
+    title: ar ? "فعاليات أُعلن عنها حديثًا" : "New events announced",
+    sub: ar ? "فعاليات ومعارض ومؤتمرات سعودية أُعلن عنها مؤخرًا بتواريخ رسمية مؤكدة — قبل أن تُطرح منافساتها. يضيفها Claude كل صباح من المصادر الرسمية فقط." : "Saudi festivals, exhibitions and conferences announced recently, with confirmed official dates — before their tenders come out. Claude adds them every morning from official sources only.",
+    empty: ar ? "لا جديد بعد — يتحقق Claude كل صباح." : "Nothing new yet — Claude checks every morning.",
+    web: ar ? "الموقع الرسمي ↗" : "Official website ↗", add: ar ? "+ أضف إلى التقويم" : "+ Add to calendar", inCal: ar ? "✓ في التقويم" : "✓ In the calendar",
+    ann: ar ? "أُعلن " : "Announced ", newT: ar ? "جديد" : "New", endTbc: ar ? "تاريخ الختام لم يُعلن" : "end date not announced", added: ar ? "أُضيفت إلى تقويم الفعاليات" : "Added to the events calendar"
+  }; }
+  function newsList(){ return arr("eventsNews").slice().sort(function(a, b){ return String(b.announced || b.addedAt || "").localeCompare(String(a.announced || a.addedAt || "")); }); }
+  function inCalendar(n){ var k = norm(n.name).toLowerCase(); return n.inCalendar || arr("events").some(function(e){ return norm(e.name).toLowerCase() === k; }); }
+  function addToCalendar(i){ var s = ST(); if(!s || RO()) return; var n = arr("eventsNews")[i]; if(!n || inCalendar(n)) return; hist();
+    var st = pd(n.start), w = st ? new Date(st.getTime() - 75 * 864e5) : null, iso = function(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+    if(!Array.isArray(s.events)) s.events = [];
+    s.events.push({ name:n.name, nameAr:n.nameAr || "", city:n.city || "", cityAr:n.cityAr || "", start:n.start, end:n.end || n.start, kind:n.kind || "Event", angle:n.angle || "", angleAr:n.angleAr || "", watchFrom:w ? iso(w) : "", keywords:(n.keywords && n.keywords.length) ? n.keywords : [String(n.name || "").split(" ")[0]], confirmed:"yes", source:"Official event website", url:n.url || "" });
+    n.inCalendar = true; save(); toast(NL().added); try{ renderAll(); }catch(e){} }
+  function renderNews(page){
+    var sec = document.getElementById("nwSec"); if(!sec){ sec = document.createElement("section"); sec.id = "nwSec"; sec.innerHTML = '<div class="sechead"><h2 class="nw-title"></h2></div><div class="subhead nw-sub"></div><div class="nw-grid" id="nwGrid"></div>'; page.insertBefore(sec, page.firstChild); }
+    var T = NL(), ar = AR(), list = newsList(), t = today0();
+    sec.querySelector(".nw-title").textContent = T.title; sec.querySelector(".nw-sub").textContent = T.sub;
+    var all = arr("eventsNews"), html = list.filter(function(n){ var e = pd(n.end) || pd(n.start); return !e || e >= t; }).map(function(n){ var i = all.indexOf(n), a = pd(n.announced || n.addedAt), fresh = a && (t - a) / 864e5 <= 14;
+      var range = n.end && n.end !== n.start ? fmtD(n.start) + " – " + fmtD(n.end) : fmtD(n.start) + (n.endTbc ? " · " + T.endTbc : "");
+      return '<div class="nw-card">' + (fresh ? '<span class="nw-new">' + esc(T.newT) + "</span>" : "") + '<span class="nw-k">' + esc(TX(n.kind || "Event")) + (n.city ? " · " + esc(ar && n.cityAr ? n.cityAr : n.city) : "") + "</span><b>" + esc(ar && n.nameAr ? n.nameAr : n.name) + '</b><span class="nw-d">' + esc(range) + "</span>"
+        + (n.angle ? '<span class="nw-m">' + esc(ar && n.angleAr ? n.angleAr : n.angle) + "</span>" : "") + (a ? '<span class="nw-m">' + esc(T.ann + fmtD(a)) + (n.source ? " · " + esc(n.source) : "") + "</span>" : "")
+        + '<div class="nw-acts">' + (n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">' + esc(T.web) + "</a>" : "") + (inCalendar(n) ? '<button type="button" class="nw-in" disabled>' + esc(T.inCal) + "</button>" : (RO() ? "" : '<button type="button" data-nwadd="' + i + '">' + esc(T.add) + "</button>")) + "</div></div>"; }).join("");
+    var g = document.getElementById("nwGrid"); if(g.__h !== html){ g.__h = html; g.innerHTML = html || '<div class="rc-empty">' + esc(T.empty) + "</div>"; }
+  }
+
+  /* =========================================================
+     2) NATIONAL OCCASIONS COUNTDOWN  (fixed official dates)
+     ========================================================= */
+  var OCC = [
+    { k:"founding", en:"Founding Day", ar:"يوم التأسيس", m:2, d:22, re:/يوم التأسيس|ذكرى التأسيس|founding day/i },
+    { k:"flag", en:"Flag Day", ar:"يوم العلم", m:3, d:11, re:/يوم العلم|flag day/i },
+    { k:"national", en:"Saudi National Day", ar:"اليوم الوطني السعودي", m:9, d:23, re:/اليوم الوطني|national day/i }
+  ];
+  function nextOcc(o, from){ var y = from.getFullYear(), d = new Date(y, o.m - 1, o.d); if(d < from) d = new Date(y + 1, o.m - 1, o.d); return d; }
+  function occRecords(o){ /* tenders for this occasion in our records, with weeks between publishing and the day */
+    var seen = {}, out = [];
+    function add(rn, name, pub){ if(!rn || seen[rn] || !o.re.test(String(name || ""))) return; seen[rn] = 1; var p = pub || rnMonth(rn); if(!p) return; var day = nextOcc(o, p), wk = Math.round((day - p) / (7 * 864e5)); if(wk >= 0 && wk <= 40) out.push(wk); }
+    allTenders().forEach(function(x){ add(x.r.rn, (x.r.name || "") + " " + (x.r.details || ""), null); });
+    var b = ST() && ST().buyers; if(b && Array.isArray(b.list)) b.list.forEach(function(g){ (g.recent || []).forEach(function(r){ add(r.rn, r.name, pd(r.date)); }); });
+    return out.sort(function(a, b){ return a - b; }); }
+  function OL(){ var ar = AR(); return {
+    title: ar ? "المناسبات الوطنية" : "National occasions",
+    sub: ar ? "مواعيد رسمية ثابتة. تبدأ الجهات طرح منافساتها قبلها بأسابيع — جهّز مبكرًا." : "Fixed official dates. Entities publish their tenders weeks before — prepare early.",
+    days: ar ? "يومًا" : "days", today: ar ? "اليوم!" : "Today!",
+    rec: function(r){ if(!r.length) return ar ? "لا منافسات لهذه المناسبة في سجلاتنا بعد — يتكوّن هذا مع الوقت." : "No tenders for this occasion in our records yet — this builds up over time.";
+      var a = r[0], b = r[r.length - 1]; return ar ? ("في سجلاتنا: " + r.length + " منافسة، طُرحت قبلها بـ <em>" + (a === b ? a : a + "–" + b) + " أسبوعًا</em>.") : ("Our records: " + r.length + " tender" + (r.length > 1 ? "s" : "") + ", published <em>" + (a === b ? a : a + "–" + b) + " weeks</em> before the day."); },
+    prep: function(d){ return ar ? "ابدأ التجهيز قبل " + fmtD(d) : "Start preparing by " + fmtD(d); }
+  }; }
+  function renderOcc(page){
+    var sec = document.getElementById("ocSec"); if(!sec){ sec = document.createElement("section"); sec.id = "ocSec"; sec.innerHTML = '<div class="sechead"><h2 class="oc-title"></h2></div><div class="subhead oc-sub"></div><div class="oc-grid" id="ocGrid"></div>'; var nw = document.getElementById("nwSec"); if(nw) nw.insertAdjacentElement("afterend", sec); else page.insertBefore(sec, page.firstChild); }
+    var T = OL(), ar = AR(), t = today0();
+    sec.querySelector(".oc-title").textContent = T.title; sec.querySelector(".oc-sub").textContent = T.sub;
+    var html = OCC.map(function(o){ return { o:o, d:nextOcc(o, t) }; }).sort(function(a, b){ return a.d - b.d; }).map(function(x){ var n = Math.round((x.d - t) / 864e5), r = occRecords(x.o), hj = "";
+      try{ hj = new Intl.DateTimeFormat(ar ? "ar-SA-u-ca-islamic-umalqura-nu-latn" : "en-u-ca-islamic-umalqura", { day:"numeric", month:"long", year:"numeric" }).format(x.d); }catch(e){}
+      var prep = r.length ? '<div class="oc-rec">' + esc(T.prep(new Date(x.d.getTime() - r[r.length - 1] * 7 * 864e5))) + "</div>" : "";
+      return '<div class="oc-card"><h4>' + esc(ar ? x.o.ar : x.o.en) + '</h4><div class="oc-date">' + esc(x.d.toLocaleDateString(loc(), { weekday:"long", day:"numeric", month:"long", year:"numeric" })) + (hj ? " · " + esc(hj) : "") + '</div><div class="oc-n">' + (n === 0 ? esc(T.today) : n + "<small>" + esc(T.days) + "</small>") + '</div><div class="oc-rec">' + T.rec(r) + "</div>" + prep + "</div>"; }).join("");
+    var g = document.getElementById("ocGrid"); if(g.__h !== html){ g.__h = html; g.innerHTML = html; }
+  }
+  function renderEventsExtras(){ var page = document.getElementById("page-events"); if(!page) return; try{ renderNews(page); }catch(e){ console.error(e); } try{ renderOcc(page); }catch(e){ console.error(e); } }
+
+  /* =========================================================
+     3) TENDER CHANGES ALERT  (row.changes = [{at, field, from, to, note}] — written by the 8:30 run)
+     4) WHY IT FITS            (computed from the tender text, the entity and our own history)
+     ========================================================= */
+  var FIELD = { bidDeadline:["Bid deadline", "آخر موعد لتقديم العروض"], inqDeadline:["Inquiry deadline", "آخر موعد للاستفسارات"], offersOpening:["Offers opening", "فتح العروض"], award:["Expected award", "الترسية المتوقعة"], addendum:["Addendum", "ملحق"], status:["Status", "الحالة"] };
+  function changesOf(r){ return (r && Array.isArray(r.changes)) ? r.changes.filter(function(c){ return c && c.at; }).sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); }) : []; }
+  function recentChange(r){ var c = changesOf(r)[0]; if(!c) return null; var d = new Date(c.at); return (Date.now() - d) / 864e5 <= 14 ? c : null; }
+  function chgLabel(c){ var ar = AR(), f = FIELD[c.field] || [c.field, c.field]; if(c.field === "bidDeadline") return ar ? "⚠ تغيّر الموعد" : "⚠ Deadline moved"; if(c.field === "addendum") return ar ? "⚠ ملحق جديد" : "⚠ New addendum"; return "⚠ " + (ar ? f[1] + " تغيّر" : f[0] + " changed"); }
+  var SIG = [
+    [/جناح|أجنحة|pavilion/i, "pavilion", "جناح"], [/معرض|معارض|exhibition/i, "exhibition", "معرض"], [/مؤتمر|conference/i, "conference", "مؤتمر"], [/ملتقى|منتدى|forum/i, "forum", "ملتقى"], [/قمة|summit/i, "summit", "قمة"],
+    [/حفل|ceremony|gala/i, "ceremony", "حفل"], [/مهرجان|festival/i, "festival", "مهرجان"], [/فعالي|events?\b/i, "events", "فعاليات"], [/تفاعل|interactive/i, "interactive", "تفاعلي"], [/شاشات|شاشة|screens?|LED/i, "screens / LED", "شاشات"],
+    [/إسقاط|عرض ضوئي|projection|mapping/i, "projection", "إسقاط ضوئي"], [/فيلم|أفلام|film|video/i, "film", "فيلم"], [/ثلاثي الأبعاد|3D/i, "3D", "ثلاثي الأبعاد"], [/هولوغرام|hologra/i, "hologram", "هولوغرام"], [/الواقع الافتراضي|الواقع المعزز|\bVR\b|\bAR\b|XR/, "VR / AR", "واقع افتراضي/معزز"],
+    [/تجرب|experience|immersive|غامر/i, "experience", "تجربة"], [/متحف|museum/i, "museum", "متحف"], [/هوية|branding|identity/i, "branding", "هوية"], [/اليوم الوطني|يوم التأسيس|يوم العلم|national day|founding day/i, "national occasion", "مناسبة وطنية"],
+    [/اتفاقي[ةه] إطاري|إطاري|framework/i, "framework agreement", "اتفاقية إطارية"], [/ركن|stand\b|booth/i, "booth", "ركن"], [/محتوى|content|motion|animation|رسوم متحركة/i, "content", "محتوى"]
+  ];
+  var WATCH = [
+    [/ضياف|استضاف|hospitality|hosting/i, "hospitality in scope", "ضيافة ضمن النطاق"], [/إعاش|تغذي|catering|وجبات/i, "catering", "إعاشة"], [/إسكان|سكن|lodging|accommodation/i, "lodging", "إسكان"],
+    [/(^|[\s،,(])(ال)?حج([\s،,)]|$)|عمرة|hajj|umrah/i, "Hajj / Umrah", "حج / عمرة"], [/تشغيل وصيانة|صيانة|maintenance|O&M/i, "operation & maintenance", "تشغيل وصيانة"], [/إنشاء|إنشاءات|construction/i, "construction", "إنشاءات"],
+    [/توريد|supply/i, "supply", "توريد"], [/شراء مباشر|direct purchase/i, "direct purchase — needs an invitation", "شراء مباشر — يحتاج دعوة"], [/very short window|نافذة قصيرة/i, "very short window", "مهلة قصيرة جدًا"]
+  ];
+  var buyersRankCache = { key:"", map:{} };
+  function buyerRank(agency){ var b = ST() && ST().buyers; if(!b || !Array.isArray(b.list)) return null; var key = b.list.length + "|" + (b.at || "");
+    if(buyersRankCache.key !== key){ var m = {}; b.list.slice().sort(function(x, y){ return (y.n - x.n) || String(y.last || "").localeCompare(String(x.last || "")); }).forEach(function(g, k){ m[norm(g.agency)] = { rank:k + 1, n:g.n }; }); buyersRankCache = { key:key, map:m, total:b.list.length, from:b.from }; }
+    var r = buyersRankCache.map[norm(agency)]; return r ? { rank:r.rank, n:r.n, total:buyersRankCache.total, from:buyersRankCache.from } : null; }
+  function whyFits(r, selfSec, selfIdx){
+    if(!r) return ""; var ar = AR(), hay = [r.name, r.details, r.notes, r.method, r.type].join(" "), hits = [], warn = [];
+    SIG.forEach(function(s){ if(s[0].test(hay) && hits.length < 6) hits.push(ar ? s[2] : s[1]); });
+    WATCH.forEach(function(s){ if(s[1] === "supply" && hits.length) return; if(s[0].test(hay)) warn.push(ar ? s[2] : s[1]); });
+    var a = norm(r.agency), mine = 0, won = 0, pursued = 0; allTenders().forEach(function(x){ if(x.sec === selfSec && x.i === selfIdx) return; if(norm(x.r.agency) === a && a){ mine++; if(x.r.outcome === "won") won++; if(x.r.decision === "pursue") pursued++; } });
+    var br = buyerRank(r.agency), ent = [];
+    if(br) ent.push(ar ? ("رقم " + br.rank + " من " + br.total + " جهة تطرح منافسات فعاليات في اعتماد (" + br.n + " منافسة)") : ("#" + br.rank + " of " + br.total + " events buyers on Etimad (" + br.n + " tenders)"));
+    if(mine) ent.push(ar ? (mine + " منافسة سابقة لها في قائمتنا" + (pursued ? " · تقدّمنا لـ " + pursued : "") + (won ? " · فزنا بـ " + won : "")) : (mine + " earlier tender" + (mine > 1 ? "s" : "") + " on our list" + (pursued ? " · pursued " + pursued : "") + (won ? " · won " + won : "")));
+    var fit = String(r.fit || "").trim() || (ar ? "غير محدد" : "Unrated");
+    var out = "<div><b>" + esc(ar ? "لماذا " + TX(fit) + ":" : "Why " + fit + ":") + "</b> " + (hits.length ? esc((ar ? "تطابق: " : "matched ") + hits.join(" · ")) : esc(ar ? "لا كلمات دالة واضحة في العنوان — راجع التفاصيل." : "no clear signal words in the title — check the details.")) + "</div>";
+    out += "<div><b>" + esc(ar ? "الجهة:" : "Entity:") + "</b> " + esc(ent.length ? ent.join(" · ") : (ar ? "جديدة علينا — ليست ضمن قائمة أكبر المشترين بعد" : "new to us — not in the top-buyers list yet")) + "</div>";
+    if(warn.length) out += '<div class="fw-w"><b>' + esc(ar ? "انتبه:" : "Watch:") + "</b> " + esc(warn.join(" · ")) + "</div>";
+    return out; }
+  function whyTitle(r, i){ var tmp = document.createElement("div"); tmp.innerHTML = whyFits(r, "external", i); return tmp.textContent.replace(/\s+/g, " ").trim(); }
+  function decorateEtimad(){
+    var ar = AR();
+    [["externalBody", "external"], ["externalExcludedBody", "externalExcluded"]].forEach(function(p){ var body = document.getElementById(p[0]); if(!body) return; var rows = arr(p[1]);
+      [].forEach.call(body.querySelectorAll('[data-bind^="' + p[1] + '."][data-bind$=".name"]'), function(td){ var m = td.dataset.bind.match(/\.(\d+)\.name$/); if(!m) return; var r = rows[+m[1]], c = p[1] === "external" ? recentChange(r) : null, b = td.querySelector(".tc-badge");
+        if(!c){ if(b) b.remove(); return; } var lab = chgLabel(c), tip = (FIELD[c.field] ? (ar ? FIELD[c.field][1] : FIELD[c.field][0]) : c.field) + ": " + (c.from || "—") + " → " + (c.to || "—");
+        if(b && b.textContent === lab && b.title === tip) return; if(b) b.remove(); b = document.createElement("span"); b.className = "tc-badge view-only"; b.contentEditable = "false"; b.textContent = lab; b.title = tip; td.appendChild(b); });
+      if(p[1] !== "external") return;
+      [].forEach.call(body.querySelectorAll("[data-fitselect]"), function(inp){ var i = +inp.dataset.fitselect, pill = inp.parentNode && inp.parentNode.querySelector(".status-pill"); if(pill){ var t = whyTitle(rows[i], i); if(pill.title !== t) pill.title = t; } });
+      [].forEach.call(body.querySelectorAll("tr.ext-detail"), function(tr){ var m = (tr.id || "").match(/^extDetail(\d+)$/); if(!m) return; var i = +m[1], r = rows[i], td = tr.querySelector("td"); if(!td || !r) return;
+        var why = td.querySelector(".fw-why"), h = whyFits(r, "external", i); if(!why){ why = document.createElement("div"); why.className = "fw-why"; td.insertBefore(why, td.firstChild); } if(why.__h !== h){ why.__h = h; why.innerHTML = h; }
+        var ch = changesOf(r), lst = td.querySelector(".tc-list"); if(!ch.length){ if(lst) lst.remove(); return; }
+        var hh = "<div><b>" + esc(ar ? "تغييرات على المنافسة في اعتماد" : "Changes on Etimad") + "</b></div>" + ch.slice(0, 6).map(function(c){ var f = FIELD[c.field] || [c.field, c.field]; return "<div>" + esc(fmtD(new Date(c.at))) + " — " + esc(ar ? f[1] : f[0]) + ": " + (c.from ? "<s>" + esc(c.from) + "</s> → " : "") + esc(c.to || "") + (c.note ? " · " + esc(c.note) : "") + "</div>"; }).join("");
+        if(!lst){ lst = document.createElement("div"); lst.className = "tc-list"; why.insertAdjacentElement("afterend", lst); } if(lst.__h !== hh){ lst.__h = hh; lst.innerHTML = hh; } });
+    }); }
+
+  /* =========================================================
+     5) SINCE YOUR LAST VISIT  (per viewer, this browser only)
+     ========================================================= */
+  var LV_KEY = "v48lastVisit", LV_SS = "v48visitDiff", lvTimer = null, lvHidden = false;
+  function snapNow(){ var s = ST(); if(!s) return null; var chg = []; arr("external").forEach(function(r){ changesOf(r).forEach(function(c){ chg.push(String(r.rn) + "|" + c.at + "|" + c.field); }); });
+    return { at:new Date().toISOString(), rns:arr("external").map(function(r){ return String(r.rn || r.name); }), ev:arr("eventsNews").map(function(n){ return norm(n.name); }).concat(arr("events").map(function(e){ return norm(e.name); })), chg:chg, alarm:(arr("alarmLog")[0] || {}).at || "", brief:(s.claudeBrief || {}).at || "", dec:arr("external").map(function(r){ return String(r.rn) + "|" + (r.decision || ""); }) }; }
+  function computeDiff(prev, cur){ var d = { since:prev.at, tenders:[], changes:[], events:[], alarm:"", decisions:0 };
+    var pr = {}; (prev.rns || []).forEach(function(x){ pr[x] = 1; }); arr("external").forEach(function(r){ var k = String(r.rn || r.name); if(!pr[k]) d.tenders.push(r.name || r.rn); });
+    var pc = {}; (prev.chg || []).forEach(function(x){ pc[x] = 1; }); arr("external").forEach(function(r){ changesOf(r).forEach(function(c){ if(!pc[String(r.rn) + "|" + c.at + "|" + c.field]) d.changes.push(r.name || r.rn); }); });
+    var pe = {}; (prev.ev || []).forEach(function(x){ pe[x] = 1; }); var seenE = {}; arr("eventsNews").concat(arr("events")).forEach(function(e){ var k = norm(e.name); if(k && !pe[k] && !seenE[k]){ seenE[k] = 1; d.events.push(e.name); } });
+    var al = arr("alarmLog")[0]; if(al && al.at && al.at !== prev.alarm && String(al.at) > String(prev.at || "")) d.alarm = al.text || "";
+    var pdx = {}; (prev.dec || []).forEach(function(x){ pdx[x] = 1; }); arr("external").forEach(function(r){ if(r.decision && pr[String(r.rn || r.name)] && !pdx[String(r.rn) + "|" + r.decision]) d.decisions++; });
+    d.changes = d.changes.filter(function(x, i, a){ return a.indexOf(x) === i; }); return d; }
+  function lvInit(){ if(ssGet(LV_SS)) { renderStrip(); return; } var s = ST(); if(!s || !Array.isArray(s.external)) return; var prev = lsGet(LV_KEY), cur = snapNow(); if(!cur) return;
+    ssSet(LV_SS, prev ? computeDiff(prev, cur) : { first:true }); lsSet(LV_KEY, cur); renderStrip(); }
+  function SL(){ var ar = AR(); return { h: ar ? "منذ زيارتك الأخيرة" : "Since your last visit", t: ar ? "منافسات جديدة" : ["new tender", "new tenders"], c: ar ? "تغيّرت في اعتماد" : "changed on Etimad", e: ar ? "فعاليات جديدة" : ["new event", "new events"], d: ar ? "قرارات جديدة" : ["new decision", "new decisions"], a: ar ? "تنبيه موعد" : "deadline alarm", none: ar ? "لا جديد منذ زيارتك الأخيرة" : "Nothing new since your last visit", x: ar ? "إخفاء" : "Hide" }; }
+  function renderStrip(){ var ov = document.getElementById("page-overview"), d = ssGet(LV_SS), el = document.getElementById("slvStrip"); if(!ov) return;
+    if(!d || d.first || lvHidden){ if(el) el.remove(); return; }
+    if(!el){ el = document.createElement("div"); el.id = "slvStrip"; var bb = document.getElementById("briefBox"); if(bb && bb.parentNode === ov) ov.insertBefore(el, bb); else ov.insertBefore(el, ov.firstChild); }
+    var T = SL(), n = d.tenders.length + d.changes.length + d.events.length + d.decisions + (d.alarm ? 1 : 0), when = d.since ? new Date(d.since) : null, ar = AR();
+    var whenTxt = when ? " · " + when.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) + " " + when.toLocaleTimeString(loc(), { hour:"2-digit", minute:"2-digit", hour12:false }) : "";
+    var item = function(k, v, lab, tip){ if(Array.isArray(lab)) lab = lab[v === 1 ? 0 : 1]; return v ? '<button type="button" class="slv-i" data-slv="' + k + '" title="' + esc(tip || "") + '"><b>' + v + "</b> " + esc(lab) + "</button>" : ""; };
+    var html = '<span class="slv-h">' + esc(T.h + whenTxt) + "</span>" + (n ? item("external", d.tenders.length, T.t, d.tenders.slice(0, 5).join(" · ")) + item("external", d.changes.length, T.c, d.changes.slice(0, 5).join(" · ")) + item("events", d.events.length, T.e, d.events.slice(0, 5).join(" · ")) + item("external", d.decisions, T.d, "") + (d.alarm ? item("external", 1, T.a, d.alarm) : "") : "<span>" + esc(T.none) + "</span>") + '<button type="button" class="slv-x" data-slvx="1" title="' + esc(T.x) + '">✕</button>';
+    el.classList.toggle("quiet", !n); if(el.__h !== html){ el.__h = html; el.innerHTML = html; } void ar; }
+
+  /* =========================================================
+     6) QUARTER RECAP  (own sidebar page)
+     ========================================================= */
+  var rcQ = null;
+  function qOf(d){ return d ? d.getFullYear() + "-Q" + (Math.floor(d.getMonth() / 3) + 1) : ""; }
+  function qRange(q){ var m = q.match(/^(\d{4})-Q(\d)$/), y = +m[1], s = (+m[2] - 1) * 3; return { from:new Date(y, s, 1), to:new Date(y, s + 3, 0, 23, 59, 59) }; }
+  function RL(){ var ar = AR(); return {
+    tab: ar ? "ملخص الربع" : "Quarter recap", title: ar ? "ملخص الربع" : "Quarter recap",
+    sub: ar ? "يُحدَّث تلقائيًا من بيانات اللوحة: منافسات اعتماد، القرارات، النتائج، الجهات والفعاليات." : "Built automatically from the dashboard: Etimad tenders, decisions, outcomes, entities and events.",
+    k: ar ? ["منافسات مناسبة", "نتقدّم لها", "قرارات", "فزنا / خسرنا", "قيمة الفوز", "فعاليات"] : ["Fitting tenders found", "Pursued", "Decisions made", "Won / Lost", "Value won", "Events"],
+    ks: ar ? ["قوية ومتوسطة", "قرار التقدّم", "نتقدّم · نراقب · نتخطّى", "نتائج مسجّلة", "ريال", "في هذا الربع"] : ["Strong + Medium", "decided to bid", "pursue · watch · pass", "outcomes recorded", "SAR", "in this quarter"],
+    cat: ar ? "حسب الفئة" : "By category", ent: ar ? "أكثر الجهات طرحًا للفعاليات في اعتماد" : "Most active events buyers on Etimad", ours: ar ? "منافساتنا المهمة" : "Our key tenders", evs: ar ? "الفعاليات" : "Events",
+    none: ar ? "لا شيء في هذا الربع." : "Nothing in this quarter.", print: ar ? "طباعة" : "Print",
+    foot: ar ? "تاريخ «وُجدت» = شهر طرح المنافسة من رقمها المرجعي في اعتماد. أكثر الجهات من قسم «أكبر الجهات المشترية» (يبدأ من يوليو 2026)." : "\"Found\" = the month the tender was published, read from its Etimad reference number. Buyers come from Top buyers (data starts July 2026).",
+    dec: { pursue:ar ? "نتقدّم" : "Pursue", watch:ar ? "نراقب" : "Watch", pass:ar ? "نتخطّى" : "Pass" }, out: { won:ar ? "فزنا" : "Won", lost:ar ? "خسرنا" : "Lost", nobid:ar ? "لم نتقدّم" : "Didn't bid", cancelled:ar ? "أُلغيت" : "Cancelled" }
+  }; }
+  function rcShell(){ var evB = document.querySelector('.tab-btn[data-page="events"]') || document.querySelector('.tab-btn[data-page="external"]'), anchorPage = document.getElementById("page-events") || document.getElementById("page-external"); if(!evB || !anchorPage) return null;
+    var b = document.querySelector('.tab-btn[data-page="recap"]');
+    if(!b){ b = document.createElement("button"); b.className = "tab-btn"; b.dataset.page = "recap"; b.setAttribute("onclick", "switchPage('recap')"); b.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/></svg><span class="rc-tab"></span>'; evB.insertAdjacentElement("afterend", b); }
+    var p = document.getElementById("page-recap");
+    if(!p){ p = document.createElement("div"); p.className = "page"; p.id = "page-recap"; p.innerHTML = '<section><div class="sechead"><h2 class="rc-title"></h2><button type="button" class="editbtn secondary rc-print"></button></div><div class="subhead rc-sub"></div><div class="rc-q" id="rcQ"></div><div class="kpi-row" id="rcKpis"></div><div class="rc-cols" id="rcCols"></div><div class="footer-note rc-foot"></div></section>'; anchorPage.insertAdjacentElement("afterend", p); }
+    try{ if(typeof PAGE_ORDER !== "undefined" && PAGE_ORDER.indexOf("recap") < 0){ var i = PAGE_ORDER.indexOf("events"); if(i < 0) i = PAGE_ORDER.indexOf("external"); PAGE_ORDER.splice(i < 0 ? PAGE_ORDER.length : i + 1, 0, "recap"); } }catch(e){}
+    return p; }
+  function renderRecap(){
+    var p = rcShell(); if(!p) return; var T = RL(), ar = AR(), t = new Date();
+    var tl = document.querySelector('.tab-btn[data-page="recap"] .rc-tab'); if(tl && tl.textContent !== T.tab) tl.textContent = T.tab; if(p.classList.contains("active")){ var pt = document.getElementById("pageTitle"); if(pt && pt.textContent !== T.tab) pt.textContent = T.tab; }
+    p.querySelector(".rc-title").textContent = T.title; p.querySelector(".rc-sub").textContent = T.sub; p.querySelector(".rc-print").textContent = T.print; p.querySelector(".rc-foot").textContent = T.foot;
+    var tenders = allTenders().map(function(x){ return { r:x.r, sec:x.sec, d:rnMonth(x.r.rn) || pd(x.r.bidDeadline) }; }).filter(function(x){ return x.d; });
+    var qs = {}; qs[qOf(t)] = 1; tenders.forEach(function(x){ qs[qOf(x.d)] = 1; }); var qList = Object.keys(qs).sort().reverse().slice(0, 6); if(!rcQ || qList.indexOf(rcQ) < 0) rcQ = qOf(t);
+    var qh = qList.map(function(q){ var m = q.match(/^(\d{4})-Q(\d)$/); return '<button type="button" data-rcq="' + q + '" class="' + (q === rcQ ? "on" : "") + '">' + esc((ar ? "الربع " + m[2] + " " : "Q" + m[2] + " ") + m[1]) + "</button>"; }).join("");
+    var qe = document.getElementById("rcQ"); if(qe.__h !== qh){ qe.__h = qh; qe.innerHTML = qh; }
+    var R = qRange(rcQ), inQ = function(d){ return d && d >= R.from && d <= R.to; };
+    var mine = tenders.filter(function(x){ return inQ(x.d) && /^(strong|medium)/i.test(x.r.fit || ""); });
+    var dec = { pursue:0, watch:0, pass:0 }; mine.forEach(function(x){ if(dec[x.r.decision] != null) dec[x.r.decision]++; });
+    var outs = allTenders().filter(function(x){ var o = x.r.outcome; if(!o) return false; var d = x.r.outcomeAt ? new Date(x.r.outcomeAt) : pd(x.r.bidDeadline); return inQ(d); });
+    var won = outs.filter(function(x){ return x.r.outcome === "won"; }), lost = outs.filter(function(x){ return x.r.outcome === "lost"; });
+    var value = won.reduce(function(s, x){ var v = +String(x.r.winPrice || x.r.ourPrice || "").replace(/[^\d.]/g, ""); return s + (isFinite(v) ? v : 0); }, 0);
+    var evs = arr("events").filter(function(e){ var s = pd(e.start), en = pd(e.end) || s; return s && s <= R.to && en >= R.from; }).sort(function(a, b){ return pd(a.start) - pd(b.start); });
+    var vals = [mine.length, dec.pursue, (dec.pursue + dec.watch + dec.pass) + " · " + dec.pursue + "/" + dec.watch + "/" + dec.pass, won.length + " / " + lost.length, value ? value.toLocaleString("en") : "—", evs.length];
+    var kh = vals.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value" style="font-size:18px;">' + esc(v) + '</div><div class="sub">' + esc(T.ks[i]) + "</div></div>"; }).join("");
+    var ke = document.getElementById("rcKpis"); if(ke.__h !== kh){ ke.__h = kh; ke.innerHTML = kh; }
+    var cats = {}; mine.forEach(function(x){ var c = x.r.category && !/BLOCKED/.test(x.r.category) ? x.r.category : (ar ? "أخرى" : "Other"); cats[c] = (cats[c] || 0) + 1; });
+    var ck = Object.keys(cats).sort(function(a, b){ return cats[b] - cats[a]; }), cmax = ck.length ? cats[ck[0]] : 1;
+    var catH = ck.length ? ck.map(function(c){ return '<div class="rc-bar"><span>' + esc(TX(c)) + '</span><i style="width:' + Math.max(6, Math.round(100 * cats[c] / cmax)) + '%"></i><b>' + cats[c] + "</b></div>"; }).join("") : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var b = ST() && ST().buyers, ents = [];
+    if(b && Array.isArray(b.list)){ var y = R.from.getFullYear(), m0 = R.from.getMonth(), byr = String(b.to || "").slice(0, 4); if(+byr === y) ents = b.list.map(function(g){ var n = 0; for(var k = m0; k < m0 + 3; k++) n += +((g.months || [])[k] || 0); return { a:g.agency, n:n }; }).filter(function(g){ return g.n > 0; }).sort(function(p1, p2){ return p2.n - p1.n; }).slice(0, 6); }
+    var emax = ents.length ? ents[0].n : 1, entH = ents.length ? ents.map(function(g){ return '<div class="rc-bar"><span>' + esc(g.a) + '</span><i style="width:' + Math.max(6, Math.round(100 * g.n / emax)) + '%"></i><b>' + g.n + "</b></div>"; }).join("") : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var key = mine.filter(function(x){ return x.r.decision === "pursue" || x.r.outcome || /^strong/i.test(x.r.fit || ""); }).sort(function(a, b){ return (pd(a.r.bidDeadline) || 0) - (pd(b.r.bidDeadline) || 0); }).slice(0, 10);
+    var ourH = key.length ? key.map(function(x){ var tag = x.r.outcome ? '<span class="rc-tag ' + esc(x.r.outcome) + '">' + esc(T.out[x.r.outcome] || x.r.outcome) + "</span>" : (x.r.decision ? '<span class="rc-tag ' + esc(x.r.decision) + '">' + esc(T.dec[x.r.decision] || x.r.decision) + "</span>" : '<span class="rc-tag">' + esc(TX(x.r.fit || "")) + "</span>");
+      return '<div class="rc-row"><span>' + esc(TX(x.r.name || x.r.rn)) + "<br><em>" + esc(TX(x.r.agency || "")) + "</em></span><span style=\"text-align:end\">" + tag + "<br><em>" + esc(fmtD(x.r.bidDeadline)) + "</em></span></div>"; }).join("") : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var evH = evs.length ? evs.slice(0, 12).map(function(e){ return '<div class="rc-row"><span>' + esc(ar && e.nameAr ? e.nameAr : e.name) + "</span><em>" + esc(fmtD(e.start, false) + (e.end && e.end !== e.start ? " – " + fmtD(e.end, false) : "")) + "</em></div>"; }).join("") : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var colH = '<div class="rc-box"><h4>' + esc(T.ours) + "</h4>" + ourH + '</div><div class="rc-box"><h4>' + esc(T.cat) + "</h4>" + catH + '<h4 style="margin-top:16px;">' + esc(T.ent) + "</h4>" + entH + '</div><div class="rc-box"><h4>' + esc(T.evs) + "</h4>" + evH + "</div>";
+    var ce = document.getElementById("rcCols"); if(ce.__h !== colH){ ce.__h = colH; ce.innerHTML = colH; }
+  }
+
+  /* ---------- registry hooks + events ---------- */
+  window.v48 = { renderRecap:renderRecap, renderEventsExtras:renderEventsExtras, whyFits:whyFits, rnMonth:rnMonth, addToCalendar:addToCalendar, lastVisitReset:function(){ try{ localStorage.removeItem(LV_KEY); sessionStorage.removeItem(LV_SS); }catch(e){} } };
+  try{ RENDER_FN.recap = renderRecap; }catch(e){}
+  try{ SECTION_NAME_KEY.recap = "tabRecap"; TITLES_AR.tabRecap = "ملخص الربع"; }catch(e){}
+  function all(){ try{ renderEventsExtras(); }catch(e){ console.error(e); } try{ decorateEtimad(); }catch(e){ console.error(e); } try{ renderRecap(); }catch(e){ console.error(e); } try{ renderStrip(); }catch(e){} }
+  document.addEventListener("click", function(e){
+    if(typeof CMT_MODE !== "undefined" && CMT_MODE) return;
+    if(e.target.closest && e.target.closest(".nw-acts a, .tc-badge")){ e.stopPropagation(); return; }
+    var a = e.target.closest && e.target.closest("[data-nwadd]"); if(a){ e.preventDefault(); e.stopPropagation(); addToCalendar(+a.dataset.nwadd); return; }
+    var q = e.target.closest && e.target.closest("[data-rcq]"); if(q){ rcQ = q.dataset.rcq; renderRecap(); return; }
+    if(e.target.closest && e.target.closest(".rc-print")){ document.body.classList.add("rc-printing"); setTimeout(function(){ try{ window.print(); }catch(err){} document.body.classList.remove("rc-printing"); }, 60); return; }
+    if(e.target.closest && e.target.closest("[data-slvx]")){ lvHidden = true; renderStrip(); return; }
+    var s = e.target.closest && e.target.closest("[data-slv]"); if(s){ try{ switchPage(s.dataset.slv); }catch(err){} return; }
+  }, true);
+  if(typeof renderAll === "function" && !renderAll.__v48){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v48 = true; }
+  all();
+  lvTimer = setTimeout(function(){ try{ lvInit(); }catch(e){ console.error(e); } }, 7000);
+  var lastLang = ""; setInterval(function(){ try{ var lg = String(typeof LANG !== "undefined" ? LANG : ""); if(lg !== lastLang || !document.getElementById("nwSec") || !document.getElementById("page-recap")){ lastLang = lg; all(); } else { decorateEtimad(); } }catch(e){} }, 1500);
+})();
+</script>
 </body>
 </html>

@@ -6305,8 +6305,8 @@ async function exportPPTX(){
   function markSeen(){ try{ localStorage.setItem("introV35", todayKey()); }catch(e){} }
   var automated = /[?&]nc=/.test(location.search) || /[?&]nointro/.test(location.search) || document.visibilityState === "hidden" || navigator.webdriver;
   if(isRed() || automated || document.body.classList.contains("present")) return;
-  if(window.__SAUD_TEAM__){ window.__v35intro = v35introRun; return; }   /* v38: team view plays the intro after the passcode, greeting the team instead of Harith */
-  v35introRun();
+  if(window.__SAUD_TEAM__){ window.__v35intro = function(){}; return; }   /* v38: team view plays the intro after the passcode, greeting the team instead of Harith */
+  /* v62: the globe intro is removed (Harith) — the v57 spinning-top intro is the only intro */
   function v35introRun(){   /* v35.2: intro plays on every load (Harith) — automated ?nc= loads and hidden tabs still skip */
   var ov = document.createElement("div"); ov.id = "introV35"; ov.setAttribute("dir", AR() ? "rtl" : "ltr");
   ov.innerHTML = '<div class="iv-grid"></div><canvas></canvas><button class="iv-skip" type="button">' + (AR() ? "تخطي ✕" : "Skip ✕") + '</button><div class="iv-txt"><div class="iv-eb">' + (AR() ? "سعود · الوكيل الذكي" : "Saud · The Intelligence Agent") + '</div><div class="iv-h"></div><div class="iv-date"></div><ul class="iv-brief"></ul><div class="iv-act"><button class="pri" type="button" data-a="listen">' + (AR() ? "▶ استمع وادخل" : "▶ Listen & enter") + '</button><button type="button" data-a="enter">' + (AR() ? "ادخل اللوحة" : "Enter dashboard") + '</button></div></div><div class="iv-bar"></div>';

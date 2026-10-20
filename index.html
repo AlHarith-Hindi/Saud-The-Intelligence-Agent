@@ -4887,7 +4887,7 @@ function renderExternal(){ if(typeof editing === "undefined" || !editing){ if(Ar
     if(r.details||r.price||r.place||r.partners||r.award){
       const f = (k,v)=> v ? `<div><b>${k}:</b> ${escapeHtml(tx(v))}</div>` : "";
       const d = elTR(`<tr class="ext-detail" id="extDetail${i}" style="display:none;"><td colspan="8">
-        <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [tx(r.inqStart), tx(r.inqDeadline)].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}${f(L("Partners"), r.partners)}</div>
+        <div class="ext-detail-grid">${f(L("Type"), r.type)}${f(L("Inquiries"), [tx(r.inqStart), tx(r.inqDeadline)].filter(Boolean).join(" → "))}${f(L("Expected award"), r.award)}${f(L("Project start"), r.projStart)}${f(L("Submission"), r.method)}${f(L("Place"), r.place)}${f(L("Document fee"), r.price)}</div>
         ${r.details ? `<div style="margin-top:8px;"><b>${L("Scope")}:</b> ${escapeHtml(tx(r.details))}</div>` : ""}
       </td></tr>`);
       body.appendChild(d);
@@ -8546,6 +8546,81 @@ async function exportPPTX(){
     window.addEventListener("blur", hide);
   }
   if(typeof switchPage === "function" && !switchPage.__v52){ var baseSP = switchPage; switchPage = function(){ hide(); return baseSP.apply(this, arguments); }; switchPage.__v52 = true; }
+})();
+</script>
+<style id="v53css">
+  /* v53: pop-up & interactive feel (Harith) — same sections, same info; only how things react to the mouse */
+  @media (prefers-reduced-motion: no-preference){
+    body:not(.calm){ --pop:cubic-bezier(.34,1.56,.64,1); }
+    /* 1) cards pop up toward you (uses translate/scale so the existing 3D tilt keeps working) */
+    body:not(.calm) .stat-tile, body:not(.calm) .ev-item, body:not(.calm) .ev-month, body:not(.calm) .wl-item, body:not(.calm) .wl-box, body:not(.calm) .bb-item, body:not(.calm) .agenda-item,
+    body:not(.calm) .kb-card, body:not(.calm) .cu-card, body:not(.calm) .overview-nav .navcard, body:not(.calm) .mission-strip [data-mi], body:not(.calm) .nw-card, body:not(.calm) .oc-card, body:not(.calm) .rc-box{
+      transition:translate .38s var(--pop), scale .38s var(--pop), border-color .2s, box-shadow .25s !important;}
+    body:not(.calm) .stat-tile:hover, body:not(.calm) .ev-item:hover, body:not(.calm) .wl-item:hover, body:not(.calm) .bb-item:hover, body:not(.calm) .agenda-item:hover,
+    body:not(.calm) .kb-card:hover, body:not(.calm) .cu-card:hover, body:not(.calm) .overview-nav .navcard:hover, body:not(.calm) .mission-strip [data-mi]:hover, body:not(.calm) .nw-card:hover, body:not(.calm) .oc-card:hover{
+      translate:0 -4px; scale:1.018; z-index:3;}
+    body:not(.calm) .ev-month:hover, body:not(.calm) .wl-box:hover, body:not(.calm) .rc-box:hover{translate:0 -2px;}
+    body:not(.calm) .stat-tile:active, body:not(.calm) .ev-item:active, body:not(.calm) .bb-item:active, body:not(.calm) .kb-card:active, body:not(.calm) .overview-nav .navcard:active{scale:.985; transition-duration:.12s !important;}
+    /* the number on a tile pops */
+    body:not(.calm) .stat-tile .value{transition:scale .4s var(--pop), text-shadow .3s; transform-origin:left center; display:inline-block;}
+    [dir="rtl"] body:not(.calm) .stat-tile .value{transform-origin:right center;}
+    body:not(.calm) .stat-tile:hover .value{scale:1.08; text-shadow:0 0 18px rgba(243,109,47,.45);}
+    /* 2) pills and tags pop */
+    body:not(.calm) .status-pill, body:not(.calm) .ev-tag, body:not(.calm) .tc-badge, body:not(.calm) .rc-tag, body:not(.calm) .wl-pill, body:not(.calm) .xf-chip, body:not(.calm) #rcQ button{transition:scale .3s var(--pop), box-shadow .2s, background-color .2s;}
+    body:not(.calm) .status-pill:hover, body:not(.calm) .ev-tag:hover, body:not(.calm) .tc-badge:hover, body:not(.calm) .rc-tag:hover, body:not(.calm) .wl-pill:hover, body:not(.calm) .xf-chip:hover, body:not(.calm) #rcQ button:hover{scale:1.08; box-shadow:0 0 14px rgba(243,109,47,.28);}
+    /* 3) sidebar icons pop */
+    body:not(.calm) .tab-btn svg{transition:scale .35s var(--pop), rotate .35s var(--pop), opacity .2s;}
+    body:not(.calm) .tab-btn:hover svg{scale:1.18; rotate:-8deg; opacity:1;}
+    body:not(.calm) .tab-btn.active svg{opacity:1; filter:drop-shadow(0 0 6px rgba(243,109,47,.6));}
+    /* 4) magnetic buttons (JS sets translate) */
+    body:not(.calm) .mg{transition:translate .25s cubic-bezier(.2,.8,.2,1), scale .3s var(--pop), box-shadow .2s;}
+    body:not(.calm) .mg:hover{box-shadow:0 8px 22px rgba(243,109,47,.22);}
+    body:not(.calm) .mg:active{scale:.94;}
+    /* 5) pop-ups open with a spring */
+    @keyframes v53pop{ 0%{opacity:0; scale:.9;} 60%{opacity:1; scale:1.025;} 100%{opacity:1; scale:1;} }
+    body:not(.calm) #srcPop:not([hidden]), body:not(.calm) #tsModal:not([hidden]) .ts-card, body:not(.calm) #extFilterPop.show, body:not(.calm) #cmtPop{animation:v53pop .34s var(--pop) both;}
+    body:not(.calm) #pvCard{transition:opacity .18s ease, transform .34s var(--pop) !important; transform:translateY(8px) scale(.92);}
+    body:not(.calm) #pvCard.show{transform:none;}
+  }
+  /* 6) spotlight: the hover light sits exactly where the mouse is (replaces the fixed v51 hover light) */
+  .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover{
+    background-image:radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgba(214,200,255,.16), rgba(243,109,47,.05) 45%, transparent 70%), linear-gradient(var(--lav-soft), var(--lav-soft)) !important;}
+  /* 7) table rows light up with a brand edge */
+  tbody > tr:not(.ext-detail){transition:background-color .2s;}
+  tbody > tr:not(.ext-detail):hover > td{background-color:rgba(243,109,47,.045);}
+  tbody > tr:not(.ext-detail):hover > td:first-child{box-shadow:inset 3px 0 0 var(--copper,#F36D2F), inset 10px 0 14px -10px rgba(243,109,47,.55);}
+  [dir="rtl"] tbody > tr:not(.ext-detail):hover > td:first-child{box-shadow:inset -3px 0 0 var(--copper,#F36D2F), inset -10px 0 14px -10px rgba(243,109,47,.55);}
+</style>
+<script>
+/* v53 module: pop-up & interactive feel (spotlight follows the mouse, magnetic buttons) · Etimad "Partners" removed (Harith) */
+(function(){
+  "use strict";
+  var RED = false, NOHOVER = false; try{ RED = matchMedia("(prefers-reduced-motion: reduce)").matches; NOHOVER = matchMedia("(hover: none)").matches; }catch(e){}
+  var calm = function(){ return document.body && document.body.classList.contains("calm"); };
+
+  /* spotlight position (CSS vars on the hovered card) */
+  var SPOT = ".stat-tile, .bb-item, .ev-item, .ev-month, .wl-item, .wl-box, .agenda-item, .kb-card, .cu-card, .overview-nav .navcard, .mission-strip [data-mi]";
+  var MAG = "button.editbtn, button.addbtn, .tab-btn, a.et-open, .ev-tag.web, .xf-chip, #rcQ button, .sp-go, #pvCard .pv-acts a, #pvCard .pv-acts button, #srcPop .sp-a button, #srcPop .sp-a a, [data-nwadd]";
+  var raf = 0, lastE = null, magEl = null;
+  function frame(){ raf = 0; var e = lastE; if(!e) return;
+    var t = e.target && e.target.closest ? e.target : null; if(!t) return;
+    var c = t.closest(SPOT); if(c){ var r = c.getBoundingClientRect(); c.style.setProperty("--mx", (e.clientX - r.left) + "px"); c.style.setProperty("--my", (e.clientY - r.top) + "px"); }
+    if(RED || calm()) return;
+    var m = t.closest(MAG); if(magEl && magEl !== m){ magEl.style.translate = ""; magEl = null; }
+    if(m){ if(!m.classList.contains("mg")) m.classList.add("mg"); var b = m.getBoundingClientRect(), dx = (e.clientX - (b.left + b.width / 2)) / (b.width / 2), dy = (e.clientY - (b.top + b.height / 2)) / (b.height / 2);
+      var k = m.classList.contains("tab-btn") ? 3 : 5; m.style.translate = (dx * k).toFixed(1) + "px " + (dy * k * .7).toFixed(1) + "px"; magEl = m; } }
+  if(!NOHOVER){
+    document.addEventListener("mousemove", function(e){ lastE = e; if(!raf) raf = requestAnimationFrame(frame); }, { passive:true });
+    document.addEventListener("mouseleave", function(){ if(magEl){ magEl.style.translate = ""; magEl = null; } });
+  }
+
+  /* Etimad opportunities: no "Partners" line any more (Harith, 20 Oct 2026) */
+  if(typeof renderAll === "function" && !renderAll.__v53){ var base = renderAll; renderAll = function(){ var out = base.apply(this, arguments); try{ strip(); }catch(e){} return out; }; renderAll.__v53 = true; }
+  function strip(){ var s = (typeof state !== "undefined" && state) ? state : null; if(!s) return;
+    if(!s._v53nopartners && !(typeof READONLY !== "undefined" && READONLY)){ var n = 0; ["external", "externalExcluded"].forEach(function(k){ (Array.isArray(s[k]) ? s[k] : []).forEach(function(r){ if(r && "partners" in r){ delete r.partners; n++; } }); });
+      s._v53nopartners = true; if(n){ try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} } }
+    [].forEach.call(document.querySelectorAll("#externalBody .ext-detail-grid > div, #externalExcludedBody .ext-detail-grid > div"), function(d){ var b = d.querySelector("b"); if(b && /^(Partners|الشركاء)\s*:?$/i.test(b.textContent.trim())) d.remove(); }); }
+  try{ strip(); }catch(e){}
 })();
 </script>
 </body>

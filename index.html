@@ -8412,5 +8412,141 @@ async function exportPPTX(){
   setInterval(function(){ try{ prune(); mark(); }catch(e){} }, 1200);
 })();
 </script>
+<style id="v52css">
+  /* v52: brand cursor glow (orange core + violet halo) · hover preview cards with links (Harith; sections unchanged) */
+  #cursorGlow{z-index:2 !important; width:520px !important; height:520px !important; mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(243,109,47,.16) 0%, rgba(243,109,47,.06) 32%, transparent 62%) !important;}
+  #cursorGlow2{position:fixed; left:0; top:0; width:900px; height:900px; border-radius:50%; pointer-events:none; z-index:1; opacity:0; transition:opacity .5s; mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(140,59,224,.13) 0%, rgba(176,36,106,.07) 34%, transparent 64%);}
+  @media (prefers-reduced-motion: reduce), (hover: none){ #cursorGlow2{display:none !important;} }
+  body.calm #cursorGlow2{display:none !important;}
+  @media print{ #cursorGlow2, #pvCard{display:none !important;} }
+
+  #hvCard{display:none !important;}   /* the v35 follow-the-mouse card is replaced by #pvCard */
+  #pvCard{position:fixed; z-index:99970; width:330px; max-width:calc(100vw - 24px); padding:14px 16px 12px; border-radius:16px; background:rgba(18,15,20,.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(185,167,255,.38); box-shadow:0 22px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(243,109,47,.10), 0 0 28px rgba(185,167,255,.12);
+    opacity:0; transform:translateY(6px) scale(.98); transition:opacity .16s ease, transform .16s ease; pointer-events:none; color:var(--cream,#F5F5F5);}
+  #pvCard.show{opacity:1; transform:none; pointer-events:auto;}
+  [dir="rtl"] #pvCard{direction:rtl;}
+  #pvCard .pv-k{display:flex; align-items:center; gap:8px; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--copper,#F36D2F); font-weight:700;}
+  #pvCard .pv-k i{font-style:normal; letter-spacing:.06em; padding:1px 7px; border-radius:999px; border:1px solid currentColor; font-size:9.5px;}
+  #pvCard .pv-t{font-size:14px; font-weight:600; line-height:1.38; margin:6px 0 2px;}
+  #pvCard .pv-s{font-size:12px; color:var(--muted,#8E8A85);}
+  #pvCard .pv-row{display:flex; align-items:center; gap:14px; margin-top:12px;}
+  #pvCard .pv-ring{flex:none; width:56px; height:56px;}
+  #pvCard .pv-cd{font-family:var(--mono, monospace); font-size:17px; font-weight:600; letter-spacing:.02em;}
+  #pvCard .pv-d{font-size:11px; color:var(--muted,#8E8A85); margin-top:2px;}
+  #pvCard .pv-grid{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin-top:12px; font-size:11.8px;}
+  #pvCard .pv-grid span{color:var(--muted,#8E8A85); white-space:nowrap;}
+  #pvCard .pv-grid b{font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #pvCard .pv-note{margin-top:10px; font-size:11.8px; line-height:1.45; color:var(--sand,#D9D3CB); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
+  #pvCard .pv-chg{margin-top:8px; font-size:11.5px; color:#ffb35c;}
+  #pvCard .pv-acts{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
+  #pvCard .pv-acts a, #pvCard .pv-acts button{cursor:pointer; display:inline-flex; align-items:center; height:28px; padding:0 11px; border-radius:9px; border:1px solid rgba(185,167,255,.45); background:transparent; color:#d9cfff; font:inherit; font-size:11.8px; text-decoration:none;}
+  #pvCard .pv-acts a:hover, #pvCard .pv-acts button:hover{background:rgba(185,167,255,.16);}
+  #pvCard .pv-acts .pv-main{border-color:var(--copper,#F36D2F); color:#fff; background:rgba(243,109,47,.16);}
+  #pvCard .pv-acts .pv-main:hover{background:rgba(243,109,47,.3);}
+</style>
+<script>
+/* v52 module: brand cursor glow · hover preview cards with deadline, fit, entity and the official link (Harith — sections stay exactly as they are) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var LL = function(s){ try{ return typeof L === "function" ? L(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var isEdit = function(){ return typeof editing !== "undefined" && !!editing; };
+  var NOHOVER = false, RED = false; try{ NOHOVER = matchMedia("(hover: none)").matches; RED = matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+
+  /* ---------- 1) brand cursor glow: orange core (existing #cursorGlow, restyled) + a slower violet halo ---------- */
+  if(!NOHOVER && !RED){
+    var g2 = document.createElement("div"); g2.id = "cursorGlow2"; g2.setAttribute("aria-hidden", "true"); document.body.insertBefore(g2, document.body.firstChild);
+    var tx2 = -900, ty2 = -900, x2 = -900, y2 = -900, on = false;
+    addEventListener("mousemove", function(e){ tx2 = e.clientX; ty2 = e.clientY; if(!on){ on = true; g2.style.opacity = "1"; } }, { passive:true });
+    document.addEventListener("mouseleave", function(){ on = false; g2.style.opacity = "0"; });
+    (function loop(){ x2 += (tx2 - x2) * .05; y2 += (ty2 - y2) * .05; g2.style.transform = "translate(" + (x2 - 450) + "px," + (y2 - 450) + "px)"; requestAnimationFrame(loop); })();
+  }
+
+  /* ---------- 2) hover preview cards ---------- */
+  function arr(k){ var s = ST(); return (s && Array.isArray(s[k])) ? s[k] : []; }
+  function pd(v){ if(!v) return null; var s = String(v).trim(), m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/); if(m) return new Date(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 23, m[5] ? +m[5] : 59); var t = Date.parse(s.replace(" ", "T")); return isNaN(t) ? null : new Date(t); }
+  function day(v){ var d = pd(v); if(!d) return ""; try{ return d.toLocaleDateString(AR() ? "ar-u-nu-latn" : "en-GB", { weekday:"short", day:"numeric", month:"short", year:"numeric" }) + (/\d{1,2}:\d{2}/.test(String(v)) ? " · " + String(v).match(/\d{1,2}:\d{2}/)[0] : ""); }catch(e){ return String(v); } }
+  function cdText(ms){ if(ms <= 0) return AR() ? "انتهى" : "Closed"; var d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3), p = function(n){ return String(n).padStart(2, "0"); }; return (d ? d + (AR() ? "ي " : "d ") : "") + p(h) + ":" + p(m) + ":" + p(s); }
+  function ring(frac, col){ var R = 23, C = 2 * Math.PI * R, off = C * (1 - Math.max(0, Math.min(1, frac)));
+    return '<svg class="pv-ring" viewBox="0 0 56 56"><circle cx="28" cy="28" r="' + R + '" fill="none" stroke="rgba(244,237,228,.12)" stroke-width="4"/><circle cx="28" cy="28" r="' + R + '" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 28 28)" style="filter:drop-shadow(0 0 4px ' + col + ')"/></svg>'; }
+  function fitCol(f){ return f === "Strong" ? "#3ccb7f" : f === "Medium" ? "#f2b544" : "#ff8a7a"; }
+  function decLab(k){ var ar = AR(); return ({ pursue:ar ? "نتقدّم" : "Pursue", watch:ar ? "نراقب" : "Watch", pass:ar ? "نتخطّى" : "Pass" })[k] || ""; }
+  function etU(r){ try{ return typeof window.etimadUrl === "function" ? window.etimadUrl(r) : ""; }catch(e){ return ""; } }
+  function evStatus(r){ var ar = AR(), t = new Date(); t.setHours(0, 0, 0, 0); var s = pd(r.start), e = pd(r.end) || s, w = pd(r.watchFrom); if(s) s.setHours(0, 0, 0, 0); if(w) w.setHours(0, 0, 0, 0);
+    if(!s) return ""; if(e && e < t) return ar ? "انتهت" : "Past"; if(s <= t) return ar ? "جارية الآن" : "Live now"; if(w && w <= t) return ar ? "نافذة المنافسات مفتوحة" : "Tender window open"; return (ar ? "راقب من " : "Watch from ") + (w ? day(r.watchFrom).replace(/ · .*$/, "") : "—"); }
+
+  /* which record is under the pointer */
+  var SECS = { external:1, externalExcluded:1, internal:1, projects:1, prototypes:1, marketing:1, brand:1, milestones:1, todos:1, events:1 };
+  function recFrom(el){
+    if(!el || !el.closest || isEdit()) return null;
+    if(el.closest("#pvCard, #srcPop, #drawer, .modal, [contenteditable='true']")) return null;
+    var ev = el.closest("#evCal .ev-item[data-evi]"); if(ev) return { sec:"events", idx:+ev.dataset.evi, el:ev };
+    var tr = el.closest("tbody > tr"); if(tr && !/^extDetail/.test(tr.id || "") && !tr.classList.contains("ext-detail")){ var c = tr.querySelector("[data-bind]"); var m = c && c.dataset.bind.match(/^(\w+)\.(\d+)\./); if(m && SECS[m[1]]) return { sec:m[1], idx:+m[2], el:tr }; }
+    var d = el.closest("[data-sec][data-idx]"); if(d && SECS[d.dataset.sec]) return { sec:d.dataset.sec, idx:+d.dataset.idx, el:d };
+    return null; }
+
+  function body(info){ var r = arr(info.sec)[info.idx]; if(!r) return null; var ar = AR(), h = "", now = Date.now();
+    var acts = function(list){ return list.length ? '<div class="pv-acts">' + list.join("") + "</div>" : ""; };
+    var countdown = function(v, label, sod){ var d = pd(v); if(!d) return ""; if(sod) d.setHours(0, 0, 0, 0); var left = d.getTime() - now, col = left < 0 ? "#8a8079" : left < 3 * 864e5 ? "#ff5a4f" : left < 10 * 864e5 ? "#f2b544" : "#3ccb7f";
+      return '<div class="pv-row" data-cd="' + esc(v) + '"' + (sod ? ' data-sod="1"' : "") + '>' + ring(left / (30 * 864e5), col) + '<div><div class="pv-cd" style="color:' + col + '">' + cdText(left) + '</div><div class="pv-d">' + esc(label) + " " + esc(day(v)) + "</div></div></div>"; };
+    var grid = function(rows){ rows = rows.filter(function(x){ return x[1]; }); return rows.length ? '<div class="pv-grid">' + rows.map(function(x){ return "<span>" + esc(x[0]) + '</span><b title="' + esc(x[1]) + '">' + esc(x[1]) + "</b>"; }).join("") + "</div>" : ""; };
+    if(info.sec === "external" || info.sec === "externalExcluded"){
+      var tags = (r.fit ? '<i style="color:' + fitCol(r.fit) + '">' + esc(LL(r.fit)) + "</i>" : "") + (r.decision ? '<i style="color:#d9cfff">' + esc(decLab(r.decision)) + "</i>" : "") + (r.outcome ? '<i style="color:#9fe3b8">' + esc(LL(r.outcome)) + "</i>" : "");
+      h = '<div class="pv-k">' + (ar ? "اعتماد" : "Etimad") + (info.sec === "externalExcluded" ? (ar ? " · منتهية" : " · closed") : "") + tags + '</div><div class="pv-t">' + esc(TX(r.name || r.rn || "")) + "</div>" + (r.agency ? '<div class="pv-s">' + esc(TX(r.agency)) + "</div>" : "")
+        + countdown(r.bidDeadline, ar ? "آخر موعد للعروض" : "Bids close")
+        + grid([[ar ? "رقم المنافسة" : "RN", r.rn ? String(r.rn) : ""], [ar ? "آخر استفسار" : "Inquiries by", r.inqDeadline ? day(r.inqDeadline) : ""], [ar ? "الترسية المتوقعة" : "Expected award", r.award && pd(r.award) ? day(r.award) : ""], [ar ? "المكان" : "Place", TX(r.place || "")], [ar ? "قيمة الوثائق" : "Booklet", r.price ? String(r.price) : ""], [ar ? "المسؤول" : "Owner", r.owner || ""]]);
+      var ch = Array.isArray(r.changes) && r.changes.length ? r.changes[r.changes.length - 1] : null;
+      if(ch && ch.field !== "addendum") h += '<div class="pv-chg">⚠ ' + esc(ar ? "تغيّر: " : "Changed: ") + esc(ch.field) + " " + esc(ch.from || "") + " → " + esc(ch.to || "") + "</div>";
+      if(r.notes) h += '<div class="pv-note">' + esc(TX(r.notes)) + "</div>";
+      var u = etU(r); h += acts([u ? '<a class="pv-main" href="' + esc(u) + '" target="_blank" rel="noopener">' + (ar ? "افتح في اعتماد ↗" : "Open on Etimad ↗") + "</a>" : "", info.sec === "external" ? '<button type="button" data-pv="details">' + (ar ? "التفاصيل" : "Details") + "</button>" : ""].filter(Boolean));
+      return h; }
+    if(info.sec === "events"){
+      var nm = ar && r.nameAr ? r.nameAr : TX(r.name || ""), range = r.end && r.end !== r.start ? day(r.start).replace(/ · .*$/, "") + " – " + day(r.end).replace(/ · .*$/, "") : day(r.start).replace(/ · .*$/, "");
+      h = '<div class="pv-k">' + (ar ? "فعالية" : "Event") + (r.kind ? "<i>" + esc(LL(r.kind)) + "</i>" : "") + '</div><div class="pv-t">' + esc(nm) + '</div><div class="pv-s">' + esc((ar && r.cityAr ? r.cityAr : TX(r.city || "")) + (range ? " · " + range : "")) + "</div>"
+        + countdown(r.start, ar ? "تبدأ" : "Starts", true)
+        + grid([[ar ? "الحالة" : "Status", evStatus(r)], [ar ? "راقب اعتماد من" : "Watch Etimad from", r.watchFrom ? day(r.watchFrom).replace(/ · .*$/, "") : ""], [ar ? "المصدر" : "Source", TX(r.source || "")]]);
+      var ang = ar && r.angleAr ? r.angleAr : TX(r.angle || ""); if(ang) h += '<div class="pv-note">' + esc(ang) + "</div>";
+      h += acts([/^https?:\/\//i.test(r.url || "") ? '<a class="pv-main" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + (ar ? "الموقع الرسمي ↗" : "Official website ↗") + "</a>" : ""].filter(Boolean));
+      return h; }
+    var title = typeof rowLabel === "function" ? rowLabel(r) : (r.name || r.initiative || ""), due = r.bidDeadline || r.subDate || r.deadline || r.targetDate || r.due || r.endDate || r.date || "";
+    var kinds = { internal:ar ? "فرصة" : "Opportunity", projects:ar ? "مشروع" : "Project", prototypes:ar ? "نموذج" : "Prototype", marketing:"KNKT", brand:ar ? "التسويق" : "Marketing", milestones:ar ? "مرحلة" : "Milestone", todos:ar ? "مهمة" : "To-do" };
+    h = '<div class="pv-k">' + esc(kinds[info.sec] || info.sec) + (r.status || r.stage ? "<i>" + esc(TX(r.status || r.stage)) + "</i>" : "") + '</div><div class="pv-t">' + esc(TX(title)) + "</div>" + ((r.client || r.agency || r.owner || r.channel) ? '<div class="pv-s">' + esc(TX(r.client || r.agency || r.owner || r.channel)) + "</div>" : "")
+      + (due && pd(due) ? countdown(due, ar ? "الموعد" : "Due") : "")
+      + grid([[ar ? "القيمة" : "Value", r.value ? (isFinite(+r.value) ? (+r.value).toLocaleString("en") : String(r.value)) : ""], [ar ? "الخطوة التالية" : "Next step", TX(r.nextStep || "")], [ar ? "المسؤول" : "Owner", r.client || r.agency ? (r.owner || "") : ""]]);
+    if(r.notes) h += '<div class="pv-note">' + esc(TX(r.notes)) + "</div>";
+    return h; }
+
+  var card = null, cur = null, showT = null, hideT = null, tick = null;
+  function el(){ if(!card){ card = document.createElement("div"); card.id = "pvCard"; card.setAttribute("role", "tooltip"); document.body.appendChild(card);
+      card.addEventListener("mouseenter", function(){ clearTimeout(hideT); }); card.addEventListener("mouseleave", function(e){ if(cur && cur.el.contains(e.relatedTarget)) return; hideSoon(); });
+      card.addEventListener("click", function(e){ var b = e.target.closest("[data-pv]"); if(!b || !cur) return; if(b.dataset.pv === "details" && typeof toggleExtDetail === "function"){ try{ toggleExtDetail(cur.idx); }catch(err){} hide(); } }); }
+    return card; }
+  function place(x, y){ var c = el(), w = c.offsetWidth || 330, h = c.offsetHeight || 220, W = innerWidth, H = innerHeight; var l = x + 16, t = y + 16;
+    if(l + w > W - 12) l = x - w - 16; if(l < 12) l = 12; if(t + h > H - 12) t = y - h - 16; if(t < 12) t = Math.max(12, H - h - 12); c.style.left = l + "px"; c.style.top = t + "px"; }
+  function refresh(){ if(!card || !cur) return; card.querySelectorAll("[data-cd]").forEach(function(row){ var d = pd(row.dataset.cd); if(!d) return; if(row.dataset.sod) d.setHours(0, 0, 0, 0); var left = d.getTime() - Date.now(), cd = row.querySelector(".pv-cd"); if(cd) cd.textContent = cdText(left); }); }
+  function show(info, x, y){ var html = body(info); if(!html) return; var c = el(); c.innerHTML = html; cur = info; place(x, y); c.classList.add("show"); clearInterval(tick); tick = setInterval(refresh, 1000); }
+  function hide(){ clearTimeout(showT); clearTimeout(hideT); clearInterval(tick); cur = null; if(card) card.classList.remove("show"); }
+  function hideSoon(){ clearTimeout(hideT); hideT = setTimeout(hide, 220); }
+  if(!NOHOVER){
+    document.addEventListener("mouseover", function(e){
+      if(card && card.contains(e.target)){ clearTimeout(hideT); return; }
+      var info = recFrom(e.target);
+      if(!info){ clearTimeout(showT); if(cur) hideSoon(); return; }
+      if(cur && cur.sec === info.sec && cur.idx === info.idx){ clearTimeout(hideT); return; }
+      clearTimeout(showT); clearTimeout(hideT); var x = e.clientX, y = e.clientY; if(cur) hide();
+      showT = setTimeout(function(){ show(info, x, y); }, 320); }, { passive:true });
+    document.addEventListener("scroll", function(e){ if(card && e.target && card.contains && card.contains(e.target)) return; hide(); }, { passive:true, capture:true });
+    document.addEventListener("pointerdown", function(e){ if(card && card.contains(e.target)) return; hide(); }, true);
+    window.addEventListener("blur", hide);
+  }
+  if(typeof switchPage === "function" && !switchPage.__v52){ var baseSP = switchPage; switchPage = function(){ hide(); return baseSP.apply(this, arguments); }; switchPage.__v52 = true; }
+})();
+</script>
 </body>
 </html>

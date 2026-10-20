@@ -2926,24 +2926,42 @@ function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(
     const A = a => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
     if(!CORE.drag && !CORE.hover && fxOn()) CORE.ry += CORE.busy ? .03 : CORE.vy;   // v26: hold still while a dot is hovered
     CORE.pulse = (CORE.pulse + (CORE.busy ? .08 : .02)) % (Math.PI*2);
-    // glow
-    const gr = g.createRadialGradient(c,c,R*.1,c,c,R*1.35); gr.addColorStop(0, A(.33)); gr.addColorStop(1, A(0)); g.fillStyle = gr; g.fillRect(0,0,S,S);
-    // orbit rings
-    g.strokeStyle = A(.25); g.lineWidth = 1;
+    // v63: the hero core is the Midwam spinning top (like the logo); the status dots orbit it; drag spins the top (Harith)
+    const tt = performance.now() / 1000, ph = CORE.ry * 3.2, still = !fxOn();
+    const gr = g.createRadialGradient(c,c+R*.15,R*.1,c,c+R*.15,R*1.35); gr.addColorStop(0, A(.30)); gr.addColorStop(.6, "rgba(176,36,106,.10)"); gr.addColorStop(1, A(0)); g.fillStyle = gr; g.fillRect(0,0,S,S);
+    g.strokeStyle = A(.22); g.lineWidth = 1;
     for(let k=0;k<2;k++){ g.beginPath(); g.ellipse(c, c, R*(1.18+k*.14), R*(.32+k*.1), CORE.ry*(k?-.7:.5), 0, 6.283); g.stroke(); }
-    // lattice dots
-    CORE_DOTS.forEach(p=>{ const [x,y,z] = rot(p); const s = 1/(1.9 - z*.5); g.globalAlpha = .15 + (z+1)*.25; g.fillStyle = acc; g.beginPath(); g.arc(c + x*R*s*1.4, c + y*R*s*1.4, .9 + (z+1)*.5, 0, 6.283); g.fill(); });
-    // data nodes
     CORE.proj = [];
-    CORE.nodes.forEach(n=>{ const [x,y,z] = rot(n.p); const s = 1/(1.9 - z*.5); const px = c + x*R*s*1.4, py = c + y*R*s*1.4; const front = z > -.2;
-      const pr = n.r * (0.7 + (z+1)*.35) * (CORE.hover === n ? 1.6 : 1);
+    const nodeAt = n=>{ const [x,y,z] = rot(n.p); const s2 = 1/(1.9 - z*.5); return { x:c + x*R*s2*1.4, y:c + y*R*s2*1.4, z }; };
+    const drawNode = (n, q)=>{ const front = q.z > -.2, pr = n.r * (0.7 + (q.z+1)*.35) * (CORE.hover === n ? 1.6 : 1);
       g.globalAlpha = front ? 1 : .35; g.fillStyle = n.col; g.shadowColor = n.col; g.shadowBlur = front ? 12 : 0;
-      g.beginPath(); g.arc(px, py, pr, 0, 6.283); g.fill(); g.shadowBlur = 0;
-      if(front){ g.globalAlpha = .25; g.strokeStyle = n.col; g.beginPath(); g.moveTo(c, c); g.lineTo(px, py); g.stroke(); }
-      CORE.proj.push({ n, x:px, y:py, r:pr+4, z }); });
-    // pulse
-    g.globalAlpha = .5 + Math.sin(CORE.pulse)*.3; g.strokeStyle = acc; g.lineWidth = 1.5; g.beginPath(); g.arc(c, c, R*(.28 + Math.sin(CORE.pulse)*.04), 0, 6.283); g.stroke();
-    g.globalAlpha = 1; g.fillStyle = acc; g.beginPath(); g.arc(c, c, 3, 0, 6.283); g.fill();
+      g.beginPath(); g.arc(q.x, q.y, pr, 0, 6.283); g.fill(); g.shadowBlur = 0; g.globalAlpha = 1;
+      CORE.proj.push({ n, x:q.x, y:q.y, r:pr+4, z:q.z }); };
+    const NQ = CORE.nodes.map(n=>({ n, q:nodeAt(n) }));
+    NQ.filter(o=>o.q.z <= 0).forEach(o=>drawNode(o.n, o.q));
+    // the top
+    const dY = c + R*.14, dW = R*.92, dH = dW*.27, th = R*.085, topY = c - R*1.08, tipY = c + R*.95, wob = still ? 0 : Math.sin(tt*1.7)*.06 + (CORE.busy ? Math.sin(tt*9)*.03 : 0);
+    g.save(); g.translate(c, tipY); g.rotate(wob); g.translate(-c, -tipY);
+    let sh = g.createRadialGradient(c, tipY + 3, 1, c, tipY + 3, dW*.55); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sh; g.beginPath(); g.ellipse(c, tipY + 3, dW*.55, dW*.12, 0, 0, 6.283); g.fill();
+    let gc = g.createLinearGradient(c - dW*.6, 0, c + dW*.6, 0); gc.addColorStop(0, "#23123f"); gc.addColorStop(.42, "#8C3BE0"); gc.addColorStop(.55, "#b67cff"); gc.addColorStop(1, "#1d0f33");
+    g.fillStyle = gc; g.beginPath(); g.moveTo(c - dW*.7, dY + th); g.quadraticCurveTo(c - dW*.16, dY + R*.42, c, tipY); g.quadraticCurveTo(c + dW*.16, dY + R*.42, c + dW*.7, dY + th); g.closePath(); g.fill();
+    let gb = g.createLinearGradient(c - dW, 0, c + dW, 0); gb.addColorStop(0, "#7a2d0e"); gb.addColorStop(.5, "#F36D2F"); gb.addColorStop(1, "#7a2d0e");
+    g.fillStyle = gb; g.beginPath(); g.ellipse(c, dY + th, dW, dH, 0, 0, Math.PI); g.lineTo(c - dW, dY); g.ellipse(c, dY, dW, dH, 0, Math.PI, 0, true); g.closePath(); g.fill();
+    for(let k=0;k<14;k++){ const a = ph + k*Math.PI*2/14, sa = Math.sin(a); if(sa <= 0) continue; const x = c + Math.cos(a)*dW*.985, y = dY + th*.5 + sa*dH;
+      g.globalAlpha = .35 + sa*.65; g.fillStyle = k % 2 ? "#ffd27a" : "#fff1d6"; g.shadowColor = "#ffb347"; g.shadowBlur = 6; g.beginPath(); g.ellipse(x, y, Math.max(.8, dW*.07*sa), th*.42, 0, 0, 6.283); g.fill(); }
+    g.shadowBlur = 0; g.globalAlpha = 1;
+    let gt = g.createRadialGradient(c - dW*.25, dY - dH*.3, 2, c, dY, dW); gt.addColorStop(0, "#6b5a9a"); gt.addColorStop(.55, "#3a2d62"); gt.addColorStop(1, "#1a1430");
+    g.fillStyle = gt; g.beginPath(); g.ellipse(c, dY, dW, dH, 0, 0, 6.283); g.fill();
+    g.strokeStyle = "rgba(255,210,140,.55)"; g.lineWidth = 1; g.beginPath(); g.ellipse(c, dY, dW*.98, dH*.96, 0, 0, 6.283); g.stroke();
+    g.save(); g.beginPath(); g.ellipse(c, dY, dW, dH, 0, 0, 6.283); g.clip(); g.globalAlpha = .35; const hx = c + Math.cos(ph*.5)*dW*.55, hy = dY + Math.sin(ph*.5)*dH*.55;
+    let gh = g.createRadialGradient(hx, hy, 1, hx, hy, dW*.45); gh.addColorStop(0, "#ffe0b0"); gh.addColorStop(1, "rgba(255,224,176,0)"); g.fillStyle = gh; g.fillRect(c - dW, dY - dH, dW*2, dH*2); g.restore(); g.globalAlpha = 1;
+    let gs = g.createLinearGradient(c - R*.2, 0, c + R*.2, 0); gs.addColorStop(0, "#8a3410"); gs.addColorStop(.38, "#F36D2F"); gs.addColorStop(.5, "#ffe2a8"); gs.addColorStop(.64, "#F36D2F"); gs.addColorStop(1, "#7a2d0e");
+    g.fillStyle = gs; g.beginPath(); g.moveTo(c - R*.24, dY - dH*.05); g.quadraticCurveTo(c - R*.05, dY - dH*.35, c - R*.045, dY - R*.42); g.lineTo(c - R*.026, topY + R*.03);
+    g.quadraticCurveTo(c, topY - R*.03, c + R*.026, topY + R*.03); g.lineTo(c + R*.045, dY - R*.42); g.quadraticCurveTo(c + R*.05, dY - dH*.35, c + R*.24, dY - dH*.05); g.closePath(); g.shadowColor = A(.8); g.shadowBlur = 10; g.fill(); g.shadowBlur = 0;
+    if(CORE.busy){ g.globalAlpha = .45 + Math.sin(CORE.pulse)*.3; g.strokeStyle = acc; g.lineWidth = 1.5; g.beginPath(); g.ellipse(c, dY + th*.5, dW*1.12, dH*1.25, 0, 0, 6.283); g.stroke(); g.globalAlpha = 1; }
+    g.restore();
+    NQ.filter(o=>o.q.z > 0).forEach(o=>drawNode(o.n, o.q));
+    g.globalAlpha = 1;
   }
   requestAnimationFrame(coreLoop);
 })();

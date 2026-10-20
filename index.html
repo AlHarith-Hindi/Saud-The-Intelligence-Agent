@@ -8873,7 +8873,7 @@ async function exportPPTX(){
         var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
         /* reflection on the floor first (faint), then the top */
         var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
-        g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, .2); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true);
+        g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, ov && ov.rf != null ? ov.rf : .2); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true);
         g.clear(g.DEPTH_BUFFER_BIT);
         var Mt = mul(tr(0, 0, z), mul(CAM, mul(tr(x, y, 0), R)));
         g.uniformMatrix4fv(uM, false, new Float32Array(Mt)); g.uniform1f(uA, 1); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0);
@@ -8897,15 +8897,31 @@ async function exportPPTX(){
     var gl2 = x.createRadialGradient(cx, cy + h * .2, 4, cx, cy + h * .2, Math.min(w, h) * .32); gl2.addColorStop(0, "rgba(243,109,47,.16)"); gl2.addColorStop(.5, "rgba(176,36,106,.08)"); gl2.addColorStop(1, "rgba(0,0,0,0)");
     x.fillStyle = gl2; x.fillRect(0, 0, w, h); }
 
+  /* v61: the top leaves its stage and travels down the whole page as you scroll, behind the content, landing at the bottom (Harith) */
+  var FLY = null, flyLanded = false;
+  function flyBox(){ if(!FLY){ FLY = document.createElement("div"); FLY.id = "v61fly"; FLY.setAttribute("aria-hidden", "true"); FLY.innerHTML = '<div class="box"></div><canvas class="spk"></canvas>'; document.body.appendChild(FLY); FLY.box = FLY.querySelector(".box"); } return FLY.box; }
+  function flyDraw(now, s){ var b = flyBox(), r = s.getBoundingClientRect(), vw = innerWidth, vh = innerHeight, rtl = AR(), narrow = r.width < 760;
+    var sm = function(t){ t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }, L = function(a, c, t){ return a + (c - a) * t; };
+    var k = sm(Ps), bh0 = r.height || 400, cx0 = r.left + r.width * (narrow ? .5 : (rtl ? .25 : .75)), cy0 = r.top + bh0 / 2;
+    var gw = rtl ? r.left : vw - r.right, bh1 = gw >= 150 ? Math.min(300, gw * 1.3) : 170, cx1 = gw >= 150 ? (rtl ? gw / 2 : r.right + gw / 2) : (rtl ? 70 : vw - 70);
+    var de = document.documentElement, pg = Math.max(0, Math.min(1, (scrollY || de.scrollTop || 0) / Math.max(1, de.scrollHeight - vh))), cy1 = L(vh * .24, vh - bh1 * .46, pg);
+    var bh = L(bh0, bh1, k), bw = bh * .95, cx = L(cx0, cx1, k), cy = L(cy0, cy1, k);
+    b.style.cssText = "left:" + (cx - bw / 2).toFixed(1) + "px;top:" + (cy - bh / 2).toFixed(1) + "px;width:" + bw.toFixed(1) + "px;height:" + bh.toFixed(1) + "px;";
+    GL.draw(now, s, Ps, mx, my, { x:0, y:-.35 + Math.sin(now / 1000 * 1.3) * .03, z:-7.2, rx:.2 + k * .12, ry:0, rf:.2 * (1 - k) });
+    GL.cx += cx - bw / 2; GL.cy += cy - bh / 2;
+    if(k > .9 && pg > .985 && !flyLanded){ flyLanded = true; for(var q = 0; q < 26; q++) SPK.push({ a:Math.random() * Math.PI * 2, r:6 + Math.random() * 18, v:220 + Math.random() * 260, L:30 + Math.random() * 80, t:now, life:700 + Math.random() * 800, wd:.8 + Math.random() * 1.6 }); }
+    if(pg < .9) flyLanded = false;
+    sparks(now, FLY); }
+
   /* the shared canvas lives in the active page's stage */
   var Pp = 0, Ps = 0, mx = 0, my = 0, raf = 0;
   function active(){ var p = cur(); return ensure(p); }
-  function mount(){ var s = active(); if(!s) return null; var gl = initGL(); if(!gl){ s.classList.add("nogl"); return s; } var slot = s.querySelector(".slot"); if(!INTRO && gl.cv.parentNode !== slot) slot.appendChild(gl.cv); return s; }
+  function mount(){ var s = active(); if(!s) return null; var gl = initGL(); if(!gl){ s.classList.add("nogl"); return s; } var slot = flyBox(); if(!INTRO && gl.cv.parentNode !== slot) slot.appendChild(gl.cv); return s; }
   function scrollP(){ var s = stages[cur()]; if(!s || !s.offsetParent) return; var r = s.getBoundingClientRect(), h = r.height || 1;
     Pp = Math.max(0, Math.min(1, -r.top / (h * .85))); if(s.__t0 === undefined || r.top > s.__t0) s.__t0 = r.top; Ps = Math.max(0, Math.min(1, (s.__t0 - r.top) / (h * .6))); s.style.setProperty("--p", Pp.toFixed(4)); var c = s.querySelector(".bar .cnt"); if(c){ var v = Math.round(Pp * 100); c.textContent = (v < 10 ? "0" : "") + v + " / 100"; }
     var path = s.querySelector("svg.pth path"); if(path){ if(!path.__len){ try{ path.__len = path.getTotalLength(); path.style.strokeDasharray = path.__len; }catch(e){ path.__len = 1200; } } path.__draw = Math.max(path.__draw || 0, Math.min(1, .55 + Pp * 1.2)); } }
-  function loop(now){ raf = 0; var s = stages[cur()]; if(!s || !s.offsetParent){ return; } var r = s.getBoundingClientRect(); var vis = r.bottom > 0 && r.top < innerHeight;
-    if(vis && GL && GL.cv.parentNode === s.querySelector(".slot")) GL.draw(now, s, Ps, mx, my); if(vis) sparks(now, s);
+  function loop(now){ raf = 0; var s = stages[cur()]; if(!s || !s.offsetParent){ return; } var r = s.getBoundingClientRect(); var vis = true;
+    if(GL && GL.cv.parentNode === flyBox()) flyDraw(now, s);
     var path = s.querySelector("svg.pth path"); if(path && path.__len){ var still = RED || calm(), tgt = still ? 1 : Math.max(path.__draw || 0, .55); path.__shown = still ? 1 : (path.__shown || 0) + (tgt - (path.__shown || 0)) * .05; path.style.strokeDashoffset = (path.__len * (1 - path.__shown)).toFixed(1); }
     if(!(RED || calm()) && vis) raf = requestAnimationFrame(loop); else if(!vis) setTimeout(kick, 400); }
   function kick(){ if(!raf) raf = requestAnimationFrame(loop); }
@@ -8988,6 +9004,14 @@ async function exportPPTX(){
     -webkit-mask-composite:source-in; mask-image:linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(180deg, transparent 0, #000 8%, #000 70%, transparent 100%); mask-composite:intersect;}
   html.v55 .v55stage .bar, html.v55 .v55stage .cap .n{color:#9A928A;}
   @media (max-width:760px){ html.v55 .v55stage{--gx:50%;} }
+</style>
+<style id="v61css">
+  /* v61: the travelling top sits behind all content (never covers info), above the page background */
+  #v61fly{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;}
+  #v61fly .box{position:absolute; left:0; top:0; width:0; height:0;}
+  #v61fly .box canvas{position:absolute; inset:0; width:100%; height:100%;}
+  #v61fly canvas.spk{position:absolute; inset:0; width:100%; height:100%;}
+  @media print{ #v61fly{display:none !important;} }
 </style>
 </body>
 </html>

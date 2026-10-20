@@ -7509,8 +7509,8 @@ async function exportPPTX(){
   #cursorRing.lav{border-color:var(--lav) !important; background:rgba(185,167,255,.10) !important;}
   #cursorRing.lav::after{background:var(--lav) !important;}
   /* team view: private sections stay hidden until the password is entered */
-  html.team-mode.ts-locked .tab-btn[data-page="internal"], html.team-mode.ts-locked .tab-btn[data-page="projects"],
-  html.team-mode.ts-locked #page-internal, html.team-mode.ts-locked #page-projects,
+  html.team-mode.ts-locked .tab-btn[data-page="internal"], html.team-mode.ts-locked .tab-btn[data-page="projects"], html.team-mode.ts-locked .tab-btn[data-page="recap"], html.team-mode.ts-locked .tab-btn[data-page="brand"], html.team-mode.ts-locked .tab-btn[data-page="marketing"],
+  html.team-mode.ts-locked #page-internal, html.team-mode.ts-locked #page-projects, html.team-mode.ts-locked #page-recap, html.team-mode.ts-locked #page-brand, html.team-mode.ts-locked #page-marketing,
   html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiRfpLabel"]), html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiOppValueLabel"]),
   html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiProjectsLabel"]), html.team-mode.ts-locked .stat-tile:has([data-bind="titles.kpiPrototypesLabel"]),
   html.team-mode.ts-locked section:has(#pipelineChart), html.team-mode.ts-locked .bd-link[data-bgo="internal"]{display:none !important;}
@@ -7539,9 +7539,9 @@ async function exportPPTX(){
   var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
   var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
   var toast = function(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} };
-  var SEC_KEYS = ["internal", "projects", "prototypes"];
-  var SEC_SECTIONS = { internal:1, projects:1, prototypes:1 };
-  var SEC_PAGES = ["internal", "projects"];
+  var SEC_KEYS = ["internal", "projects", "prototypes", "marketing", "brand"];   /* v51: + KNKT (marketing) and Marketing (brand) */
+  var SEC_SECTIONS = { internal:1, projects:1, prototypes:1, marketing:1, brand:1 };
+  var SEC_PAGES = ["recap", "internal", "projects", "brand", "marketing"];   /* v51: + Quarter recap, Marketing, KNKT */
   var ITER = 250000;
 
   /* ---------- 1) lavender cursor ring over cards ---------- */
@@ -7581,14 +7581,14 @@ async function exportPPTX(){
     if(!force && card.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
     var c = tv(), ar = AR(), has = !!(c && c.sec && c.sec.key);
     var st = !c ? (ar ? "فعّل نسخة الفريق أولًا." : "Set up the team view first.")
-      : has ? (ar ? "🔒 محميّة بكلمة مرور منذ " : "🔒 Password set ") + new Date(c.sec.setAt).toLocaleDateString(ar ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short" }) + (ar ? " — من يملكها يفتح القسمين." : " — people with it can open both sections.")
+      : has ? (ar ? "🔒 محميّة بكلمة مرور منذ " : "🔒 Password set ") + new Date(c.sec.setAt).toLocaleDateString(ar ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short" }) + (ar ? " — من يملكها يفتح الأقسام الخاصة." : " — people with it can open the private sections.")
       : (ar ? "مخفيّة تمامًا عن نسخة الفريق الآن (لا توجد كلمة مرور)." : "Fully hidden from the team view right now (no password set).");
     var html = '<div class="cu-t">' + (ar ? "أقسام خاصة في نسخة الفريق" : "Private sections in the team view") + '</div><div class="cu-d">'
-      + (ar ? "«الأداء الداخلي» و«المشاريع والنماذج» لا تظهر في القائمة الجانبية لنسخة الفريق إلا بعد إدخال كلمة المرور (نفس الرابط). بياناتهما مشفّرة بكلمة المرور نفسها." : "Internal Performance and Projects & Prototypes stay off the team view's sidebar until someone enters the password (same link). Their data is encrypted with that password.")
+      + (ar ? "«ملخص الربع» و«التسويق» و«KNKT» و«الأداء الداخلي» و«المشاريع والنماذج» لا تظهر في القائمة الجانبية لنسخة الفريق إلا بعد إدخال كلمة المرور (نفس الرابط). بياناتها مشفّرة بكلمة المرور نفسها." : "Quarter recap, Marketing, KNKT, Internal Performance and Projects & Prototypes stay off the team view's sidebar until someone enters the password (same link). Their data is encrypted with that password.")
       + '</div><div class="tm-st' + (has ? " ok" : "") + '">' + esc(st) + "</div>"
       + (c ? '<div class="ts-row"><input type="password" id="tsPw1" autocomplete="new-password" placeholder="' + (ar ? "كلمة مرور جديدة" : "New password") + '"><input type="password" id="tsPw2" autocomplete="new-password" placeholder="' + (ar ? "أعد كتابتها" : "Repeat it") + '"></div>'
         + '<div class="cu-actions" style="margin:10px 0 0"><button class="editbtn" type="button" data-ts="set">' + (has ? (ar ? "تغيير كلمة المرور" : "Change password") : (ar ? "حفظ كلمة المرور" : "Save password")) + "</button>"
-        + (has ? '<button class="editbtn secondary" type="button" data-ts="clear">' + (ar ? "إزالة (إخفاء القسمين تمامًا)" : "Remove (hide both completely)") + "</button>" : "") + "</div>" : "");
+        + (has ? '<button class="editbtn secondary" type="button" data-ts="clear">' + (ar ? "إزالة (إخفاء الأقسام الخاصة تمامًا)" : "Remove (hide them completely)") + "</button>" : "") + "</div>" : "");
     if(force || card.__h !== html){ card.__h = html; card.innerHTML = html; }
   }
 
@@ -7596,7 +7596,7 @@ async function exportPPTX(){
   var lastSec = null, unlocked = false;
   function skey(sec){ return "saudTS_" + (sec && sec.salt ? sec.salt.slice(0, 12) : ""); }
   function setLocked(on){ var h = document.documentElement; h.classList.toggle("ts-locked", on); h.classList.toggle("ts-open", !on);
-    try{ if(typeof PAGE_ORDER !== "undefined"){ SEC_PAGES.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(on && i >= 0) PAGE_ORDER.splice(i, 1); }); if(!on){ var at = PAGE_ORDER.indexOf("events"); if(at < 0) at = PAGE_ORDER.indexOf("external"); SEC_PAGES.forEach(function(p, k){ if(PAGE_ORDER.indexOf(p) < 0) PAGE_ORDER.splice(at + 1 + k, 0, p); }); } } }catch(e){}
+    try{ if(typeof PAGE_ORDER !== "undefined"){ SEC_PAGES.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(on && i >= 0) PAGE_ORDER.splice(i, 1); }); if(!on){ var dom = [].map.call(document.querySelectorAll(".tab-btn[data-page]"), function(b){ return b.dataset.page; }); SEC_PAGES.forEach(function(p){ if(PAGE_ORDER.indexOf(p) >= 0 || dom.indexOf(p) < 0) return; var at = -1; for(var j = dom.indexOf(p) - 1; j >= 0 && at < 0; j--) at = PAGE_ORDER.indexOf(dom[j]); PAGE_ORDER.splice(at + 1, 0, p); }); }   /* v51: back in sidebar order */ } }catch(e){}
     try{ if(on && typeof currentPage === "function" && SEC_PAGES.indexOf(currentPage()) >= 0 && typeof switchPage === "function") switchPage("overview"); }catch(e){}
     btn(); }
   function merge(priv){ if(!priv || typeof state === "undefined" || !state) return; SEC_KEYS.forEach(function(k){ if(Array.isArray(priv[k])) state[k] = priv[k]; }); if(Array.isArray(priv.activity)) state.activity = priv.activity; }
@@ -7612,7 +7612,7 @@ async function exportPPTX(){
     var t = unlocked ? (AR() ? "🔓 قفل" : "🔓 Lock") : "🔒"; if(b.textContent !== t) b.textContent = t;
     b.title = unlocked ? (AR() ? "إخفاء الأقسام الخاصة" : "Hide the private sections") : (AR() ? "أقسام إضافية بكلمة مرور" : "More sections (password)"); }
   function modal(){ var m = document.getElementById("tsModal"); if(!m){ m = document.createElement("div"); m.id = "tsModal"; document.body.appendChild(m); } var ar = AR();
-    m.innerHTML = '<div class="ts-card"><h3>' + (ar ? "أقسام إضافية" : "More sections") + "</h3><p>" + (ar ? "أدخل كلمة المرور لفتح «الأداء الداخلي» و«المشاريع والنماذج»." : "Enter the password to open Internal Performance and Projects & Prototypes.") + '</p><input type="password" id="tsIn" autocomplete="off"><div class="ts-msg" id="tsMsg"></div><div class="ts-acts"><button type="button" data-tsm="x">' + (ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="ts-go" data-tsm="go">' + (ar ? "فتح" : "Unlock") + "</button></div></div>";
+    m.innerHTML = '<div class="ts-card"><h3>' + (ar ? "أقسام إضافية" : "More sections") + "</h3><p>" + (ar ? "أدخل كلمة المرور لفتح «ملخص الربع» و«التسويق» و«KNKT» و«الأداء الداخلي» و«المشاريع والنماذج»." : "Enter the password to open Quarter recap, Marketing, KNKT, Internal Performance and Projects & Prototypes.") + '</p><input type="password" id="tsIn" autocomplete="off"><div class="ts-msg" id="tsMsg"></div><div class="ts-acts"><button type="button" data-tsm="x">' + (ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="ts-go" data-tsm="go">' + (ar ? "فتح" : "Unlock") + "</button></div></div>";
     m.hidden = false; setTimeout(function(){ var i = document.getElementById("tsIn"); if(i) i.focus(); }, 30); }
   async function tryUnlock(){ var i = document.getElementById("tsIn"), msg = document.getElementById("tsMsg"), card = document.querySelector("#tsModal .ts-card"); if(!i || !lastSec) return;
     var pw = i.value; if(!pw) return; if(msg) msg.textContent = AR() ? "جارٍ التحقق…" : "Checking…";
@@ -7635,7 +7635,7 @@ async function exportPPTX(){
       if(a !== c2){ toast(ar ? "الكلمتان غير متطابقتين" : "The two passwords don't match"); return; }
       t.disabled = true; t.textContent = ar ? "جارٍ الحفظ…" : "Saving…";
       setPassword(a).then(function(r){ renderCard(true); toast(r.ok ? (r.pub && r.pub.ok ? (ar ? "حُفظت كلمة المرور ونُشرت نسخة الفريق" : "Password saved and team view published") : (ar ? "حُفظت كلمة المرور" : "Password saved")) : (ar ? "فعّل نسخة الفريق أولًا" : "Set up the team view first")); }); return; }
-    if(t.dataset.ts === "clear"){ t.disabled = true; clearPassword().then(function(){ renderCard(true); toast(ar ? "أُزيلت كلمة المرور — القسمان مخفيّان تمامًا الآن" : "Password removed — both sections are fully hidden now"); }); return; }
+    if(t.dataset.ts === "clear"){ t.disabled = true; clearPassword().then(function(){ renderCard(true); toast(ar ? "أُزيلت كلمة المرور — الأقسام الخاصة مخفيّة تمامًا الآن" : "Password removed — the private sections are fully hidden now"); }); return; }
   });
   document.addEventListener("keydown", function(e){ if(e.key === "Enter" && e.target && e.target.id === "tsIn"){ e.preventDefault(); tryUnlock(); } });
   if(!TEAM){ setInterval(function(){ try{ renderCard(); }catch(e){} }, 2000); try{ renderCard(); }catch(e){} }
@@ -8188,6 +8188,228 @@ async function exportPPTX(){
   if(typeof renderAll === "function" && !renderAll.__v49){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ theme(); logo(); }catch(e){} return out; }; renderAll.__v49 = true; }
   try{ logo(); theme(); }catch(e){}
   setInterval(function(){ try{ logo(); }catch(e){} }, 2000);
+})();
+</script>
+<style id="v51css">
+  /* v51: electric lavender (running edge + soft flicker) · press a number to see its source */
+  @property --lavA{ syntax:"<angle>"; inherits:false; initial-value:0deg; }
+  @keyframes lavRun{ to{ --lavA:360deg; } }
+  @keyframes lavFlick{
+    0%{box-shadow:0 0 0 1px rgba(222,212,255,.95), 0 0 26px rgba(185,167,255,.55);}
+    10%{box-shadow:0 0 0 1px rgba(185,167,255,.22), 0 0 6px rgba(185,167,255,.08);}
+    20%{box-shadow:0 0 0 1px rgba(222,212,255,.85), 0 0 20px rgba(185,167,255,.42);}
+    30%{box-shadow:0 0 0 1px rgba(185,167,255,.3), 0 0 8px rgba(185,167,255,.12);}
+    100%{box-shadow:0 0 0 1px rgba(185,167,255,.42), 0 0 18px rgba(185,167,255,.22), inset 0 0 14px rgba(185,167,255,.06);}
+  }
+  @keyframes lavHum{ 0%,100%{opacity:1;} 46%{opacity:1;} 48%{opacity:.55;} 50%{opacity:1;} 52%{opacity:.7;} 54%{opacity:1;} }
+  .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover{
+    border-color:rgba(200,186,255,.7) !important;
+    background-image:radial-gradient(120% 140% at 50% 0%, rgba(185,167,255,.10), transparent 60%), linear-gradient(var(--lav-soft), var(--lav-soft)) !important;
+    background-size:auto !important; background-repeat:no-repeat !important;
+    animation:lavFlick .65s ease-out 1 both !important;}
+  #lavArc{position:fixed; left:0; top:0; width:0; height:0; pointer-events:none; z-index:45; border-radius:14px; opacity:0; transition:opacity .16s ease;}
+  #lavArc.on{opacity:1; animation:lavHum 3.4s linear infinite;}
+  #lavArc::before, #lavArc::after{content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1.5px;
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation:lavRun 2.6s linear infinite;}
+  #lavArc::before{background:conic-gradient(from var(--lavA), transparent 0 66%, rgba(185,167,255,.55) 76%, rgba(236,230,255,1) 80.5%, rgba(170,210,255,.9) 82%, transparent 88%); filter:drop-shadow(0 0 3px rgba(190,172,255,.95)) drop-shadow(0 0 7px rgba(185,167,255,.55));}
+  #lavArc::after{background:conic-gradient(from calc(var(--lavA) + 180deg), transparent 0 78%, rgba(185,167,255,.35) 86%, rgba(225,216,255,.8) 89%, transparent 93%); opacity:.7;}
+  @media (prefers-reduced-motion: reduce){ #lavArc{display:none !important;} .stat-tile:hover, .bb-item:hover, .ev-item:hover, .ev-month:hover, .wl-item:hover, .wl-box:hover, .agenda-item:hover, .kb-card:hover, .cu-card:hover, .overview-nav .navcard:hover, .mission-strip [data-mi]:hover{animation:none !important;} }
+  @media (pointer:coarse){ #lavArc{display:none !important;} }
+
+  /* press-a-number → source */
+  .stat-tile.src-tile{cursor:pointer;}
+  .stat-tile.src-tile::after{content:"↗"; position:absolute; top:10px; inset-inline-end:12px; font-size:11px; line-height:1; color:var(--muted,#8E8A85); opacity:.6; transition:opacity .15s, color .15s, transform .15s;}
+  .stat-tile.src-tile:hover::after{opacity:1; color:#d9cfff; transform:translate(1px,-1px);}
+  [dir="rtl"] .stat-tile.src-tile::after{content:"↖";}
+  .stat-tile.src-on{border-color:rgba(205,190,255,.85) !important;}
+  #srcPop{position:fixed; z-index:9990; width:min(440px, calc(100vw - 32px)); max-height:min(62vh, 560px); display:flex; flex-direction:column; border-radius:16px; border:1px solid rgba(185,167,255,.45); background:var(--night2,#17171B); box-shadow:0 28px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(185,167,255,.12), 0 0 30px rgba(185,167,255,.12); overflow:hidden;}
+  #srcPop[hidden]{display:none;}
+  #srcPop .sp-head{display:flex; align-items:flex-start; gap:10px; padding:14px 16px 10px; border-bottom:1px solid var(--border,rgba(255,255,255,.08));}
+  #srcPop .sp-head b{display:block; font-size:14px; color:#fff;}
+  #srcPop .sp-head span{display:block; margin-top:3px; font-size:11.5px; color:var(--muted,#8E8A85);}
+  #srcPop .sp-x{margin-inline-start:auto; flex:0 0 auto; cursor:pointer; width:26px; height:26px; border-radius:8px; border:1px solid rgba(255,255,255,.12); background:transparent; color:var(--sand,#D9D3CB); font:inherit; font-size:13px; line-height:1;}
+  #srcPop .sp-x:hover{border-color:var(--lav); color:#fff;}
+  #srcPop .sp-list{overflow:auto; padding:6px 8px; scrollbar-width:thin;}
+  #srcPop .sp-row{display:flex; align-items:center; gap:10px; padding:8px 8px; border-radius:10px;}
+  #srcPop .sp-row:hover{background:rgba(185,167,255,.07);}
+  #srcPop .sp-t{flex:1 1 auto; min-width:0;}
+  #srcPop .sp-t b{display:block; font-size:12.8px; font-weight:600; color:var(--cream,#F5F5F5); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #srcPop .sp-t em{display:block; font-style:normal; font-size:11.3px; color:var(--muted,#8E8A85); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #srcPop .sp-a{flex:0 0 auto; display:flex; gap:6px;}
+  #srcPop .sp-a button, #srcPop .sp-a a{cursor:pointer; display:inline-flex; align-items:center; height:26px; padding:0 9px; border-radius:8px; border:1px solid rgba(185,167,255,.4); background:transparent; color:#d9cfff; font:inherit; font-size:11.5px; text-decoration:none; white-space:nowrap;}
+  #srcPop .sp-a button:hover, #srcPop .sp-a a:hover{background:rgba(185,167,255,.16);}
+  #srcPop .sp-empty{padding:16px 10px; font-size:12.5px; color:var(--muted,#8E8A85); text-align:center;}
+  #srcPop .sp-more{padding:4px 10px 8px; font-size:11.5px; color:var(--muted,#8E8A85);}
+  #srcPop .sp-foot{display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 16px 12px; border-top:1px solid var(--border,rgba(255,255,255,.08)); font-size:11.5px; color:var(--muted,#8E8A85);}
+  #srcPop .sp-foot .sp-src{flex:1 1 180px; min-width:0;}
+  #srcPop .sp-foot .sp-src a{color:#d9cfff; text-decoration:none;}
+  #srcPop .sp-foot .sp-go{cursor:pointer; height:30px; padding:0 12px; border-radius:9px; border:1px solid var(--lav); background:var(--lav); color:#140f24; font:inherit; font-size:12px; font-weight:700;}
+  @keyframes srcFlash{ 0%{box-shadow:0 0 0 2px rgba(214,202,255,.95), 0 0 26px rgba(185,167,255,.6);} 100%{box-shadow:0 0 0 2px rgba(185,167,255,0), 0 0 0 rgba(185,167,255,0);} }
+  .src-flash{animation:srcFlash 1.8s ease-out 1 !important; border-radius:10px;}
+  tr.src-flash > td{background:rgba(185,167,255,.12) !important; transition:background 1.6s;}
+  @media print{ #srcPop, #lavArc{display:none !important;} .stat-tile.src-tile::after{display:none !important;} }
+</style>
+<script>
+/* v51 module: Quarter recap, Marketing and KNKT join the password-only sections of the team view · press any number tile to see the records behind it and open their source · electric lavender hover (Harith) */
+(function(){
+  "use strict";
+  var TEAM = !!window.__SAUD_TEAM__;
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var TX = function(s){ try{ return typeof tx === "function" ? tx(s) : s; }catch(e){ return s; } };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var toast = function(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} };
+  function arr(k){ var s = ST(); return (s && Array.isArray(s[k])) ? s[k] : []; }
+  function pd(v){ if(!v) return null; var m = String(v).match(/(\d{4})-(\d{2})-(\d{2})/); if(m) return new Date(+m[1], +m[2] - 1, +m[3]); var t = Date.parse(String(v).replace(" ", "T")); return isNaN(t) ? null : new Date(t); }
+  function today0(){ var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function fmt(v){ var d = pd(v); if(!d) return ""; try{ return d.toLocaleDateString(AR() ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short", year:"numeric" }); }catch(e){ return String(v); } }
+  function isEdit(){ return typeof editing !== "undefined" && !!editing; }
+
+  /* ---------- 1) team view: these pages stay password-only (the v42 lock list was extended; this keeps them out of the page order) ---------- */
+  var LOCK = ["recap", "internal", "projects", "brand", "marketing"];
+  function locked(){ var h = document.documentElement; return TEAM && h.classList.contains("team-mode") && h.classList.contains("ts-locked"); }
+  function prune(){ if(!locked()) return; try{ if(typeof PAGE_ORDER !== "undefined") LOCK.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(i >= 0) PAGE_ORDER.splice(i, 1); }); }catch(e){} }
+  if(typeof switchPage === "function" && !switchPage.__v51){ var baseSP = switchPage; switchPage = function(p){ var a = [].slice.call(arguments); if(locked() && LOCK.indexOf(p) >= 0) a[0] = "overview"; closePop(); return baseSP.apply(this, a); }; switchPage.__v51 = true; }
+  if(typeof renderAll === "function" && !renderAll.__v51){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ prune(); mark(); }catch(e){} return out; }; renderAll.__v51 = true; }
+
+  /* ---------- 2) press a number → the records behind it ---------- */
+  function etU(r){ try{ return typeof window.etimadUrl === "function" ? window.etimadUrl(r) : ""; }catch(e){ return ""; } }
+  function allT(){ return arr("external").map(function(r, i){ return { r:r, i:i, sec:"external" }; }).concat(arr("externalExcluded").map(function(r, i){ return { r:r, i:i, sec:"externalExcluded" }; })).filter(function(x){ return x.r; }); }
+  function decL(k){ var ar = AR(); return ({ pursue:ar ? "نتقدّم" : "Pursue", watch:ar ? "نراقب" : "Watch", pass:ar ? "نتخطّى" : "Pass" })[k] || ""; }
+  function outL(k){ var ar = AR(); return ({ won:ar ? "فزنا" : "Won", lost:ar ? "خسرنا" : "Lost", nobid:ar ? "لم نتقدّم" : "No bid", cancelled:ar ? "أُلغيت" : "Cancelled" })[k] || ""; }
+  function tItem(x, extra){ var r = x.r, ar = AR(); var bits = [TX(r.agency || ""), r.bidDeadline ? (ar ? "التقديم " : "Bids ") + fmt(r.bidDeadline) : (r.deadline ? TX(r.deadline) : ""), extra || ""].filter(Boolean);
+    return { kind:"t", name:TX(r.name || r.rn || ""), sub:bits.join(" · "), sec:x.sec, i:x.i, rn:String(r.rn || ""), url:etU(r), urlL:ar ? "اعتماد ↗" : "Etimad ↗" }; }
+  function evItem(r, i, extra){ var range = r.end && r.end !== r.start ? fmt(r.start) + " – " + fmt(r.end) : fmt(r.start);
+    return { kind:"e", name:(AR() && r.nameAr ? r.nameAr : TX(r.name || "")), sub:[range, AR() && r.cityAr ? r.cityAr : TX(r.city || ""), extra || ""].filter(Boolean).join(" · "), i:i, url:/^https?:\/\//i.test(r.url || "") ? r.url : "", urlL:AR() ? "الموقع ↗" : "Website ↗" }; }
+  function rowItem(sec, page, r, i, name, sub){ return { kind:"r", sec:sec, page:page, i:i, name:TX(name || ""), sub:sub || "" }; }
+  var SRC_ET = function(){ return AR() ? 'المصدر: منصة اعتماد (<a href="https://tenders.etimad.sa/Tender/AllTendersForVisitor" target="_blank" rel="noopener">tenders.etimad.sa ↗</a>) عبر الفحص اليومي لسعود.' : 'Source: Etimad (<a href="https://tenders.etimad.sa/Tender/AllTendersForVisitor" target="_blank" rel="noopener">tenders.etimad.sa ↗</a>), from Saud’s daily check.'; };
+  var SRC_EV = function(){ return AR() ? "المصدر: المواقع الرسمية للفعاليات — اضغط «الموقع» بجانب كل فعالية." : "Source: each event’s official website — press Website next to it."; };
+  var SRC_TEAM = function(){ return AR() ? "المصدر: ما يسجّله الفريق في هذه الصفحة." : "Source: what the team logs on this page."; };
+
+  /* events helpers (same rules as the Events page) */
+  function evStatusK(r){ var t = today0(), s = pd(r.start), e = pd(r.end) || s, w = pd(r.watchFrom); if(!s) return "soon"; if(e && e < t) return "exp"; if(s <= t) return "live"; if(w && w <= t) return "win"; return "soon"; }
+  function kwOf(r){ var k = Array.isArray(r.keywords) ? r.keywords.slice() : []; if(!k.length && r.name) k = [String(r.name).replace(/\s*\d{4}.*$/, "")]; return k.filter(function(x){ return x && String(x).trim().length > 2; }); }
+  function upcoming(){ var t = today0(); return arr("events").map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var e = pd(x.r.end) || pd(x.r.start); return x.r && e && e >= t; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); }); }
+
+  var R = {
+    evKpis:function(k){ var up = upcoming(), t = today0(), jump = { page:"events", sel:"#evCal" };
+      if(k === 0) return { items:up.filter(function(x){ var s = pd(x.r.start); return s > t && (s - t) / 864e5 <= 90; }).map(function(x){ return evItem(x.r, x.i); }), src:SRC_EV(), jump:jump };
+      if(k === 1) return { items:up.filter(function(x){ return evStatusK(x.r) === "win"; }).map(function(x){ return evItem(x.r, x.i, (AR() ? "راقب من " : "Watch from ") + fmt(x.r.watchFrom)); }), src:SRC_EV(), jump:jump };
+      if(k === 3) return { items:up.filter(function(x){ return evStatusK(x.r) === "live"; }).map(function(x){ return evItem(x.r, x.i); }), src:SRC_EV(), jump:jump };
+      var seen = {}, items = [], ext = arr("external");
+      up.forEach(function(x){ var kws = kwOf(x.r).map(function(s){ return String(s).toLowerCase(); }); if(!kws.length) return;
+        ext.forEach(function(r, i){ if(!r) return; var hay = [r.name, r.agency, r.notes, r.details].join(" ").toLowerCase();
+          for(var j = 0; j < kws.length; j++){ if(hay.indexOf(kws[j]) >= 0){ var nm = AR() && x.r.nameAr ? x.r.nameAr : TX(x.r.name || ""); items.push(tItem({ r:r, i:i, sec:"external" }, "↔ " + nm)); return; } } }); });
+      return { items:items, src:SRC_ET(), jump:{ page:"external", sel:"#externalBody" } }; },
+    rcKpis:function(k){ var qb = document.querySelector("#rcQ button.on"), q = qb && qb.dataset.rcq; if(!q || !/^\d{4}-Q\d$/.test(q)) return { items:[], jump:{ page:"recap", sel:"#rcCols" } };
+      var m = q.match(/^(\d{4})-Q(\d)$/), y = +m[1], s0 = (+m[2] - 1) * 3, from = new Date(y, s0, 1), to = new Date(y, s0 + 3, 0, 23, 59, 59), inQ = function(d){ return d && d >= from && d <= to; };
+      var rnM = function(rn){ try{ return window.v48 && typeof window.v48.rnMonth === "function" ? window.v48.rnMonth(rn) : null; }catch(e){ return null; } };
+      var mine = allT().map(function(x){ x.d = rnM(x.r.rn) || pd(x.r.bidDeadline); return x; }).filter(function(x){ return inQ(x.d) && /^(strong|medium)/i.test(x.r.fit || ""); });
+      if(k === 0) return { items:mine.map(function(x){ return tItem(x, TX(x.r.fit || "")); }), src:SRC_ET(), jump:{ page:"external", sel:"#externalBody" } };
+      if(k === 1) return { items:mine.filter(function(x){ return x.r.decision === "pursue"; }).map(function(x){ return tItem(x, decL("pursue")); }), src:SRC_ET(), jump:{ page:"external", sel:"#externalBody" } };
+      if(k === 2) return { items:mine.filter(function(x){ return /^(pursue|watch|pass)$/.test(x.r.decision || ""); }).map(function(x){ return tItem(x, decL(x.r.decision)); }), src:SRC_ET(), jump:{ page:"external", sel:"#externalBody" } };
+      if(k === 3 || k === 4){ var outs = allT().filter(function(x){ var o = x.r.outcome; if(!o) return false; var d = x.r.outcomeAt ? new Date(x.r.outcomeAt) : pd(x.r.bidDeadline); return inQ(d); }).filter(function(x){ return k === 4 ? x.r.outcome === "won" : (x.r.outcome === "won" || x.r.outcome === "lost"); });
+        return { items:outs.map(function(x){ var v = x.r.winPrice || x.r.ourPrice; return tItem(x, outL(x.r.outcome) + (k === 4 && v ? " · " + v : "")); }), src:SRC_ET(), jump:{ page:"external", sel:"#wlSec" } }; }
+      return { items:arr("events").map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var s = pd(x.r.start), en = pd(x.r.end) || s; return x.r && s && s <= to && en >= from; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); }).map(function(x){ return evItem(x.r, x.i); }), src:SRC_EV(), jump:{ page:"events", sel:"#evCal" } }; },
+    wlKpis:function(k){ var rows = allT(), now = Date.now();
+      var bidOn = function(r){ return r.outcome === "won" || r.outcome === "lost" || (r.decision === "pursue" && r.outcome !== "nobid" && r.outcome !== "cancelled"); };
+      var closed = function(x){ if(x.sec === "externalExcluded") return true; var d = pd(x.r.bidDeadline); return !!(d && d.getTime() < now); };
+      var f = [function(x){ return bidOn(x.r); }, function(x){ return x.r.outcome === "won"; }, function(x){ return x.r.outcome === "lost"; }, function(x){ return x.r.outcome === "won" || x.r.outcome === "lost"; }, function(x){ return closed(x) && !x.r.outcome && x.r.decision === "pursue"; }][k] || function(){ return false; };
+      return { items:rows.filter(f).map(function(x){ return tItem(x, x.r.outcome ? outL(x.r.outcome) : decL(x.r.decision)); }), src:SRC_ET(), jump:{ page:"external", sel:"#wlSec" } }; },
+    externalKpis:function(k){ var list = arr("external").map(function(r, i){ return { r:r, i:i, sec:"external" }; }).filter(function(x){ return x.r; });
+      if(k === 1) list = list.filter(function(x){ return !x.r.fit || x.r.fit === "Unknown"; });
+      if(k === 2){ var c = {}; list.forEach(function(x){ var g = x.r.category || "Other/Uncategorized"; c[g] = (c[g] || 0) + 1; }); var top = Object.keys(c).sort(function(a, b){ return c[b] - c[a]; })[0]; list = list.filter(function(x){ return (x.r.category || "Other/Uncategorized") === top; }); }
+      return { items:list.map(function(x){ return tItem(x, TX(x.r.fit || "")); }), src:SRC_ET(), jump:{ page:"external", sel:"#externalBody" } }; },
+    tbKpis:function(){ var b = ST() && ST().buyers, src = b && /^https?:\/\//i.test(b.url || "") ? '<a href="' + esc(b.url) + '" target="_blank" rel="noopener">' + esc(b.source || "Source") + " ↗</a>" : (b && b.source ? esc(b.source) : SRC_ET());
+      var list = b && Array.isArray(b.list) ? b.list.slice().sort(function(p, q){ return (q.n - p.n); }).slice(0, 25) : [];
+      return { items:list.map(function(g){ return { kind:"j", name:TX(g.agency || ""), sub:(g.n || 0) + (AR() ? " منافسة" : " tenders"), jump:{ page:"external", sel:"#tbWrap" } }; }), src:src, jump:{ page:"external", sel:"#tbWrap" } }; },
+    brandKpis:function(k){ var now = today0(), end = now.getTime() + 30 * 864e5;
+      var f = [function(){ return true; }, function(r){ return r.status === "In progress"; }, function(r){ return r.status === "Done"; }, function(r){ var d = pd(r.targetDate); return d && d >= now && d <= end && r.status !== "Done"; }][k] || function(){ return true; };
+      return { items:arr("brand").map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ return x.r && f(x.r); }).map(function(x){ return rowItem("brand", "brand", x.r, x.i, x.r.initiative, [TX(x.r.channel || ""), TX(x.r.status || ""), fmt(x.r.targetDate)].filter(Boolean).join(" · ")); }), src:SRC_TEAM(), jump:{ page:"brand", sel:"#brandBody" } }; },
+    internalKpis:function(k){ var list = arr("internal").map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ return x.r; });
+      if(k === 1) list = list.filter(function(x){ return x.r.stage === "Submitted"; }); if(k >= 2) list = list.filter(function(x){ return +x.r.value; });
+      return { items:list.map(function(x){ return rowItem("internal", "internal", x.r, x.i, x.r.name, [TX(x.r.client || x.r.agency || ""), TX(x.r.stage || ""), x.r.value ? (+x.r.value).toLocaleString("en") : ""].filter(Boolean).join(" · ")); }), src:SRC_TEAM(), jump:{ page:"internal", sel:"#internalBody" } }; },
+    prototypesKpis:function(k){ var list = arr("prototypes").map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ return x.r; });
+      if(k === 0) list = list.filter(function(x){ return x.r.status === "In the Makers"; }); else if(k === 1) list = list.filter(function(x){ return x.r.status === "On shelf"; }); else list = list.filter(function(x){ return +x.r.value; });
+      return { items:list.map(function(x){ return rowItem("prototypes", "projects", x.r, x.i, x.r.name, [TX(x.r.status || ""), x.r.value ? String(x.r.value) : ""].filter(Boolean).join(" · ")); }), src:SRC_TEAM(), jump:{ page:"projects", sel:"#prototypesBody" } }; }
+  };
+  var ROWS = Object.keys(R);
+  function mark(){ var hint = AR() ? "اضغط لترى مصدر هذا الرقم" : "Press to see where this number comes from";
+    ROWS.forEach(function(id){ var row = document.getElementById(id); if(!row) return; [].forEach.call(row.querySelectorAll(":scope > .stat-tile"), function(t){ if(!t.classList.contains("src-tile")) t.classList.add("src-tile"); if(t.title !== hint) t.title = hint; }); }); }
+
+  var cur = null;
+  function pop(){ var p = document.getElementById("srcPop"); if(!p){ p = document.createElement("div"); p.id = "srcPop"; p.hidden = true; p.setAttribute("role", "dialog"); document.body.appendChild(p); } return p; }
+  function closePop(){ var p = document.getElementById("srcPop"); if(p && !p.hidden) p.hidden = true; if(cur && cur.tile) cur.tile.classList.remove("src-on"); cur = null; }
+  function place(p, tile){ var r = tile.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight, w = Math.min(440, W - 32);
+    var left = Math.max(16, Math.min(r.left, W - w - 16)); p.style.left = left + "px"; p.style.right = "auto";
+    var below = H - r.bottom - 12, above = r.top - 12, ph = Math.min(p.offsetHeight || 380, H * .62);
+    if(below >= Math.min(ph, 300) || below >= above){ p.style.top = (r.bottom + 8) + "px"; p.style.bottom = "auto"; p.style.maxHeight = Math.max(220, below - 8) + "px"; }
+    else { p.style.top = "auto"; p.style.bottom = (H - r.top + 8) + "px"; p.style.maxHeight = Math.max(220, above - 8) + "px"; } }
+  function openPop(tile, id, k){
+    var res = null; try{ res = R[id](k); }catch(e){ console.error(e); res = { items:[] }; } if(!res) return;
+    var ar = AR(), p = pop(), lab = (tile.querySelector(".label") || {}).textContent || "", val = (tile.querySelector(".value") || {}).textContent || "";
+    var items = res.items || [], MAX = 15, shown = items.slice(0, MAX);
+    if(cur && cur.tile) cur.tile.classList.remove("src-on"); cur = { tile:tile, items:shown, jump:res.jump }; tile.classList.add("src-on");
+    var list = shown.length ? shown.map(function(it, n){ var acts = (it.kind === "t" || it.kind === "e" || it.kind === "r" || it.kind === "j") ? '<button type="button" data-sp="' + n + '">' + (ar ? "عرض" : "Show") + "</button>" : "";
+        if(it.url) acts += '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.urlL || "↗") + "</a>";
+        return '<div class="sp-row"><div class="sp-t"><b title="' + esc(it.name) + '">' + esc(it.name) + "</b>" + (it.sub ? '<em title="' + esc(it.sub) + '">' + esc(it.sub) + "</em>" : "") + '</div><div class="sp-a">' + acts + "</div></div>"; }).join("")
+      : '<div class="sp-empty">' + (ar ? "لا توجد سجلات خلف هذا الرقم الآن." : "No records behind this number right now.") + "</div>";
+    var more = items.length > MAX ? '<div class="sp-more">+' + (items.length - MAX) + (ar ? " أخرى — افتح القائمة كاملة" : " more — open the full list") + "</div>" : "";
+    p.innerHTML = '<div class="sp-head"><div><b>' + esc(lab.trim()) + (val.trim() ? " · " + esc(val.trim()) : "") + "</b><span>" + (ar ? "من أين جاء هذا الرقم" : "Where this number comes from") + (items.length ? " — " + items.length + (ar ? " سجل" : items.length === 1 ? " record" : " records") : "") + '</span></div><button type="button" class="sp-x" data-sp="x" aria-label="Close">✕</button></div>'
+      + '<div class="sp-list">' + list + more + "</div>"
+      + '<div class="sp-foot"><div class="sp-src">' + (res.src || "") + "</div>" + (res.jump ? '<button type="button" class="sp-go" data-sp="go">' + (ar ? "افتح القائمة كاملة ←" : "Open the full list →") + "</button>" : "") + "</div>";
+    p.hidden = false; place(p, tile); }
+
+  function flash(el){ if(!el) return; el.classList.remove("src-flash"); void el.offsetWidth; el.classList.add("src-flash"); setTimeout(function(){ el.classList.remove("src-flash"); }, 2000); }
+  function visible(el){ return !!(el && el.offsetParent !== null && el.getClientRects().length); }
+  function openSec(el){ var s = el && el.closest("section"); if(s && s.classList.contains("collapsed")) s.classList.remove("collapsed"); }
+  function after(fn){ setTimeout(fn, 420); }
+  function go(page){ try{ if(typeof currentPage === "function" && currentPage() === page) return; if(typeof switchPage === "function") switchPage(page); }catch(e){} }
+  function showTender(it){ go("external"); after(function(){ var bodyId = it.sec === "externalExcluded" ? "externalExcludedBody" : "externalBody", body = document.getElementById(bodyId), tr = null;
+      if(body){ [].some.call(body.querySelectorAll('[data-bind$=".rn"]'), function(c){ if(String(c.textContent || "").trim() === it.rn){ tr = c.closest("tr"); return true; } return false; });
+        if(!tr){ var c = body.querySelector('[data-bind^="' + it.sec + "." + it.i + '."]'); tr = c && c.closest("tr"); } }
+      if(tr) openSec(tr);
+      if(!tr || !visible(tr)){ toast(AR() ? "غير ظاهرة بسبب الشهر أو التصفية في صفحة اعتماد — استخدم «اعتماد ↗»." : "Not shown with the current month or filter on the Etimad page — use Etimad ↗."); return; }
+      if(it.sec === "external"){ var m = (tr.querySelector('[data-bind^="external."]') || {}).dataset; var i = m && m.bind ? +m.bind.split(".")[1] : -1; var d = document.getElementById("extDetail" + i); if(d && d.style.display === "none" && typeof toggleExtDetail === "function"){ try{ toggleExtDetail(i); }catch(e){} } }
+      tr.scrollIntoView({ behavior:"smooth", block:"center" }); flash(tr); }); }
+  function showEvent(it){ go("events"); after(function(){ var el = document.querySelector('#evCal .ev-item[data-evi="' + it.i + '"]'); if(!visible(el)){ var c = document.querySelector('#eventsBody [data-bind="events.' + it.i + '.name"]'); el = c && c.closest("tr"); }
+      if(!el) return; openSec(el); el.scrollIntoView({ behavior:"smooth", block:"center" }); flash(el); }); }
+  function showRow(it){ go(it.page); after(function(){ var c = document.querySelector('[data-bind^="' + it.sec + "." + it.i + '."]'); var el = c && (c.closest("tr") || c); if(!el) return; openSec(el); el.scrollIntoView({ behavior:"smooth", block:"center" }); flash(el); }); }
+  function jumpTo(j){ if(!j) return; go(j.page); after(function(){ var el = document.querySelector(j.sel); if(!el) return; openSec(el); el.scrollIntoView({ behavior:"smooth", block:"start" }); flash(el.id === "wlSec" || el.tagName === "SECTION" ? el : (el.closest(".table-scroll") || el)); }); }
+
+  document.addEventListener("click", function(e){
+    var p = document.getElementById("srcPop");
+    if(p && !p.hidden && p.contains(e.target)){ var b = e.target.closest("[data-sp]"); if(!b) return; var v = b.dataset.sp, c = cur;
+      if(v === "x"){ closePop(); return; }
+      if(v === "go"){ var j = c && c.jump; closePop(); jumpTo(j); return; }
+      var it = c && c.items[+v]; closePop(); if(!it) return;
+      if(it.kind === "t") showTender(it); else if(it.kind === "e") showEvent(it); else if(it.kind === "r") showRow(it); else if(it.kind === "j") jumpTo(it.jump); return; }
+    var tile = e.target.closest && e.target.closest(".stat-tile.src-tile");
+    if(tile && !isEdit() && !e.target.closest("a, button, input, select, textarea, [contenteditable='true']")){ var row = tile.parentNode; if(row && R[row.id]){ var k = [].indexOf.call(row.querySelectorAll(":scope > .stat-tile"), tile);
+        if(cur && cur.tile === tile){ closePop(); return; } openPop(tile, row.id, k); return; } }
+    if(p && !p.hidden) closePop();
+  });
+  window.addEventListener("resize", function(){ if(cur && cur.tile) place(pop(), cur.tile); }, { passive:true });
+  document.addEventListener("scroll", function(){ if(cur && cur.tile){ var r = cur.tile.getBoundingClientRect(); if(r.bottom < 0 || r.top > window.innerHeight) closePop(); else place(pop(), cur.tile); } }, { passive:true, capture:true });
+
+  /* ---------- 3) electric lavender: a thin current runs round the edge of the card under the cursor ---------- */
+  var SEL = ".stat-tile, .bb-item, .ev-item, .ev-month, .wl-item, .wl-box, .agenda-item, .kb-card, .cu-card, .overview-nav .navcard, .mission-strip [data-mi]";
+  var arc = null, hov = null, raf = 0, coarse = false; try{ coarse = window.matchMedia("(pointer:coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  function arcEl(){ if(!arc){ arc = document.createElement("div"); arc.id = "lavArc"; arc.setAttribute("aria-hidden", "true"); document.body.appendChild(arc); } return arc; }
+  function follow(){ raf = 0; if(!hov || !document.contains(hov)){ hide(); return; } var r = hov.getBoundingClientRect(), a = arcEl();
+    if(!r.width){ hide(); return; } a.style.transform = "translate(" + r.left + "px," + r.top + "px)"; a.style.width = r.width + "px"; a.style.height = r.height + "px";
+    if(!a.__br || a.__el !== hov){ a.__el = hov; a.__br = 1; try{ a.style.borderRadius = getComputedStyle(hov).borderTopLeftRadius || "14px"; }catch(e){} }
+    raf = requestAnimationFrame(follow); }
+  function hide(){ hov = null; if(raf){ cancelAnimationFrame(raf); raf = 0; } if(arc) arc.classList.remove("on"); }
+  if(!coarse){
+    document.addEventListener("mouseover", function(e){ var el = e.target && e.target.closest && e.target.closest(SEL); if(el && el.closest("#srcPop")) el = null; if(el === hov) return; if(!el){ hide(); return; }
+      hov = el; var a = arcEl(); a.__br = 0; a.classList.add("on"); if(!raf) raf = requestAnimationFrame(follow); }, { passive:true });
+    document.addEventListener("mouseleave", hide, { passive:true }); window.addEventListener("blur", hide);
+  }
+
+  try{ prune(); mark(); }catch(e){}
+  setInterval(function(){ try{ prune(); mark(); }catch(e){} }, 1200);
 })();
 </script>
 </body>

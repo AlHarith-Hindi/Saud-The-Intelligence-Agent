@@ -2938,7 +2938,7 @@ function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(
       g.beginPath(); g.arc(q.x, q.y, pr, 0, 6.283); g.fill(); g.shadowBlur = 0; g.globalAlpha = 1;
       CORE.proj.push({ n, x:q.x, y:q.y, r:pr+4, z:q.z }); };
     const NQ = CORE.nodes.map(n=>({ n, q:nodeAt(n) }));
-    NQ.filter(o=>o.q.z <= 0).forEach(o=>drawNode(o.n, o.q));
+    // v64: no status dots around the top (Harith)
     // the top
     const dY = c + R*.14, dW = R*.92, dH = dW*.27, th = R*.085, topY = c - R*1.08, tipY = c + R*.95, wob = still ? 0 : Math.sin(tt*1.7)*.06 + (CORE.busy ? Math.sin(tt*9)*.03 : 0);
     g.save(); g.translate(c, tipY); g.rotate(wob); g.translate(-c, -tipY);
@@ -2960,7 +2960,6 @@ function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(
     g.quadraticCurveTo(c, topY - R*.03, c + R*.026, topY + R*.03); g.lineTo(c + R*.045, dY - R*.42); g.quadraticCurveTo(c + R*.05, dY - dH*.35, c + R*.24, dY - dH*.05); g.closePath(); g.shadowColor = A(.8); g.shadowBlur = 10; g.fill(); g.shadowBlur = 0;
     if(CORE.busy){ g.globalAlpha = .45 + Math.sin(CORE.pulse)*.3; g.strokeStyle = acc; g.lineWidth = 1.5; g.beginPath(); g.ellipse(c, dY + th*.5, dW*1.12, dH*1.25, 0, 0, 6.283); g.stroke(); g.globalAlpha = 1; }
     g.restore();
-    NQ.filter(o=>o.q.z > 0).forEach(o=>drawNode(o.n, o.q));
     g.globalAlpha = 1;
   }
   requestAnimationFrame(coreLoop);
@@ -3051,7 +3050,7 @@ function renderV12(){
   CORE.nodes = coreNodes(); wireCore(); renderTicker(); applySound(); applyAmbience();
   const sp = document.getElementById("briefSpeak"); if(sp && !sp.classList.contains("on")) sp.textContent = "🔊 " + L("Listen");
   const mic = document.getElementById("micBtn"); if(mic){ mic.title = L("Ask Saud by voice"); mic.style.display = SR ? "" : "none"; }
-  const cl = document.getElementById("coreLabel"); if(cl) cl.textContent = L("Drag to spin · click a node");
+  const cl = document.getElementById("coreLabel"); if(cl) cl.textContent = LANG === "ar" ? "اسحب للتدوير" : "Drag to spin";
 }
 
 /* ======================= v13: comments on any element + sidebar search + Customize tab ======================= */

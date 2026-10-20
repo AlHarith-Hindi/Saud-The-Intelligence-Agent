@@ -8864,11 +8864,11 @@ async function exportPPTX(){
         if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
         g.viewport(0, 0, cv.width, cv.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
         var still = RED || calm(), tt = still ? 0 : (now - t0) / 1000; sx += (mx - sx) * .05; sy += (my - sy) * .05; sp += (Pp - sp) * .12;
-        var asp = w / h, fov = .62, z = -7.2 + sp * 3.2, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
-        var x = (narrow ? .0 : .5) * half * rtl * (1 - sp * .6) + sx * .25, y = -.35 + Math.sin(tt * 1.3) * .03 - sy * .12;
-        var spin = tt * 15, prec = tt * 1.7, tilt = .07 + sp * .05;
+        var asp = w / h, fov = .62, z = -7.2 - sp * .4, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
+        var x = (narrow ? .0 : .5) * half * rtl * (1 - sp * .12) + sx * .25, y = -.35 - sp * 2.0 + Math.sin(tt * 1.3) * .03 - sy * .12;
+        var spin = tt * 15 + sp * 14, prec = tt * 1.7, tilt = .07 + sp * .09;
         var R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(spin))));
-        var CAM = mul(rx(.2 + sy * .12 + sp * .35), ry(sx * .25));
+        var CAM = mul(rx(.2 + sy * .12 + sp * .12), ry(sx * .25));
         if(ov){ x = ov.x; y = ov.y; z = ov.z; CAM = mul(rx(ov.rx), ry(ov.ry)); }
         var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
         /* reflection on the floor first (faint), then the top */
@@ -8898,14 +8898,14 @@ async function exportPPTX(){
     x.fillStyle = gl2; x.fillRect(0, 0, w, h); }
 
   /* the shared canvas lives in the active page's stage */
-  var Pp = 0, mx = 0, my = 0, raf = 0;
+  var Pp = 0, Ps = 0, mx = 0, my = 0, raf = 0;
   function active(){ var p = cur(); return ensure(p); }
   function mount(){ var s = active(); if(!s) return null; var gl = initGL(); if(!gl){ s.classList.add("nogl"); return s; } var slot = s.querySelector(".slot"); if(!INTRO && gl.cv.parentNode !== slot) slot.appendChild(gl.cv); return s; }
   function scrollP(){ var s = stages[cur()]; if(!s || !s.offsetParent) return; var r = s.getBoundingClientRect(), h = r.height || 1;
-    Pp = Math.max(0, Math.min(1, -r.top / (h * .85))); s.style.setProperty("--p", Pp.toFixed(4)); var c = s.querySelector(".bar .cnt"); if(c){ var v = Math.round(Pp * 100); c.textContent = (v < 10 ? "0" : "") + v + " / 100"; }
+    Pp = Math.max(0, Math.min(1, -r.top / (h * .85))); if(s.__t0 === undefined || r.top > s.__t0) s.__t0 = r.top; Ps = Math.max(0, Math.min(1, (s.__t0 - r.top) / (h * .6))); s.style.setProperty("--p", Pp.toFixed(4)); var c = s.querySelector(".bar .cnt"); if(c){ var v = Math.round(Pp * 100); c.textContent = (v < 10 ? "0" : "") + v + " / 100"; }
     var path = s.querySelector("svg.pth path"); if(path){ if(!path.__len){ try{ path.__len = path.getTotalLength(); path.style.strokeDasharray = path.__len; }catch(e){ path.__len = 1200; } } path.__draw = Math.max(path.__draw || 0, Math.min(1, .55 + Pp * 1.2)); } }
   function loop(now){ raf = 0; var s = stages[cur()]; if(!s || !s.offsetParent){ return; } var r = s.getBoundingClientRect(); var vis = r.bottom > 0 && r.top < innerHeight;
-    if(vis && GL && GL.cv.parentNode === s.querySelector(".slot")) GL.draw(now, s, Pp, mx, my); if(vis) sparks(now, s);
+    if(vis && GL && GL.cv.parentNode === s.querySelector(".slot")) GL.draw(now, s, Ps, mx, my); if(vis) sparks(now, s);
     var path = s.querySelector("svg.pth path"); if(path && path.__len){ var still = RED || calm(), tgt = still ? 1 : Math.max(path.__draw || 0, .55); path.__shown = still ? 1 : (path.__shown || 0) + (tgt - (path.__shown || 0)) * .05; path.style.strokeDashoffset = (path.__len * (1 - path.__shown)).toFixed(1); }
     if(!(RED || calm()) && vis) raf = requestAnimationFrame(loop); else if(!vis) setTimeout(kick, 400); }
   function kick(){ if(!raf) raf = requestAnimationFrame(loop); }

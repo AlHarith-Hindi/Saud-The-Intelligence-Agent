@@ -8696,7 +8696,7 @@ async function exportPPTX(){
   @media print{ .v55stage, #v54load, section > .v54line, .v54n{display:none !important;} html.v55 section .sechead h2{clip-path:none !important; transform:none !important;} .v55r{opacity:1 !important; translate:none !important; scale:none !important;} }
 
   /* v57: 10-second intro on every visit and refresh — the Midwam spinning top drops in, sparks fly, "Experience the spin", the top rushes the camera, flash, the Midwam logo (Harith) */
-  #v57intro{position:fixed; inset:0; z-index:100006; overflow:hidden; color:#E9E4DA; background:radial-gradient(70% 80% at 50% 62%, #221d3d 0%, #0b0a12 72%) #0b0a12; transition:transform 1s cubic-bezier(.76,0,.24,1);}
+  #v57intro{position:fixed; inset:0; z-index:100006; overflow:hidden; color:#E9E4DA; background:radial-gradient(60% 70% at 50% 64%, rgba(243,109,47,.20) 0%, rgba(176,36,106,.10) 38%, transparent 70%) #0E0E11; transition:transform 1s cubic-bezier(.76,0,.24,1);}
   #v57intro.out{transform:translateY(-100%);}
   #v57intro .gl, #v57intro canvas.spk{position:absolute; inset:0; width:100%; height:100%;}
   #v57intro .gl{z-index:1; transition:opacity .9s ease;} #v57intro canvas.spk{z-index:2;}
@@ -8894,7 +8894,7 @@ async function exportPPTX(){
       gr.addColorStop(0, "rgba(255,170,60,0)"); gr.addColorStop(.7, "rgba(255,190,90," + (al * .7).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,236,170," + al.toFixed(3) + ")");
       x.strokeStyle = gr; x.lineWidth = p.wd; x.lineCap = "round"; x.shadowColor = "rgba(255,170,60,.9)"; x.shadowBlur = 8; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.stroke(); });
     x.globalCompositeOperation = "source-over"; x.shadowBlur = 0;
-    var gl2 = x.createRadialGradient(cx, cy + h * .2, 4, cx, cy + h * .2, Math.min(w, h) * .32); gl2.addColorStop(0, "rgba(243,109,47,.16)"); gl2.addColorStop(.5, "rgba(140,59,224,.07)"); gl2.addColorStop(1, "rgba(0,0,0,0)");
+    var gl2 = x.createRadialGradient(cx, cy + h * .2, 4, cx, cy + h * .2, Math.min(w, h) * .32); gl2.addColorStop(0, "rgba(243,109,47,.16)"); gl2.addColorStop(.5, "rgba(176,36,106,.08)"); gl2.addColorStop(1, "rgba(0,0,0,0)");
     x.fillStyle = gl2; x.fillRect(0, 0, w, h); }
 
   /* the shared canvas lives in the active page's stage */
@@ -8976,5 +8976,18 @@ async function exportPPTX(){
   })();
 })();
 </script>
+<style id="v59css">
+  /* v59: the spinning-top stage blends into the dashboard on every section — no separate navy box; the dash's own night + copper/magenta glow, soft fading edges (Harith) */
+  html.v55 .v55stage{background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; --gx:72%;}
+  [dir="rtl"] .v55stage{--gx:28%;}
+  html.v55 .v55stage::before{content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(34% 50% at var(--gx) 50%, rgba(243,109,47,.17) 0%, rgba(243,109,47,.06) 45%, transparent 72%),
+               radial-gradient(28% 34% at var(--gx) 78%, rgba(176,36,106,.16) 0%, transparent 72%);}
+  html.v55 .v55stage .slot, html.v55 .v55stage canvas.spk{
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(180deg, transparent 0, #000 8%, #000 70%, transparent 100%);
+    -webkit-mask-composite:source-in; mask-image:linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(180deg, transparent 0, #000 8%, #000 70%, transparent 100%); mask-composite:intersect;}
+  html.v55 .v55stage .bar, html.v55 .v55stage .cap .n{color:#9A928A;}
+  @media (max-width:760px){ html.v55 .v55stage{--gx:50%;} }
+</style>
 </body>
 </html>

@@ -8626,7 +8626,8 @@ async function exportPPTX(){
 <style id="v55css">
   /* v55 (replaces v54): cinematic stages on EVERY page with a 3D Midwam mark · words always fit · giant section titles · self-drawing lines · items pop in · once-a-day loader (Harith) */
   .v55stage{position:relative; height:clamp(340px, 50vh, 520px); margin:0 0 22px; border-radius:22px; overflow:hidden; isolation:isolate;
-    background:radial-gradient(60% 70% at 72% 50%, #1c1210 0%, #0a0a0b 68%), #0a0a0b; border:1px solid var(--border, rgba(255,255,255,.08)); --p:0;}
+    background:radial-gradient(60% 75% at 72% 55%, #1d1a33 0%, #0c0b14 70%), #0c0b14; border:1px solid var(--border, rgba(255,255,255,.08)); --p:0;}
+  .v55stage canvas.spk{position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none;}
   .v55stage.big{height:clamp(500px, 82vh, 860px);}
   .v55stage .w{position:absolute; left:3.2vw; right:3.2vw; top:30px; bottom:118px; display:flex; flex-direction:column; justify-content:center; z-index:3; pointer-events:none;
     filter:blur(calc(var(--p) * 14px)); opacity:calc(1 - var(--p) * .6); transform:scale(calc(1 + var(--p) * .06)); transform-origin:0 50%; will-change:filter, transform;}
@@ -8768,7 +8769,7 @@ async function exportPPTX(){
   function ensure(page){ var def = PAGES[page]; if(!def) return null; var pg = document.getElementById("page-" + page); if(!pg) return null;
     var s = stages[page]; if(s && s.isConnected && s.parentNode === pg) { labels(s, page); return s; }
     s = pg.querySelector(":scope > .v55stage"); if(!s){ s = document.createElement("div"); s.className = "v55stage" + (def.big ? " big" : ""); s.dataset.page = page;
-      s.innerHTML = '<div class="slot"></div><div class="fallback"></div><div class="w"></div><svg class="pth" viewBox="0 0 1000 600" preserveAspectRatio="none"><path d="M-20 392 C 200 398, 360 406, 520 398 S 700 338, 760 292 S 900 228, 1020 238"/></svg>'
+      s.innerHTML = '<div class="slot"></div><canvas class="spk"></canvas><div class="fallback"></div><div class="w"></div><svg class="pth" viewBox="0 0 1000 600" preserveAspectRatio="none"><path d="M-20 392 C 200 398, 360 406, 520 398 S 700 338, 760 292 S 900 228, 1020 238"/></svg>'
         + '<div class="cap" role="button" tabindex="0"><div class="n"></div><div class="t"></div></div><div class="bar"><span class="l"></span><span class="mid"></span><span class="cnt">00 / 100</span></div><div class="prog"></div>';
       pg.insertBefore(s, pg.firstChild);
       s.querySelector(".cap").addEventListener("click", function(){ var c = caps(page), k = (+s.dataset.ci || 0) % c.length; if(c[k] && c[k].go && c[k].go !== cur() && typeof switchPage === "function") switchPage(c[k].go); }); }
@@ -8788,54 +8789,80 @@ async function exportPPTX(){
     if(now){ put(); return; } t.classList.add("swap"); setTimeout(put, 420); }
   setInterval(function(){ if(document.hidden) return; var s = stages[cur()]; if(!s || !s.offsetParent) return; capI++; showCap(s, cur(), false); }, 4200);
 
-  /* ---------- 3) one shared WebGL canvas: the Midwam mark in 3D (the eye, two orbit swooshes, the wave) ---------- */
+  /* ---------- 3) one shared WebGL canvas: the Midwam spinning top ("Experience the spin", midwam.com) with its reflection; golden light streaks on a 2D layer ---------- */
   var GL = null;
   function initGL(){ if(GL !== null) return GL; GL = false; var cv = document.createElement("canvas"), g = null;
     try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:false }); }catch(e){} if(!g) return GL;
-    var VS = "attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vc;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vc=c;gl_Position=P*w;}";
-    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vc;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;vec3 L1=normalize(vec3(-.55,.75,.65));vec3 L2=normalize(vec3(.8,-.3,.45));"
-      + "float d=max(dot(N,L1),0.)*.62+max(dot(N,L2),0.)*.18+.16;vec3 H1=normalize(L1+V);float s1=pow(max(dot(N,H1),0.),80.)*1.1;vec3 H2=normalize(L2+V);float s2=pow(max(dot(N,H2),0.),24.)*.25;"
-      + "float fr=pow(1.-max(dot(N,V),0.),2.6);vec3 rim=mix(vec3(.69,.14,.42),vec3(.55,.23,.88),clamp(N.y*.5+.5,0.,1.))*fr*.9;vec3 col=vc*d+vec3(1.,.93,.86)*(s1+s2)+rim;gl_FragColor=vec4(col,1.);}";
+    var VS = "attribute vec3 p;attribute vec3 n;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vo;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vo=p;gl_Position=P*w;}";
+    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,2.2);"
+      + "vec3 L1=normalize(vec3(-.4,.8,.6));vec3 H=normalize(L1+V);float sp=pow(max(dot(N,H),0.),60.);vec3 base=vec3(.05,.045,.065)+vec3(.10)*max(dot(N,L1),0.);"
+      + "vec3 OR=vec3(1.,.48,.16);vec3 GO=vec3(1.,.76,.34);vec3 VI=vec3(.55,.30,1.);float rr=length(vo.xz);float ang=atan(vo.z,vo.x);"
+      + "float stem=smoothstep(.46,.62,vo.y);vec3 e=stem*(OR*pow(ndv,1.4)*1.7+VI*fr*1.5);"
+      + "float rim=smoothstep(.88,1.,rr)*(1.-smoothstep(.05,.085,abs(vo.y-.30)));e+=rim*(GO*1.9*(.62+.38*sin(ang*18.+T*34.))+OR*.6);"
+      + "float top=(1.-stem)*smoothstep(.35,.43,vo.y)*smoothstep(.25,.95,rr);e+=top*(OR*.45*(.5+.5*sin(ang*9.-T*26.))+VI*fr*.9);"
+      + "float und=1.-smoothstep(.12,.27,vo.y);e+=und*(VI*fr*1.25+OR*pow(ndv,3.)*.3);"
+      + "vec3 col=base+vec3(1.,.92,.85)*sp*.85+e;gl_FragColor=vec4(col,A);}";
     function sh(t, src){ var o = g.createShader(t); g.shaderSource(o, src); g.compileShader(o); return o; }
     var pr = g.createProgram(); g.attachShader(pr, sh(g.VERTEX_SHADER, VS)); g.attachShader(pr, sh(g.FRAGMENT_SHADER, FS)); g.linkProgram(pr); if(!g.getProgramParameter(pr, g.LINK_STATUS)) return GL; g.useProgram(pr);
-    var P = [], N = [], C = [], I = [];
-    /* generic surface S(u,v) on a (U+1)x(V+1) grid with numeric normals */
-    function surf(fn, U, V, col){ var base = P.length / 3, e = 1e-3;
-      for(var i = 0; i <= U; i++) for(var j = 0; j <= V; j++){ var u = i / U, v = j / V, p = fn(u, v), pu = fn(Math.min(1, u + e), v), pu0 = fn(Math.max(0, u - e), v), pv = fn(u, Math.min(1, v + e)), pv0 = fn(u, Math.max(0, v - e));
-        var du = [pu[0] - pu0[0], pu[1] - pu0[1], pu[2] - pu0[2]], dv = [pv[0] - pv0[0], pv[1] - pv0[1], pv[2] - pv0[2]], nn = [du[1] * dv[2] - du[2] * dv[1], du[2] * dv[0] - du[0] * dv[2], du[0] * dv[1] - du[1] * dv[0]], L = Math.hypot(nn[0], nn[1], nn[2]) || 1;
-        P.push(p[0], p[1], p[2]); N.push(nn[0] / L, nn[1] / L, nn[2] / L); C.push(col[0], col[1], col[2]); }
-      for(i = 0; i < U; i++) for(j = 0; j < V; j++){ var a = base + i * (V + 1) + j, b = a + V + 1; I.push(a, b, a + 1, b, b + 1, a + 1); } }
-    var TAU = Math.PI * 2, OR = [.953, .427, .184], OR2 = [.98, .56, .30], CR = [.91, .86, .80];
-    /* the eye: outer edge a perfect circle, the hole sits off-centre (thick at the lower-right, thin at the upper-left) */
-    surf(function(u, v){ var a = u * TAU, b = v * TAU, r = .42 + .18 * Math.cos(a + .785), R = 1.45 - r; return [(R + r * Math.cos(b)) * Math.cos(a), (R + r * Math.cos(b)) * Math.sin(a), r * Math.sin(b) * .78]; }, 140, 40, OR);
-    /* two thin orbit swooshes around the eye (open arcs that taper to points) */
-    function arc(Rr, a0, a1, w, tilt, col){ surf(function(u, v){ var a = a0 + (a1 - a0) * u, b = v * TAU, k = Math.sin(Math.PI * u), r = w * Math.pow(k, .8) + .002, x = (Rr + r * Math.cos(b)) * Math.cos(a), y = (Rr + r * Math.cos(b)) * Math.sin(a), z = r * Math.sin(b) + tilt * Math.sin(a); return [x, y, z]; }, 110, 12, col); }
-    arc(1.72, 1.9, 5.15, .055, .10, OR2); arc(2.0, 2.3, 5.55, .04, -.12, OR2);
-    /* the wave underneath */
-    surf(function(u, v){ var x = -2.6 + 4.6 * u, y = -2.05 + .32 * Math.sin(u * 5.2 + .6) - .25 * u, b = v * TAU, k = Math.sin(Math.PI * u), r = .05 * Math.pow(k, .7) + .003; var dx = 4.6, dy = .32 * 5.2 * Math.cos(u * 5.2 + .6) - .25, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
-      return [x + nx * r * Math.cos(b), y + ny * r * Math.cos(b), r * Math.sin(b)]; }, 120, 10, CR);
+    /* lathe profile (radius, height) from the tip of the stem down to the point */
+    var PRO = [[0, 2.05], [.028, 2.0], [.036, 1.7], [.045, 1.3], [.06, 1.0], [.09, .8], [.15, .65], [.27, .53], [.48, .45], [.76, .405], [.97, .38], [1.02, .345], [1.025, .30], [1.0, .26], [.93, .235], [.7, .19], [.44, .08], [.24, -.12], [.1, -.33], [.03, -.46], [0, -.5]];
+    function prof(t){ var f = t * (PRO.length - 1), i = Math.min(PRO.length - 2, Math.floor(f)), k = f - i, a = PRO[Math.max(0, i - 1)], b = PRO[i], c = PRO[i + 1], d = PRO[Math.min(PRO.length - 1, i + 2)];
+      var cr = function(p0, p1, p2, p3){ return .5 * ((2 * p1) + (-p0 + p2) * k + (2 * p0 - 5 * p1 + 4 * p2 - p3) * k * k + (-p0 + 3 * p1 - 3 * p2 + p3) * k * k * k); };
+      return [Math.max(0, cr(a[0], b[0], c[0], d[0])), cr(a[1], b[1], c[1], d[1])]; }
+    var P = [], N = [], I = [], U = 96, V = 220, e = 1e-3, TAU = Math.PI * 2;
+    function pt(u, v){ var q = prof(v), a = u * TAU; return [q[0] * Math.cos(a), q[1], q[0] * Math.sin(a)]; }
+    for(var i = 0; i <= U; i++) for(var j = 0; j <= V; j++){ var u = i / U, v = j / V, p = pt(u, v), pu = pt(u + e, v), pu0 = pt(u - e, v), pv = pt(u, Math.min(1, v + e)), pv0 = pt(u, Math.max(0, v - e));
+      var du = [pu[0] - pu0[0], pu[1] - pu0[1], pu[2] - pu0[2]], dv = [pv[0] - pv0[0], pv[1] - pv0[1], pv[2] - pv0[2]], nn = [du[1] * dv[2] - du[2] * dv[1], du[2] * dv[0] - du[0] * dv[2], du[0] * dv[1] - du[1] * dv[0]], L = Math.hypot(nn[0], nn[1], nn[2]);
+      if(L < 1e-9){ nn = [0, p[1] > 0 ? 1 : -1, 0]; L = 1; } P.push(p[0], p[1], p[2]); N.push(nn[0] / L, nn[1] / L, nn[2] / L); }
+    for(i = 0; i < U; i++) for(j = 0; j < V; j++){ var a0 = i * (V + 1) + j, b0 = a0 + V + 1; I.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1); }
     function buf(data, T, kind){ var b = g.createBuffer(); g.bindBuffer(kind, b); g.bufferData(kind, new T(data), g.STATIC_DRAW); return b; }
-    var big = P.length / 3 > 65535, ext = big ? g.getExtension("OES_element_index_uint") : null; if(big && !ext) return GL;
-    var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bc = buf(C, Float32Array, g.ARRAY_BUFFER), bi = buf(I, big ? Uint32Array : Uint16Array, g.ELEMENT_ARRAY_BUFFER);
-    [["p", bp], ["n", bn], ["c", bc]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
-    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST);
-    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P");
+    var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bi = buf(I, Uint16Array, g.ELEMENT_ARRAY_BUFFER);
+    [["p", bp], ["n", bn]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
+    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A");
     function persp(f, asp, n, fa){ var t = 1 / Math.tan(f / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
     function mul(a, b){ var o = new Array(16); for(var c = 0; c < 4; c++) for(var r = 0; r < 4; r++){ var s = 0; for(var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; }
     function rx(t){ var c = Math.cos(t), s = Math.sin(t); return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]; }
     function ry(t){ var c = Math.cos(t), s = Math.sin(t); return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]; }
     function rz(t){ var c = Math.cos(t), s = Math.sin(t); return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]; }
     function tr(x, y, z){ return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]; }
-    var count = I.length, type = big ? g.UNSIGNED_INT : g.UNSIGNED_SHORT, t0 = performance.now(), sx = 0, sy = 0, sp = 0;
-    GL = { cv:cv, draw:function(now, st, Pp, mx, my){ var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
+    var SY = [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    var count = I.length, t0 = performance.now(), sx = 0, sy = 0, sp = 0;
+    GL = { cv:cv, cx:0, cy:0, draw:function(now, st, Pp, mx, my){ var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
         if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
         g.viewport(0, 0, cv.width, cv.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
         var still = RED || calm(), tt = still ? 0 : (now - t0) / 1000; sx += (mx - sx) * .05; sy += (my - sy) * .05; sp += (Pp - sp) * .12;
-        var asp = w / h, fov = .62, z = -8.6 + sp * 3.8, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
-        var xOff = (narrow ? .0 : .52) * half * rtl * (1 - sp * .7);
-        var M = mul(tr(xOff + sx * .3, -sy * .22 + .38 + (narrow ? .25 : 0), z), mul(rx(.32 + sp * .9 + sy * .22 + Math.sin(tt * .5) * .05), mul(ry(-.35 * rtl + Math.sin(tt * .35) * .28 + sp * 1.6 + sx * .45), rz(.05 + Math.sin(tt * .25) * .04))));
-        g.uniformMatrix4fv(uM, false, new Float32Array(M)); g.uniformMatrix4fv(uP, false, new Float32Array(persp(fov, asp, .1, 60))); g.drawElements(g.TRIANGLES, count, type, 0); } };
+        var asp = w / h, fov = .62, z = -7.2 + sp * 3.2, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
+        var x = (narrow ? .0 : .5) * half * rtl * (1 - sp * .6) + sx * .25, y = -.35 + Math.sin(tt * 1.3) * .03 - sy * .12;
+        var spin = tt * 15, prec = tt * 1.7, tilt = .07 + sp * .05;
+        var R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(spin))));
+        var CAM = mul(rx(.2 + sy * .12 + sp * .35), ry(sx * .25));
+        var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
+        /* reflection on the floor first (faint), then the top */
+        var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
+        g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, .2); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true);
+        g.clear(g.DEPTH_BUFFER_BIT);
+        var Mt = mul(tr(0, 0, z), mul(CAM, mul(tr(x, y, 0), R)));
+        g.uniformMatrix4fv(uM, false, new Float32Array(Mt)); g.uniform1f(uA, 1); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0);
+        /* where the top's disc is on screen, for the light streaks */
+        var c = mul(Pm, Mt), X = c[12] + c[4] * .3, Y = c[13] + c[5] * .3, W = c[15] + c[7] * .3; if(W){ GL.cx = (X / W * .5 + .5) * w; GL.cy = (1 - (Y / W * .5 + .5)) * h; } } };
     return GL; }
+  /* golden light streaks flying out from the top (as on midwam.com) */
+  var SPK = [], spkLast = 0;
+  function sparks(now, s){ var cv = s.querySelector("canvas.spk"); if(!cv) return; var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
+    if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    var x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, h); if(RED || calm()) return;
+    var cx = GL && GL.cx ? GL.cx : w * .72, cy = GL && GL.cy ? GL.cy : h * .5;
+    if(now - spkLast > 170 && SPK.length < 18){ spkLast = now; var a = Math.random() * Math.PI * 2; SPK.push({ a:a, r:30 + Math.random() * 60, v:110 + Math.random() * 190, L:40 + Math.random() * 90, t:now, life:1400 + Math.random() * 1400, wd:.8 + Math.random() * 1.6 }); }
+    SPK = SPK.filter(function(p){ return now - p.t < p.life; });
+    x.globalCompositeOperation = "lighter";
+    SPK.forEach(function(p){ var age = (now - p.t) / 1000, k = (now - p.t) / p.life, al = Math.sin(Math.PI * Math.min(1, k)) * .95, r = p.r + p.v * age, ca = Math.cos(p.a), sa = Math.sin(p.a) * .55;
+      var x1 = cx + ca * r, y1 = cy + sa * r, x0 = cx + ca * (r - p.L), y0 = cy + sa * (r - p.L), gr = x.createLinearGradient(x0, y0, x1, y1);
+      gr.addColorStop(0, "rgba(255,170,60,0)"); gr.addColorStop(.7, "rgba(255,190,90," + (al * .7).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,236,170," + al.toFixed(3) + ")");
+      x.strokeStyle = gr; x.lineWidth = p.wd; x.lineCap = "round"; x.shadowColor = "rgba(255,170,60,.9)"; x.shadowBlur = 8; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.stroke(); });
+    x.globalCompositeOperation = "source-over"; x.shadowBlur = 0;
+    var gl2 = x.createRadialGradient(cx, cy + h * .2, 4, cx, cy + h * .2, Math.min(w, h) * .32); gl2.addColorStop(0, "rgba(243,109,47,.16)"); gl2.addColorStop(.5, "rgba(140,59,224,.07)"); gl2.addColorStop(1, "rgba(0,0,0,0)");
+    x.fillStyle = gl2; x.fillRect(0, 0, w, h); }
 
   /* the shared canvas lives in the active page's stage */
   var Pp = 0, mx = 0, my = 0, raf = 0;
@@ -8845,7 +8872,7 @@ async function exportPPTX(){
     Pp = Math.max(0, Math.min(1, -r.top / (h * .85))); s.style.setProperty("--p", Pp.toFixed(4)); var c = s.querySelector(".bar .cnt"); if(c){ var v = Math.round(Pp * 100); c.textContent = (v < 10 ? "0" : "") + v + " / 100"; }
     var path = s.querySelector("svg.pth path"); if(path){ if(!path.__len){ try{ path.__len = path.getTotalLength(); path.style.strokeDasharray = path.__len; }catch(e){ path.__len = 1200; } } path.__draw = Math.max(path.__draw || 0, Math.min(1, .55 + Pp * 1.2)); } }
   function loop(now){ raf = 0; var s = stages[cur()]; if(!s || !s.offsetParent){ return; } var r = s.getBoundingClientRect(); var vis = r.bottom > 0 && r.top < innerHeight;
-    if(vis && GL && GL.cv.parentNode === s.querySelector(".slot")) GL.draw(now, s, Pp, mx, my);
+    if(vis && GL && GL.cv.parentNode === s.querySelector(".slot")) GL.draw(now, s, Pp, mx, my); if(vis) sparks(now, s);
     var path = s.querySelector("svg.pth path"); if(path && path.__len){ var still = RED || calm(), tgt = still ? 1 : Math.max(path.__draw || 0, .55); path.__shown = still ? 1 : (path.__shown || 0) + (tgt - (path.__shown || 0)) * .05; path.style.strokeDashoffset = (path.__len * (1 - path.__shown)).toFixed(1); }
     if(!(RED || calm()) && vis) raf = requestAnimationFrame(loop); else if(!vis) setTimeout(kick, 400); }
   function kick(){ if(!raf) raf = requestAnimationFrame(loop); }

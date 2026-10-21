@@ -2488,15 +2488,15 @@ function applySpotlight(root){
 (function bgNetwork(){
   const c = document.getElementById("bgCanvas"); if(!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const ctx = c.getContext("2d"); let W, H, dpr, pts = [], mouse = { x:-9999, y:-9999 };
-  function size(){ dpr = Math.min(2, window.devicePixelRatio||1); W = innerWidth; H = innerHeight; c.width = W*dpr; c.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  function size(){ dpr = 1; W = innerWidth; H = innerHeight; c.width = W*dpr; c.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
     const n = Math.round(Math.min(70, W*H/26000)); pts = Array.from({length:n}, ()=>({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25 })); }
   size(); addEventListener("resize", size);
   addEventListener("mousemove", e=>{ mouse.x = e.clientX; mouse.y = e.clientY; });
-  function frame(){
-    if(document.hidden || document.body.classList.contains("calm")){ requestAnimationFrame(frame); return; }
-    const cs = getComputedStyle(document.documentElement);
-    const acc = (cs.getPropertyValue("--copper")||"#F26522").trim();
-    const light = relLuminance((state && state.theme && state.theme.bg) || "#0E0E11") > .5;
+  let bgLast = 0, bgAcc = "#F26522", bgLight = false, bgT = -1e9;   /* v66: 30 fps, colours read every 2 s (performance) */
+  function frame(now){
+    if(document.hidden || document.body.classList.contains("calm") || now - bgLast < 32){ requestAnimationFrame(frame); return; } bgLast = now;
+    if(now - bgT > 2000){ bgT = now; bgAcc = (getComputedStyle(document.documentElement).getPropertyValue("--copper")||"#F26522").trim(); bgLight = relLuminance((state && state.theme && state.theme.bg) || "#0E0E11") > .5; }
+    const acc = bgAcc, light = bgLight;
     ctx.clearRect(0,0,W,H);
     const rgb = hexToRgb(acc.startsWith("#") ? acc : "#F26522");
     for(const p of pts){
@@ -2892,10 +2892,11 @@ document.addEventListener("click", e=>{ if(e.target.closest("button, .clickable,
   document.addEventListener("mouseleave", ()=>{ ring.style.opacity = "0"; }); document.addEventListener("mouseenter", ()=>{ ring.style.opacity = ""; });
   (function loop(){
     rx += (mx - rx) * .22; ry += (my - ry) * .22; ring.style.transform = `translate(${rx}px, ${ry}px)`;
-    g.clearRect(0,0,W,H);
-    if(fxOn()){ const acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522";
+    if(sparks.length || cv.__dirty){ g.clearRect(0,0,W,H); cv.__dirty = false; }   /* v66: idle when there is nothing to draw */
+    if(fxOn() && sparks.length){ if(!cv.__acc || ++cv.__n > 120){ cv.__n = 0; cv.__acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522"; } const acc = cv.__acc;
       for(const s of sparks){ s.x += s.vx; s.y += s.vy; s.l -= .03; if(s.l <= 0) continue; g.globalAlpha = s.l*.8; g.fillStyle = acc; g.beginPath(); g.arc(s.x, s.y, s.s*s.l, 0, 6.283); g.fill(); }
-      g.globalAlpha = 1; }
+      for(let k = sparks.length - 1; k >= 0; k--) if(sparks[k].l <= 0) sparks.splice(k, 1);
+      g.globalAlpha = 1; cv.__dirty = true; }
     requestAnimationFrame(loop);
   })();
 })();
@@ -2917,11 +2918,12 @@ function rot(p){ const [x,y,z] = p; const cy = Math.cos(CORE.ry), sy = Math.sin(
   const x1 = x*cy + z*sy, z1 = -x*sy + z*cy; const y2 = y*cx - z1*sx, z2 = y*sx + z1*cx; return [x1, y2, z2]; }
 (function coreLoop(){
   const cv = document.getElementById("saudCore");
-  if(cv){
+  if(cv && !CORE.io && window.IntersectionObserver){ CORE.io = new IntersectionObserver(function(es){ CORE.vis = es[es.length - 1].isIntersecting; }); CORE.io.observe(cv); }   /* v66: draw only while the card is on screen */
+  if(cv && CORE.vis !== false && !document.hidden && !(performance.now() - (CORE.t || 0) < 31)){ CORE.t = performance.now();
     const g = cv.getContext("2d"); const dpr = Math.min(2, devicePixelRatio||1); const S = cv.clientWidth || 150;
     if(cv.width !== S*dpr){ cv.width = cv.height = S*dpr; }
     g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,S,S);
-    const c = S/2, R = S*.38, acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522";
+    if(!CORE.acc || ++CORE.accN > 120){ CORE.accN = 0; CORE.acc = getComputedStyle(document.documentElement).getPropertyValue("--copper").trim() || "#F26522"; } const c = S/2, R = S*.38, acc = CORE.acc;
     let rgb = { r:242, g:101, b:34 }; try{ if(acc.startsWith("#")) rgb = hexToRgb(acc); }catch(e){}
     const A = a => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
     if(!CORE.drag && !CORE.hover && fxOn()) CORE.ry += CORE.busy ? .03 : CORE.vy;   // v26: hold still while a dot is hovered
@@ -8855,23 +8857,21 @@ async function exportPPTX(){
     return { P:P, N:N, I:I }; })();
   var GL = null;
   function initGL(){ if(GL !== null) return GL; GL = false; var cv = document.createElement("canvas"), g = null;
-    try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:false }); }catch(e){} if(!g) return GL;
+    try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:true }); }catch(e){} if(!g) return GL;
     var VS = "attribute vec3 p;attribute vec3 n;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vo;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vo=p;gl_Position=P*w;}";
-    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,2.2);"
-      + "vec3 L1=normalize(vec3(-.4,.8,.6));vec3 H=normalize(L1+V);float sp=pow(max(dot(N,H),0.),60.);vec3 base=vec3(.05,.045,.065)+vec3(.10)*max(dot(N,L1),0.);"
-      + "vec3 OR=vec3(1.,.48,.16);vec3 GO=vec3(1.,.76,.34);vec3 VI=vec3(.55,.30,1.);float rr=length(vo.xz);float ang=atan(vo.z,vo.x);"
-      + "float stem=smoothstep(.95,1.1,vo.y);vec3 e=stem*(OR*pow(ndv,1.4)*1.7+VI*fr*1.5);"
-      + "float rim=smoothstep(.9,.96,rr)*(1.-smoothstep(.09,.12,abs(vo.y-.45)));e+=rim*(GO*1.9*(.62+.38*sin(ang*18.+T*34.))+OR*.6);"
-      + "float top=(1.-stem)*smoothstep(.55,.62,vo.y)*smoothstep(.25,.95,rr);e+=top*(OR*.45*(.5+.5*sin(ang*9.-T*26.))+VI*fr*.9);"
-      + "float und=1.-smoothstep(.25,.38,vo.y);e+=und*(VI*fr*1.25+OR*pow(ndv,3.)*.3);"
-      + "vec3 col=base+vec3(1.,.92,.85)*sp*.85+e;gl_FragColor=vec4(col,A);}";
+    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
+      + "vec3 LK=normalize(vec3(-.55,.55,.62));vec3 LP=normalize(vec3(.95,.05,.25));vec3 LB=normalize(vec3(.2,-.8,.4));float ang=atan(vo.z,vo.x);"
+      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=vec3(1.,.47,.13);vec3 DEEP=vec3(.17,.055,.025);vec3 PUR=vec3(.26,.2,1.);"
+      + "float dk=pow(max(dot(N,LK),0.),1.5);float dp=pow(max(dot(N,LP),0.),2.);float sk=pow(max(dot(R,LK),0.),7.);float s2=pow(max(dot(R,LP),0.),5.);"
+      + "vec3 col=DEEP*(.3+.7*ndv)+GOLD*(dk*.55*(.35+.65*sw)+sk*1.8*sw)+PUR*(dp*.5+s2*1.35)+GOLD*.18*max(dot(N,LB),0.)+PUR*fr*.18+vec3(1.,.62,.28)*pow(max(dot(R,LK),0.),30.)*.9*sw;"
+      + "gl_FragColor=vec4(col*A,A);}";
     function sh(t, src){ var o = g.createShader(t); g.shaderSource(o, src); g.compileShader(o); return o; }
     var pr = g.createProgram(); g.attachShader(pr, sh(g.VERTEX_SHADER, VS)); g.attachShader(pr, sh(g.FRAGMENT_SHADER, FS)); g.linkProgram(pr); if(!g.getProgramParameter(pr, g.LINK_STATUS)) return GL; g.useProgram(pr);
     var P = MESH.P, N = MESH.N, I = MESH.I;   /* v65: Harith's model replaces the lathe top */
     function buf(data, T, kind){ var b = g.createBuffer(); g.bindBuffer(kind, b); g.bufferData(kind, new T(data), g.STATIC_DRAW); return b; }
     var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bi = buf(I, Uint16Array, g.ELEMENT_ARRAY_BUFFER);
     [["p", bp], ["n", bn]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
-    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
     var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A");
     function persp(f, asp, n, fa){ var t = 1 / Math.tan(f / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
     function mul(a, b){ var o = new Array(16); for(var c = 0; c < 4; c++) for(var r = 0; r < 4; r++){ var s = 0; for(var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; }
@@ -8881,8 +8881,8 @@ async function exportPPTX(){
     function tr(x, y, z){ return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]; }
     var SY = [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     var count = I.length, t0 = performance.now(), sx = 0, sy = 0, sp = 0;
-    GL = { cv:cv, cx:0, cy:0, draw:function(now, st, Pp, mx, my, ov){ var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
-        if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    GL = { cv:cv, cx:0, cy:0, draw:function(now, st, Pp, mx, my, ov){ var dpr = Math.min(1.5, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
+        var tw2 = Math.round(w * dpr), th2 = Math.round(h * dpr); if(Math.abs(cv.width - tw2) > tw2 * .18 || Math.abs(cv.height - th2) > th2 * .18){ cv.width = tw2; cv.height = th2; }
         g.viewport(0, 0, cv.width, cv.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
         var still = RED || calm(), tt = still ? 0 : (now - t0) / 1000; sx += (mx - sx) * .05; sy += (my - sy) * .05; sp += (Pp - sp) * .12;
         var asp = w / h, fov = .62, z = -7.2 - sp * .4, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
@@ -8894,7 +8894,7 @@ async function exportPPTX(){
         var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
         /* reflection on the floor first (faint), then the top */
         var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
-        g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, ov && ov.rf != null ? ov.rf : .2); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true);
+        var rfa = ov && ov.rf != null ? ov.rf : .2; if(rfa > .02){ g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, rfa); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true); }
         g.clear(g.DEPTH_BUFFER_BIT);
         var Mt = mul(tr(0, 0, z), mul(CAM, mul(tr(x, y, 0), R)));
         g.uniformMatrix4fv(uM, false, new Float32Array(Mt)); g.uniform1f(uA, 1); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0);
@@ -8904,23 +8904,21 @@ async function exportPPTX(){
   /* v65: the Good-morning card's top is the same model, drawn by its own small WebGL canvas over the 2D glow and rings */
   function mkGL2(){ var GL = null;
   function initGL(){ if(GL !== null) return GL; GL = false; var cv = document.createElement("canvas"), g = null;
-    try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:false }); }catch(e){} if(!g) return GL;
+    try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:true }); }catch(e){} if(!g) return GL;
     var VS = "attribute vec3 p;attribute vec3 n;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vo;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vo=p;gl_Position=P*w;}";
-    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,2.2);"
-      + "vec3 L1=normalize(vec3(-.4,.8,.6));vec3 H=normalize(L1+V);float sp=pow(max(dot(N,H),0.),60.);vec3 base=vec3(.05,.045,.065)+vec3(.10)*max(dot(N,L1),0.);"
-      + "vec3 OR=vec3(1.,.48,.16);vec3 GO=vec3(1.,.76,.34);vec3 VI=vec3(.55,.30,1.);float rr=length(vo.xz);float ang=atan(vo.z,vo.x);"
-      + "float stem=smoothstep(.95,1.1,vo.y);vec3 e=stem*(OR*pow(ndv,1.4)*1.7+VI*fr*1.5);"
-      + "float rim=smoothstep(.9,.96,rr)*(1.-smoothstep(.09,.12,abs(vo.y-.45)));e+=rim*(GO*1.9*(.62+.38*sin(ang*18.+T*34.))+OR*.6);"
-      + "float top=(1.-stem)*smoothstep(.55,.62,vo.y)*smoothstep(.25,.95,rr);e+=top*(OR*.45*(.5+.5*sin(ang*9.-T*26.))+VI*fr*.9);"
-      + "float und=1.-smoothstep(.25,.38,vo.y);e+=und*(VI*fr*1.25+OR*pow(ndv,3.)*.3);"
-      + "vec3 col=base+vec3(1.,.92,.85)*sp*.85+e;gl_FragColor=vec4(col,A);}";
+    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
+      + "vec3 LK=normalize(vec3(-.55,.55,.62));vec3 LP=normalize(vec3(.95,.05,.25));vec3 LB=normalize(vec3(.2,-.8,.4));float ang=atan(vo.z,vo.x);"
+      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=vec3(1.,.47,.13);vec3 DEEP=vec3(.17,.055,.025);vec3 PUR=vec3(.26,.2,1.);"
+      + "float dk=pow(max(dot(N,LK),0.),1.5);float dp=pow(max(dot(N,LP),0.),2.);float sk=pow(max(dot(R,LK),0.),7.);float s2=pow(max(dot(R,LP),0.),5.);"
+      + "vec3 col=DEEP*(.3+.7*ndv)+GOLD*(dk*.55*(.35+.65*sw)+sk*1.8*sw)+PUR*(dp*.5+s2*1.35)+GOLD*.18*max(dot(N,LB),0.)+PUR*fr*.18+vec3(1.,.62,.28)*pow(max(dot(R,LK),0.),30.)*.9*sw;"
+      + "gl_FragColor=vec4(col*A,A);}";
     function sh(t, src){ var o = g.createShader(t); g.shaderSource(o, src); g.compileShader(o); return o; }
     var pr = g.createProgram(); g.attachShader(pr, sh(g.VERTEX_SHADER, VS)); g.attachShader(pr, sh(g.FRAGMENT_SHADER, FS)); g.linkProgram(pr); if(!g.getProgramParameter(pr, g.LINK_STATUS)) return GL; g.useProgram(pr);
     var P = MESH.P, N = MESH.N, I = MESH.I;   /* v65: Harith's model replaces the lathe top */
     function buf(data, T, kind){ var b = g.createBuffer(); g.bindBuffer(kind, b); g.bufferData(kind, new T(data), g.STATIC_DRAW); return b; }
     var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bi = buf(I, Uint16Array, g.ELEMENT_ARRAY_BUFFER);
     [["p", bp], ["n", bn]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
-    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.SRC_ALPHA, g.ONE_MINUS_SRC_ALPHA);
+    g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
     var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A");
     function persp(f, asp, n, fa){ var t = 1 / Math.tan(f / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
     function mul(a, b){ var o = new Array(16); for(var c = 0; c < 4; c++) for(var r = 0; r < 4; r++){ var s = 0; for(var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; }
@@ -8930,8 +8928,8 @@ async function exportPPTX(){
     function tr(x, y, z){ return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]; }
     var SY = [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     var count = I.length, t0 = performance.now(), sx = 0, sy = 0, sp = 0;
-    GL = { cv:cv, cx:0, cy:0, draw:function(now, st, Pp, mx, my, ov){ var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
-        if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    GL = { cv:cv, cx:0, cy:0, draw:function(now, st, Pp, mx, my, ov){ var dpr = Math.min(1.5, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
+        var tw2 = Math.round(w * dpr), th2 = Math.round(h * dpr); if(Math.abs(cv.width - tw2) > tw2 * .18 || Math.abs(cv.height - th2) > th2 * .18){ cv.width = tw2; cv.height = th2; }
         g.viewport(0, 0, cv.width, cv.height); g.clearColor(0, 0, 0, 0); g.clear(g.COLOR_BUFFER_BIT | g.DEPTH_BUFFER_BIT);
         var still = RED || calm(), tt = still ? 0 : (now - t0) / 1000; sx += (mx - sx) * .05; sy += (my - sy) * .05; sp += (Pp - sp) * .12;
         var asp = w / h, fov = .62, z = -7.2 - sp * .4, half = Math.abs(z) * Math.tan(fov / 2) * asp, rtl = AR() ? -1 : 1, narrow = w < 760;
@@ -8943,7 +8941,7 @@ async function exportPPTX(){
         var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
         /* reflection on the floor first (faint), then the top */
         var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
-        g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, ov && ov.rf != null ? ov.rf : .2); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true);
+        var rfa = ov && ov.rf != null ? ov.rf : .2; if(rfa > .02){ g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, rfa); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true); }
         g.clear(g.DEPTH_BUFFER_BIT);
         var Mt = mul(tr(0, 0, z), mul(CAM, mul(tr(x, y, 0), R)));
         g.uniformMatrix4fv(uM, false, new Float32Array(Mt)); g.uniform1f(uA, 1); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0);
@@ -8953,23 +8951,22 @@ async function exportPPTX(){
     return initGL(); }
   var HG = null;
   window.__v65hero = function(now, spin, busy){ var w = document.querySelector(".core-wrap"); if(!w || !w.offsetParent) return !!HG; if(HG === null){ HG = mkGL2() || false; if(HG) HG.cv.className = "v65hero"; } if(!HG) return false;
-    if(HG.cv.parentNode !== w) w.appendChild(HG.cv); HG.draw(now, w, 0, 0, 0, { x:0, y:-.8 + Math.sin(now / 700) * .02, z:-5.6, rx:.26, ry:0, rf:0, spin:spin + now / 1000 * (busy ? 16 : 7) }); return true; };
+    if(HG.cv.parentNode !== w) w.appendChild(HG.cv); if(now - (HG.t || 0) < 31) return true; HG.t = now; HG.draw(now, w, 0, 0, 0, { x:0, y:-.8 + Math.sin(now / 700) * .02, z:-5.6, rx:.26, ry:0, rf:0, spin:spin + now / 1000 * (busy ? 16 : 7) }); return true; };
   /* golden light streaks flying out from the top (as on midwam.com) */
   var SPK = [], spkLast = 0;
-  function sparks(now, s){ var cv = s.querySelector("canvas.spk"); if(!cv) return; var dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
+  function sparks(now, s){ var cv = s.querySelector("canvas.spk"); if(!cv) return; var dpr = 1, w = cv.clientWidth, h = cv.clientHeight; if(!w || !h) return;
     if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     var x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, h); if(RED || calm()) return;
     var cx = GL && GL.cx ? GL.cx : w * .72, cy = GL && GL.cy ? GL.cy : h * .5;
-    if(now - spkLast > 170 && SPK.length < 18){ spkLast = now; var a = Math.random() * Math.PI * 2; SPK.push({ a:a, r:30 + Math.random() * 60, v:110 + Math.random() * 190, L:40 + Math.random() * 90, t:now, life:1400 + Math.random() * 1400, wd:.8 + Math.random() * 1.6 }); }
+    if(now - spkLast > 170 && SPK.length < 18){ spkLast = now; var a = Math.random() * Math.PI * 2; SPK.push({ a:a, r:30 + Math.random() * 60, v:90 + Math.random() * 150, L:9 + Math.random() * 12, t:now, life:1400 + Math.random() * 1400, wd:2.4 + Math.random() * 1.4 }); }
     SPK = SPK.filter(function(p){ return now - p.t < p.life; });
     x.globalCompositeOperation = "lighter";
     SPK.forEach(function(p){ var age = (now - p.t) / 1000, k = (now - p.t) / p.life, al = Math.sin(Math.PI * Math.min(1, k)) * .95, r = p.r + p.v * age, ca = Math.cos(p.a), sa = Math.sin(p.a) * .55;
-      var x1 = cx + ca * r, y1 = cy + sa * r, x0 = cx + ca * (r - p.L), y0 = cy + sa * (r - p.L), gr = x.createLinearGradient(x0, y0, x1, y1);
-      gr.addColorStop(0, "rgba(255,170,60,0)"); gr.addColorStop(.7, "rgba(255,190,90," + (al * .7).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,236,170," + al.toFixed(3) + ")");
-      x.strokeStyle = gr; x.lineWidth = p.wd; x.lineCap = "round"; x.shadowColor = "rgba(255,170,60,.9)"; x.shadowBlur = 8; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.stroke(); });
+      var x1 = cx + ca * r, y1 = cy + sa * r, x0 = cx + ca * (r - p.L), y0 = cy + sa * (r - p.L);
+      x.strokeStyle = "rgba(255,214,48," + al.toFixed(3) + ")"; x.lineWidth = p.wd; x.lineCap = "round"; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.stroke(); });
     x.globalCompositeOperation = "source-over"; x.shadowBlur = 0;
     var gl2 = x.createRadialGradient(cx, cy + h * .2, 4, cx, cy + h * .2, Math.min(w, h) * .32); gl2.addColorStop(0, "rgba(243,109,47,.16)"); gl2.addColorStop(.5, "rgba(176,36,106,.08)"); gl2.addColorStop(1, "rgba(0,0,0,0)");
-    x.fillStyle = gl2; x.fillRect(0, 0, w, h); }
+    var gq = Math.min(w, h) * .32; x.fillStyle = gl2; x.fillRect(cx - gq, cy + h * .2 - gq, gq * 2, gq * 2); }
 
   /* v61: the top leaves its stage and travels down the whole page as you scroll, behind the content, landing at the bottom (Harith) */
   var FLY = null, flyLanded = false;
@@ -8981,6 +8978,7 @@ async function exportPPTX(){
     var de = document.documentElement, pg = Math.max(0, Math.min(1, (scrollY || de.scrollTop || 0) / Math.max(1, de.scrollHeight - vh))), cy1 = L(vh * .24, vh - bh1 * .46, pg);
     var bh = L(bh0, bh1, k), bw = bh * .95, cx = L(cx0, cx1, k), cy = L(cy0, cy1, k);
     b.style.cssText = "left:" + (cx - bw / 2).toFixed(1) + "px;top:" + (cy - bh / 2).toFixed(1) + "px;width:" + bw.toFixed(1) + "px;height:" + bh.toFixed(1) + "px;";
+    if(now - (FLY.t || 0) < 31) return; FLY.t = now;   /* v66: the box follows every frame, the top is drawn at 30 fps */
     GL.draw(now, s, Ps, mx, my, { x:0, y:-.35 + Math.sin(now / 1000 * 1.3) * .03, z:-7.2, rx:.2 + k * .12, ry:0, rf:.2 * (1 - k) });
     GL.cx += cx - bw / 2; GL.cy += cy - bh / 2;
     if(k > .9 && pg > .985 && !flyLanded){ flyLanded = true; for(var q = 0; q < 26; q++) SPK.push({ a:Math.random() * Math.PI * 2, r:6 + Math.random() * 18, v:220 + Math.random() * 260, L:30 + Math.random() * 80, t:now, life:700 + Math.random() * 800, wd:.8 + Math.random() * 1.6 }); }
@@ -9090,6 +9088,12 @@ async function exportPPTX(){
 <style id="v65css">
   /* v65: the hero card top (WebGL, Harith's model) sits over the 2D glow; clicks/drags pass through to #saudCore */
   .core-wrap canvas.v65hero{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+</style>
+<style id="v66css">
+  /* v66: performance — no per-frame blur on the big stage words, no backdrop blur over the animated background, travelling top above the background lines (still under all content) */
+  html.v55 .v55stage .w{filter:none !important; will-change:transform, opacity;}
+  .sidebar{backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:color-mix(in srgb, var(--sidebar) 96%, transparent) !important;}
+  #v61fly{z-index:0 !important;}
 </style>
 </body>
 </html>

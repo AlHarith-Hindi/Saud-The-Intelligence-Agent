@@ -8855,13 +8855,17 @@ async function exportPPTX(){
       var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; [i0, i1, i2].forEach(function(j){ N[j] += nx; N[j + 1] += ny; N[j + 2] += nz; }); }
     for(k = 0; k < nv; k++){ var L = Math.hypot(N[3 * k], N[3 * k + 1], N[3 * k + 2]) || 1; N[3 * k] /= L; N[3 * k + 1] /= L; N[3 * k + 2] /= L; }
     return { P:P, N:N, I:I }; })();
+  /* v67: the top takes the theme accent colour (the purple light stays) */
+  var ACC3v = [1, .47, .13], ACC3t = -1e9, ACC3k = "";
+  function ACC3(){ var n = performance.now(); if(n - ACC3t > 800){ ACC3t = n; var c = (getComputedStyle(document.documentElement).getPropertyValue("--copper") || "").trim().toLowerCase(); if(c !== ACC3k){ ACC3k = c; var m = /^#([0-9a-f]{6})$/.exec(c);
+      if(m){ var v = parseInt(m[1], 16), r = (v >> 16 & 255) / 255, gg = (v >> 8 & 255) / 255, b = (v & 255) / 255; if(c === "#f26522" || c === "#f36d2f") ACC3v = [1, .47, .13]; else { var mx = Math.max(r, gg, b) || 1, k = 1 / mx; ACC3v = [r * k, gg * k, b * k]; } } } } return ACC3v; }
   var GL = null;
   function initGL(){ if(GL !== null) return GL; GL = false; var cv = document.createElement("canvas"), g = null;
     try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:true }); }catch(e){} if(!g) return GL;
     var VS = "attribute vec3 p;attribute vec3 n;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vo;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vo=p;gl_Position=P*w;}";
-    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
+    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;uniform vec3 G;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
       + "vec3 LK=normalize(vec3(-.55,.55,.62));vec3 LP=normalize(vec3(.95,.05,.25));vec3 LB=normalize(vec3(.2,-.8,.4));float ang=atan(vo.z,vo.x);"
-      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=vec3(1.,.47,.13);vec3 DEEP=vec3(.17,.055,.025);vec3 PUR=vec3(.26,.2,1.);"
+      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=G;vec3 DEEP=G*vec3(.17,.117,.19);vec3 PUR=vec3(.26,.2,1.);"
       + "float dk=pow(max(dot(N,LK),0.),1.5);float dp=pow(max(dot(N,LP),0.),2.);float sk=pow(max(dot(R,LK),0.),7.);float s2=pow(max(dot(R,LP),0.),5.);"
       + "vec3 col=DEEP*(.3+.7*ndv)+GOLD*(dk*.55*(.35+.65*sw)+sk*1.8*sw)+PUR*(dp*.5+s2*1.35)+GOLD*.18*max(dot(N,LB),0.)+PUR*fr*.18+vec3(1.,.62,.28)*pow(max(dot(R,LK),0.),30.)*.9*sw;"
       + "gl_FragColor=vec4(col*A,A);}";
@@ -8872,7 +8876,7 @@ async function exportPPTX(){
     var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bi = buf(I, Uint16Array, g.ELEMENT_ARRAY_BUFFER);
     [["p", bp], ["n", bn]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
     g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
-    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A");
+    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A"), uG = g.getUniformLocation(pr, "G");
     function persp(f, asp, n, fa){ var t = 1 / Math.tan(f / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
     function mul(a, b){ var o = new Array(16); for(var c = 0; c < 4; c++) for(var r = 0; r < 4; r++){ var s = 0; for(var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; }
     function rx(t){ var c = Math.cos(t), s = Math.sin(t); return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]; }
@@ -8891,7 +8895,7 @@ async function exportPPTX(){
         var R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(spin))));
         var CAM = mul(rx(.2 + sy * .12 + sp * .12), ry(sx * .25));
         if(ov){ x = ov.x; y = ov.y; z = ov.z; CAM = mul(rx(ov.rx), ry(ov.ry)); if(ov.spin != null) R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(ov.spin)))); }
-        var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
+        var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt); g.uniform3fv(uG, ACC3());
         /* reflection on the floor first (faint), then the top */
         var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
         var rfa = ov && ov.rf != null ? ov.rf : .08; if(rfa > .02){ g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, rfa); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true); }
@@ -8906,9 +8910,9 @@ async function exportPPTX(){
   function initGL(){ if(GL !== null) return GL; GL = false; var cv = document.createElement("canvas"), g = null;
     try{ g = cv.getContext("webgl", { antialias:true, alpha:true, premultipliedAlpha:true }); }catch(e){} if(!g) return GL;
     var VS = "attribute vec3 p;attribute vec3 n;uniform mat4 M;uniform mat4 P;varying vec3 vn;varying vec3 vp;varying vec3 vo;void main(){vec4 w=M*vec4(p,1.);vp=w.xyz;vn=mat3(M)*n;vo=p;gl_Position=P*w;}";
-    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
+    var FS = "precision mediump float;varying vec3 vn;varying vec3 vp;varying vec3 vo;uniform float T;uniform float A;uniform vec3 G;void main(){vec3 N=normalize(vn);vec3 V=normalize(-vp);if(dot(N,V)<0.)N=-N;float ndv=max(dot(N,V),0.);float fr=pow(1.-ndv,3.);vec3 R=reflect(-V,N);"
       + "vec3 LK=normalize(vec3(-.55,.55,.62));vec3 LP=normalize(vec3(.95,.05,.25));vec3 LB=normalize(vec3(.2,-.8,.4));float ang=atan(vo.z,vo.x);"
-      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=vec3(1.,.47,.13);vec3 DEEP=vec3(.17,.055,.025);vec3 PUR=vec3(.26,.2,1.);"
+      + "float sw=.6+.4*sin(ang*3.+vo.y*5.5+sin(ang*2.-vo.y*3.)*1.2);sw=sw*sw;vec3 GOLD=G;vec3 DEEP=G*vec3(.17,.117,.19);vec3 PUR=vec3(.26,.2,1.);"
       + "float dk=pow(max(dot(N,LK),0.),1.5);float dp=pow(max(dot(N,LP),0.),2.);float sk=pow(max(dot(R,LK),0.),7.);float s2=pow(max(dot(R,LP),0.),5.);"
       + "vec3 col=DEEP*(.3+.7*ndv)+GOLD*(dk*.55*(.35+.65*sw)+sk*1.8*sw)+PUR*(dp*.5+s2*1.35)+GOLD*.18*max(dot(N,LB),0.)+PUR*fr*.18+vec3(1.,.62,.28)*pow(max(dot(R,LK),0.),30.)*.9*sw;"
       + "gl_FragColor=vec4(col*A,A);}";
@@ -8919,7 +8923,7 @@ async function exportPPTX(){
     var bp = buf(P, Float32Array, g.ARRAY_BUFFER), bn = buf(N, Float32Array, g.ARRAY_BUFFER), bi = buf(I, Uint16Array, g.ELEMENT_ARRAY_BUFFER);
     [["p", bp], ["n", bn]].forEach(function(x){ var l = g.getAttribLocation(pr, x[0]); g.bindBuffer(g.ARRAY_BUFFER, x[1]); g.enableVertexAttribArray(l); g.vertexAttribPointer(l, 3, g.FLOAT, false, 0, 0); });
     g.bindBuffer(g.ELEMENT_ARRAY_BUFFER, bi); g.enable(g.DEPTH_TEST); g.enable(g.BLEND); g.blendFunc(g.ONE, g.ONE_MINUS_SRC_ALPHA);
-    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A");
+    var uM = g.getUniformLocation(pr, "M"), uP = g.getUniformLocation(pr, "P"), uT = g.getUniformLocation(pr, "T"), uA = g.getUniformLocation(pr, "A"), uG = g.getUniformLocation(pr, "G");
     function persp(f, asp, n, fa){ var t = 1 / Math.tan(f / 2); return [t / asp, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0]; }
     function mul(a, b){ var o = new Array(16); for(var c = 0; c < 4; c++) for(var r = 0; r < 4; r++){ var s = 0; for(var k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; }
     function rx(t){ var c = Math.cos(t), s = Math.sin(t); return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]; }
@@ -8938,7 +8942,7 @@ async function exportPPTX(){
         var R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(spin))));
         var CAM = mul(rx(.2 + sy * .12 + sp * .12), ry(sx * .25));
         if(ov){ x = ov.x; y = ov.y; z = ov.z; CAM = mul(rx(ov.rx), ry(ov.ry)); if(ov.spin != null) R = mul(ry(prec), mul(rz(tilt), mul(ry(-prec), ry(ov.spin)))); }
-        var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt);
+        var Pm = persp(fov, asp, .1, 60); g.uniformMatrix4fv(uP, false, new Float32Array(Pm)); g.uniform1f(uT, tt); g.uniform3fv(uG, ACC3());
         /* reflection on the floor first (faint), then the top */
         var floorY = y - .5, Mr = mul(tr(0, 0, z), mul(CAM, mul(tr(x, 2 * floorY - y, 0), mul(SY, R))));
         var rfa = ov && ov.rf != null ? ov.rf : .08; if(rfa > .02){ g.uniformMatrix4fv(uM, false, new Float32Array(Mr)); g.uniform1f(uA, rfa); g.depthMask(false); g.drawElements(g.TRIANGLES, count, g.UNSIGNED_SHORT, 0); g.depthMask(true); }
@@ -8979,7 +8983,7 @@ async function exportPPTX(){
     var bh = L(bh0, bh1, k), bw = bh * .95, cx = L(cx0, cx1, k), cy = L(cy0, cy1, k);
     b.style.cssText = "left:" + (cx - bw / 2).toFixed(1) + "px;top:" + (cy - bh / 2).toFixed(1) + "px;width:" + bw.toFixed(1) + "px;height:" + bh.toFixed(1) + "px;";
     if(now - (FLY.t || 0) < 31) return; FLY.t = now;   /* v66: the box follows every frame, the top is drawn at 30 fps */
-    GL.draw(now, s, Ps, mx, my, { x:0, y:-.35 + Math.sin(now / 1000 * 1.3) * .03, z:-7.2, rx:.2 + k * .12, ry:0, rf:.06 * (1 - k) });
+    GL.draw(now, s, Ps, mx, my, { x:0, y:-.35 + Math.sin(now / 1000 * 1.3) * .03, z:-7.2, rx:.2 + k * .12, ry:0, rf:(document.documentElement.classList.contains("theme-light") ? 0 : .06 * (1 - k)) });
     GL.cx += cx - bw / 2; GL.cy += cy - bh / 2;
     if(k > .9 && pg > .985 && !flyLanded){ flyLanded = true; for(var q = 0; q < 26; q++) SPK.push({ a:Math.random() * Math.PI * 2, r:6 + Math.random() * 18, v:220 + Math.random() * 260, L:30 + Math.random() * 80, t:now, life:700 + Math.random() * 800, wd:.8 + Math.random() * 1.6 }); }
     if(pg < .9) flyLanded = false;
@@ -9095,5 +9099,53 @@ async function exportPPTX(){
   .sidebar{backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:color-mix(in srgb, var(--sidebar) 96%, transparent) !important;}
   #v61fly{z-index:0 !important;}
 </style>
+<style id="v67css">
+  /* v67: team view gets Customize (Display & experience without "Edit dashboard content", and Theme) · light themes: no white text on light backgrounds (Harith) */
+  html.team-mode #sidebar .tab-btn[data-page="customize"]{display:flex !important;}
+  html.team-mode #page-customize > section:nth-of-type(n+3){display:none !important;}
+  html.team-mode #page-customize .cu-edit{display:none !important;}
+  html.theme-light .topbar h1, html.theme-light .page-title, html.theme-light section h2{color:var(--cream) !important;}
+  html.theme-light .v55stage .ln span, html.theme-light .v55stage .cap .t, html.theme-light .v55stage .cap .n b{color:var(--cream) !important;}
+  html.theme-light .v55stage .ln:nth-child(2) span{color:var(--copper) !important;}
+  html.theme-light .v55stage .cap .n, html.theme-light .v55stage .bar, html.theme-light section .sechead > .v54n{color:var(--muted) !important;}
+  html.theme-light .v55stage .bar .mid i{background:var(--muted) !important;}
+  html.theme-light .v55stage svg.pth path{stroke:color-mix(in srgb, var(--cream) 55%, transparent) !important;}
+  html.theme-light:root section .sechead h2{color:var(--cream) !important;}
+  html.theme-light .ext-filters.hud-bar, html.theme-light .bb-col, html.theme-light .bp-sec, html.theme-light .wl-item, html.theme-light #slvStrip .slv-i{background:var(--night2) !important; border-color:var(--border) !important; color:var(--cream);}
+  html.theme-light .hud-search #externalSearch, html.theme-light .hud-m, html.theme-light .hud-bar .xf-btn, html.theme-light .bd-btn, html.theme-light .bd-own select, html.theme-light .bb-item, html.theme-light .hud-dec, html.theme-light .wl-out{background:var(--night3) !important; color:var(--cream) !important;}
+  html.theme-light .hud-m.on, html.theme-light .hud-dec.on{background:var(--accent-soft) !important; border-color:var(--copper) !important;}
+  html.theme-light .hud-cnt, html.theme-light .bp-why, html.theme-light .al-last b{color:var(--cream) !important;}
+  /* big stage words: no clipped tops (e.g. "TASKS &"), and the rise plays again every time you open a section */
+  .v55stage .ln{padding-top:.12em; margin-top:-.12em;}
+  .v55stage:not(.in) .ln span{transition:none !important;}
+  html.v67snap section .sechead h2{transition:none !important;}
+</style>
+<script>
+/* v67 module: theme-light flag + per-viewer theme in the team view (the team view is read-only, so a viewer's theme is kept only in that viewer's browser) */
+(function(){
+  var TEAM = !!window.__SAUD_TEAM__, KEY = "saudTeamThemeV67", userT = 0;
+  function isLight(t){ try{ return relLuminance((t && t.bg) || "#0E0E11") > .5; }catch(e){ return false; } }
+  if(typeof applyTheme === "function" && !applyTheme.__v67){
+    var orig = applyTheme;
+    applyTheme = function(t){
+      if(TEAM && t){
+        if(Date.now() - userT < 1500){ try{ localStorage.setItem(KEY, JSON.stringify({ accent:t.accent, bg:t.bg, text:t.text })); }catch(e){} }
+        else { try{ var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if(sv && sv.bg && sv.accent){ t.accent = sv.accent; t.bg = sv.bg; t.text = sv.text || t.text; } }catch(e){} }
+      }
+      var r = orig.apply(this, arguments);
+      document.documentElement.classList.toggle("theme-light", isLight(t));
+      return r; };
+    applyTheme.__v67 = true;
+  }
+  if(TEAM){ ["input", "change", "click"].forEach(function(ev){ document.addEventListener(ev, function(e){ if(e.target && e.target.closest && e.target.closest("#themePanel")) userT = Date.now(); }, true); }); }
+  /* replay the section-title reveal when a section is opened again */
+  if(typeof switchPage === "function" && !switchPage.__v67){ var sp = switchPage; switchPage = function(){ var out = sp.apply(this, arguments);
+      setTimeout(function(){ var pg = document.querySelector(".page.active"); if(!pg) return; var hs = [].slice.call(pg.querySelectorAll("section .sechead h2.v54in")); if(!hs.length) return;
+        var root = document.documentElement; root.classList.add("v67snap"); hs.forEach(function(h){ h.classList.remove("v54in"); }); void root.offsetWidth; root.classList.remove("v67snap");
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ hs.forEach(function(h){ h.classList.add("v54in"); }); }); }); }, 60);
+      return out; }; switchPage.__v67 = true; }
+  try{ if(typeof state !== "undefined" && state && state.theme) applyTheme(state.theme); }catch(e){}
+})();
+</script>
 </body>
 </html>

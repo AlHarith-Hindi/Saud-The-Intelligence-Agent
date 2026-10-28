@@ -2436,7 +2436,7 @@ function renderCmdk(q){
   q = (q||"").trim().toLowerCase();
   let items = cmdkCommands().filter(c=>!q || c.label.toLowerCase().includes(q));
   if(q){
-    const found = globalSearch(q).slice(0,8).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) }));
+    const found = globalSearch(q).slice(0,14).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) }));
     // also search the translated text the reader actually sees
     items = items.concat(found);
     const raw = (document.getElementById("cmdkInput")||{}).value || q;
@@ -3818,7 +3818,7 @@ function renderSbSearch(){
   const raw = inp.value.trim(), q = raw.toLowerCase();
   if(!q){ box.classList.remove("show"); box.innerHTML = ""; return; }
   let items = cmdkCommands().filter(c=>c.label.toLowerCase().includes(q));
-  items = items.concat(globalSearch(q).slice(0,8).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) })));
+  items = items.concat(globalSearch(q).slice(0,14).map(r=>({ group:L("Data"), label:tx(r.label), sub:L(r.kind), ic:"⌕", run:()=>goToSearchResult(r.section, r.page, r.index) })));
   items.push({ group:L("Ask Saud"), label:(LANG==="ar" ? "اسأل سعود: " : "Ask Saud: ") + raw, ic:"💬", run:()=>askSaud(raw) });
   __sbItems = items; __sbSel = 0;
   let html = "", g = "";
@@ -7790,13 +7790,14 @@ async function exportPPTX(){
     var key = b.raw.length + "|" + (b.at || ""); if(cache.key === key) return cache.val;
     var g = {}, from = "", to = "";
     b.raw.forEach(function(x){ if(!x) return; var a = norm(x[1]) || "—", d = String(x[2] || ""), m = +d.slice(5, 7); if(d && (!from || d < from)) from = d; if(d > to) to = d;
-      var e = g[a] || (g[a] = { agency:a, n:0, months:[0,0,0,0,0,0,0,0,0,0,0,0], last:"", prices:[], recent:[] }); e.n++; if(m >= 1 && m <= 12) e.months[m - 1]++; if(d > e.last) e.last = d; if(+x[3] > 0) e.prices.push(+x[3]); e.recent.push({ rn:x[0], date:d, name:x[4] }); });
-    var list = Object.keys(g).map(function(k){ var e = g[k]; e.prices.sort(function(p, q){ return p - q; }); e.price = e.prices.length ? e.prices[Math.floor(e.prices.length / 2)] : 0; e.recent.sort(function(p, q){ return String(q.date).localeCompare(String(p.date)); }); e.recent = e.recent.slice(0, 5); delete e.prices; return e; });
+      var e = g[a] || (g[a] = { agency:a, n:0, months:[0,0,0,0,0,0,0,0,0,0,0,0], last:"", prices:[], recent:[] }); e.n++; if(m >= 1 && m <= 12) e.months[m - 1]++; if(d > e.last) e.last = d; if(+x[3] > 0) e.prices.push(+x[3]); e.recent.push({ rn:x[0], date:d, name:x[4], price:+x[3] || 0, bid:x[5] || "" }); });
+    var list = Object.keys(g).map(function(k){ var e = g[k]; e.prices.sort(function(p, q){ return p - q; }); e.price = e.prices.length ? e.prices[Math.floor(e.prices.length / 2)] : 0; e.recent.sort(function(p, q){ return String(q.date).localeCompare(String(p.date)); }); delete e.prices; return e; });
     cache = { key:key, val:{ at:b.at, from:from, to:to, tenders:b.raw.length, list:list } }; return cache.val; }
   function norm(a){ return String(a || "").replace(/\s+/g, " ").trim(); }
   function ours(agency){ var s = ST(), a = norm(agency), n = 0, won = 0; if(!s || !a) return { n:0, won:0 };
     (s.external || []).concat(s.externalExcluded || []).forEach(function(r){ if(r && norm(r.agency) === a){ n++; if(r.outcome === "won") won++; } }); return { n:n, won:won }; }
   function etUrl(rn){ try{ if(typeof window.etimadUrl === "function") return window.etimadUrl({ rn:rn }); }catch(e){} return ""; }
+  function ourRn(rn){ var s = ST(), k = String(rn || ""); if(!s || !k) return false; return (s.external || []).concat(s.externalExcluded || []).some(function(r){ return r && String(r.rn) === k; }); }
   function fmtD(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return String(s || ""); var d = new Date(+m[1], +m[2] - 1, +m[3]); return d.toLocaleDateString(AR() ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short", year:"numeric" }); }
   function sar(v){ var n = +v; if(!isFinite(n) || n <= 0) return "—"; return AR() ? n.toLocaleString("en") + " ر.س" : "SAR " + n.toLocaleString("en"); }
   function L(){ var ar = AR(); return {
@@ -7809,6 +7810,7 @@ async function exportPPTX(){
     cols: ar ? ["#", "الجهة", "منافسات", "الأشهر المعتادة", "آخر منافسة", "قيمة الكراسة المعتادة", "معنا"] : ["#", "Entity", "Tenders", "Usual months", "Last tender", "Typical booklet", "With us"],
     all: ar ? "عرض كل الجهات" : "Show all entities", top: ar ? "عرض أعلى 15 فقط" : "Show top 15 only",
     recent: ar ? "أحدث منافساتها" : "Recent tenders",
+    allT: function(n){ return ar ? ("كل منافساتها في اعتماد (" + n + ")") : ("All their Etimad tenders (" + n + ")"); }, ours1: ar ? "في قائمتنا" : "On our list", openTil: function(d){ return (ar ? "مفتوحة حتى " : "Open till ") + d; }, closedT: ar ? "مغلقة" : "Closed",
     us: function(o){ return o.n ? ((ar ? o.n + " في قائمتنا" : o.n + " on our list") + (o.won ? (ar ? " · " + o.won + " فوز" : " · " + o.won + " won") : "")) : (ar ? "لا شيء بعد" : "none yet"); }
   }; }
   function ensure(){ var page = document.getElementById("page-external"); if(!page) return null; var sec = document.getElementById("tbSec"); if(sec) return sec;
@@ -7832,13 +7834,17 @@ async function exportPPTX(){
       var heat = '<div class="tb-heat">' + (g.months || []).map(function(v, i){ var a = v ? 0.18 + 0.82 * (v / mx) : 0; return '<i title="' + esc(full[i] + ": " + v) + '" style="' + (v ? "background:rgba(242,101,34," + a.toFixed(2) + ")" : "") + '"></i>'; }).join("") + "</div>";
       var row = '<tr class="tb-row" data-tb="' + esc(key) + '"><td class="tb-rank">' + (k + 1) + '</td><td class="tb-name"><b>' + esc(g.agency) + "</b></td>"
         + '<td><div class="tb-bar"><i style="width:' + Math.max(6, Math.round(110 * g.n / max)) + 'px"></i><b>' + g.n + "</b></div></td><td>" + heat + "</td><td>" + esc(fmtD(g.last)) + "</td><td>" + esc(sar(g.price)) + '</td><td><span class="tb-us' + (o.n ? "" : " none") + '">' + esc(T.us(o)) + "</span></td></tr>";
-      if(open[key]){ row += '<tr class="tb-detail"><td></td><td colspan="6"><div class="tb-recent"><b style="font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);">' + esc(T.recent) + "</b>"
-        + (g.recent || []).map(function(r){ var u = etUrl(r.rn); return "<div><em>" + esc(fmtD(r.date)) + "</em><span>" + esc(r.name || r.rn) + "</span>" + (u ? '<a class="et-link" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a>' : "") + "</div>"; }).join("") + "</div></td></tr>"; }
+      if(open[key]){ var allT = g.recent || [], now0 = new Date(); now0.setHours(0, 0, 0, 0);
+        row += '<tr class="tb-detail"><td></td><td colspan="6"><div class="tb-all-h"><b>' + esc(T.allT(allT.length)) + '</b></div><div class="tb-all">'
+        + allT.map(function(r){ var u = etUrl(r.rn), mine = ourRn(r.rn), bm = String(r.bid || "").match(/(\d{4})-(\d{2})-(\d{2})/), bd = bm ? new Date(+bm[1], +bm[2] - 1, +bm[3]) : null, isOpen = bd && bd >= now0;
+            return '<div class="tb-it"><em>' + esc(fmtD(r.date)) + "</em><span>" + esc(r.name || r.rn) + '<span class="tb-rn">' + esc(r.rn) + "</span></span><em>" + esc(sar(r.price)) + "</em>"
+              + '<span class="tb-st' + (mine ? " ours" : isOpen ? " open" : "") + '">' + esc(mine ? T.ours1 : isOpen ? T.openTil(fmtD(r.bid)) : (bd ? T.closedT : "—")) + "</span>"
+              + (u ? '<a class="et-link" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a>' : "<span></span>") + "</div>"; }).join("") + "</div></td></tr>"; }
       return row; }).join("");
     document.getElementById("tbWrap").innerHTML = '<table class="tb-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table>";
     document.getElementById("tbMore").innerHTML = list.length > 15 ? '<button class="editbtn secondary" type="button" data-tball="1">' + esc(showAll ? T.top : T.all + " (" + list.length + ")") + "</button>" : "";
   }
-  window.topBuyers = { render:render };
+  window.topBuyers = { render:render, open:function(a){ open[norm(a)] = true; showAll = true; render(); } };
   document.addEventListener("click", function(e){ if(typeof CMT_MODE !== "undefined" && CMT_MODE) return; if(e.target.closest("a[href]")) return;
     var a = e.target.closest("[data-tball]"); if(a){ showAll = !showAll; render(); return; }
     var r = e.target.closest("tr.tb-row"); if(r){ var k = r.dataset.tb; open[k] = !open[k]; render(); } });
@@ -8060,9 +8066,10 @@ async function exportPPTX(){
     var pdx = {}; (prev.dec || []).forEach(function(x){ pdx[x] = 1; }); arr("external").forEach(function(r){ if(r.decision && pr[String(r.rn || r.name)] && !pdx[String(r.rn) + "|" + r.decision]) d.decisions++; });
     d.changes = d.changes.filter(function(x, i, a){ return a.indexOf(x) === i; }); return d; }
   function lvInit(){ if(ssGet(LV_SS)) { renderStrip(); return; } var s = ST(); if(!s || !Array.isArray(s.external)) return; var prev = lsGet(LV_KEY), cur = snapNow(); if(!cur) return;
-    ssSet(LV_SS, prev ? computeDiff(prev, cur) : { first:true }); lsSet(LV_KEY, cur); renderStrip(); }
+    ssSet(LV_SS, prev ? computeDiff(prev, cur) : { first:true }); if(prev) ssSet("v68base", prev); else lsSet(LV_KEY, cur); renderStrip(); }
   function SL(){ var ar = AR(); return { h: ar ? "منذ زيارتك الأخيرة" : "Since your last visit", t: ar ? "منافسات جديدة" : ["new tender", "new tenders"], c: ar ? "تغيّرت في اعتماد" : "changed on Etimad", e: ar ? "فعاليات جديدة" : ["new event", "new events"], d: ar ? "قرارات جديدة" : ["new decision", "new decisions"], a: ar ? "تنبيه موعد" : "deadline alarm", none: ar ? "لا جديد منذ زيارتك الأخيرة" : "Nothing new since your last visit", x: ar ? "إخفاء" : "Hide" }; }
-  function renderStrip(){ var ov = document.getElementById("page-overview"), d = ssGet(LV_SS), el = document.getElementById("slvStrip"); if(!ov) return;
+  function liveDiff(){ var b = ssGet("v68base"); if(b){ try{ var dd = computeDiff(b, snapNow()); ssSet(LV_SS, dd); return dd; }catch(e){} } return ssGet(LV_SS); }
+  function renderStrip(){ var ov = document.getElementById("page-overview"), d = liveDiff(), el = document.getElementById("slvStrip"); if(!ov) return;
     if(!d || d.first || lvHidden){ if(el) el.remove(); return; }
     if(!el){ el = document.createElement("div"); el.id = "slvStrip"; var bb = document.getElementById("briefBox"); if(bb && bb.parentNode === ov) ov.insertBefore(el, bb); else ov.insertBefore(el, ov.firstChild); }
     var T = SL(), n = d.tenders.length + d.changes.length + d.events.length + d.decisions + (d.alarm ? 1 : 0), when = d.since ? new Date(d.since) : null, ar = AR();
@@ -8127,7 +8134,7 @@ async function exportPPTX(){
   }
 
   /* ---------- registry hooks + events ---------- */
-  window.v48 = { renderRecap:renderRecap, renderEventsExtras:renderEventsExtras, whyFits:whyFits, rnMonth:rnMonth, addToCalendar:addToCalendar, lastVisitReset:function(){ try{ localStorage.removeItem(LV_KEY); sessionStorage.removeItem(LV_SS); }catch(e){} } };
+  window.v48 = { renderRecap:renderRecap, renderEventsExtras:renderEventsExtras, whyFits:whyFits, rnMonth:rnMonth, addToCalendar:addToCalendar, lastVisitReset:function(){ try{ localStorage.removeItem(LV_KEY); sessionStorage.removeItem(LV_SS); sessionStorage.removeItem("v68base"); }catch(e){} }, diffNow:function(){ var b = ssGet("v68base"); return b ? computeDiff(b, snapNow()) : null; }, base:function(){ return ssGet("v68base"); }, commitVisit:function(){ var c = snapNow(); if(c) lsSet(LV_KEY, c); }, ready:function(){ return !!ssGet(LV_SS); }, renderStrip:renderStrip };
   try{ RENDER_FN.recap = renderRecap; }catch(e){}
   try{ SECTION_NAME_KEY.recap = "tabRecap"; TITLES_AR.tabRecap = "ملخص الربع"; }catch(e){}
   function all(){ try{ renderEventsExtras(); }catch(e){ console.error(e); } try{ decorateEtimad(); }catch(e){ console.error(e); } try{ renderRecap(); }catch(e){ console.error(e); } try{ renderStrip(); }catch(e){} }
@@ -9147,5 +9154,249 @@ async function exportPPTX(){
   try{ if(typeof state !== "undefined" && state && state.theme) applyTheme(state.theme); }catch(e){}
 })();
 </script>
+<style id="v68css">
+  /* v68: booklet spend · bid calendar file · weekend/holiday flags · new-since-last-visit highlights · search everything · Top buyers full tender list */
+  #bsSec .bs-table{width:100%; border-collapse:collapse; font-size:13px;}
+  #bsSec .bs-table th{text-align:start; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  #bsSec .bs-table td{padding:9px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  .bs-name b{display:block; color:var(--cream); font-size:13px; font-weight:600;}
+  .bs-name span{font-size:11px; color:var(--muted);}
+  .bs-amt{font-family:var(--mono, monospace); white-space:nowrap;}
+  .bs-btn{font:inherit; font-size:11.5px; padding:4px 11px; border-radius:999px; border:1px solid rgba(185,167,255,.45); background:transparent; color:#d9cfff; cursor:pointer; white-space:nowrap;}
+  .bs-btn.on{border-color:rgba(60,203,127,.55); color:#3ccb7f;}
+  .bs-btn[disabled]{cursor:default;}
+  .bs-months{display:flex; align-items:flex-end; gap:10px; height:96px; margin:16px 0 8px; padding:0 4px;}
+  .bs-months div{flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; font-size:10.5px; color:var(--muted); font-family:var(--mono, monospace);}
+  .bs-months i{display:block; width:100%; max-width:46px; border-radius:6px 6px 2px 2px; background:linear-gradient(180deg, var(--copper), rgba(242,101,34,.35)); min-height:2px;}
+  .bs-months b{color:var(--cream); font-weight:600;}
+  .bs-tag{display:inline-flex; font-size:10.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); white-space:nowrap; margin-inline-end:4px;}
+  .bs-tag.pursue{color:#ffc857; border-color:rgba(255,200,87,.5);}
+  .bs-tag.watch{color:#d9cfff; border-color:rgba(185,167,255,.5);}
+  .bs-tag.strong{color:var(--copper); border-color:rgba(242,101,34,.5);}
+  .bs-note{font-size:12px; color:var(--muted); margin-top:8px;}
+  #icsBar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; margin:0 0 22px; padding:12px 16px; border-radius:14px; border:1px solid var(--border); background:var(--night2);}
+  #icsBar .ics-t{font-size:13px; color:var(--sand, #D9D3CB); line-height:1.55; flex:1; min-width:220px;}
+  #icsBar .ics-t b{color:var(--cream);}
+  #icsBar button{font:inherit; font-size:12.5px; padding:7px 15px; border-radius:999px; border:1px solid var(--copper); background:rgba(242,101,34,.12); color:var(--cream); cursor:pointer; white-space:nowrap;}
+  #icsBar button:hover{background:rgba(242,101,34,.22);}
+  .v68-wk{display:inline-flex; align-items:center; margin-inline-start:6px; padding:1px 7px; border-radius:999px; font-size:10.5px; font-weight:600; white-space:nowrap; vertical-align:middle; background:rgba(255,122,112,.12); color:#ff9d94; border:1px solid rgba(255,122,112,.45); cursor:help;}
+  .v68-wk.soft{background:rgba(255,200,87,.10); color:#ffc857; border-color:rgba(255,200,87,.42);}
+  .v68-nv{display:inline-flex; align-items:center; margin-inline-start:8px; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:.06em; background:rgba(185,167,255,.18); color:#d9cfff; border:1px solid rgba(185,167,255,.55); vertical-align:middle; white-space:nowrap;}
+  tr.v68-hl > td{background:rgba(185,167,255,.07);}
+  tr.v68-hl > td:first-child{box-shadow:inset 3px 0 0 #b9a7ff;}
+  [dir="rtl"] tr.v68-hl > td:first-child{box-shadow:inset -3px 0 0 #b9a7ff;}
+  .nw-card.v68-hl{border-color:rgba(185,167,255,.65); box-shadow:0 0 0 1px rgba(185,167,255,.25);}
+  #v68brief{margin:0 0 10px; margin-inline-start:0;}
+  .tb-all-h{display:flex; justify-content:space-between; gap:10px; align-items:baseline; margin-bottom:6px;}
+  .tb-all-h b{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+  .tb-all{max-height:380px; overflow:auto; padding-inline-end:6px;}
+  .tb-all .tb-it{display:grid; grid-template-columns:88px minmax(0, 1fr) auto auto 18px; gap:12px; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+  .tb-all .tb-it:last-child{border-bottom:none;}
+  .tb-all em{font-style:normal; font-family:var(--mono, monospace); font-size:11px; color:var(--muted);}
+  .tb-all .tb-rn{display:block; font-family:var(--mono, monospace); font-size:10.5px; color:var(--muted); margin-top:1px;}
+  .tb-all .tb-st{font-size:10.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); white-space:nowrap;}
+  .tb-all .tb-st.open{color:#3ccb7f; border-color:rgba(60,203,127,.5);}
+  .tb-all .tb-st.ours{color:var(--copper); border-color:rgba(242,101,34,.5);}
+  @media (max-width:760px){ .tb-all .tb-it{grid-template-columns:72px minmax(0, 1fr);} .tb-all .tb-it > :nth-child(n+3){grid-column:2;} }
+  html.theme-light .v68-nv, html.theme-light .bs-btn, html.theme-light .bs-tag.watch{color:#5b45c9;}
+  html.theme-light .bs-tag.pursue, html.theme-light .v68-wk.soft{color:#9a6a00;}
+  html.theme-light .v68-wk{color:#c0392b;}
+  html.theme-light .bs-btn.on, html.theme-light .tb-all .tb-st.open{color:#1e8a52;}
+</style>
+<script>
+/* v68 module: booklet spend · bid calendar file (.ics) · weekend & holiday flags · new since your last visit (in place) · search everything · Top buyers full list (Harith, 27 Oct 2026) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var RO = function(){ return typeof READONLY !== "undefined" && READONLY; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var arr = function(k){ var s = ST(); return (s && Array.isArray(s[k])) ? s[k] : []; };
+  var pad = function(n){ return String(n).padStart(2, "0"); };
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function today0(){ var d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function isoDay(d){ return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function save(){ try{ if(typeof saveLocalDraft === "function") saveLocalDraft(); }catch(e){} }
+  function hist(){ try{ if(typeof pushHistory === "function") pushHistory(); }catch(e){} }
+  function norm(a){ return String(a || "").replace(/\s+/g, " ").trim(); }
+  function ssGet(k){ try{ return JSON.parse(sessionStorage.getItem(k) || "null"); }catch(e){ return null; } }
+  try{ TR_SKIP_FIELDS.add("bookletBought"); }catch(e){}
+  /* "YYYY-MM-DD[ HH:MM]" (Riyadh time) → parts */
+  function parts(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/); if(!m) return null; return { y:+m[1], mo:+m[2], d:+m[3], h:m[4] != null ? +m[4] : null, mi:m[5] != null ? +m[5] : 0 }; }
+  function localDate(p){ return p ? new Date(p.y, p.mo - 1, p.d) : null; }
+  function fmtD(s, withTime){ var p = parts(s); if(!p) return String(s || ""); var d = new Date(p.y, p.mo - 1, p.d, p.h || 0, p.mi || 0);
+    var o = { weekday:"short", day:"numeric", month:"short" }; var t = d.toLocaleDateString(loc(), o); if(withTime && p.h != null) t += " " + pad(p.h) + ":" + pad(p.mi); return t; }
+  function isOpenRow(r){ var p = parts(r && r.bidDeadline); if(!p) return false; var d = new Date(p.y, p.mo - 1, p.d, p.h != null ? p.h : 23, p.mi || 59); return d >= new Date(); }
+  function price(r){ var s = String((r && r.price) || "").replace(/[٠-٩]/g, function(c){ return String(c.charCodeAt(0) - 1632); }); if(/free|مجان/i.test(s)) return 0; var m = s.replace(/,/g, "").match(/\d+(\.\d+)?/); return m ? +m[0] : 0; }
+  function sar(n){ n = +n || 0; return AR() ? n.toLocaleString("en") + " ر.س" : "SAR " + n.toLocaleString("en"); }
+  function etU(r){ try{ return typeof window.etimadUrl === "function" ? window.etimadUrl(r) : ""; }catch(e){ return ""; } }
+
+  /* =========================================================
+     1) WEEKEND & HOLIDAY FLAG  (Saudi weekend Fri–Sat · Eid windows from the Umm al-Qura calendar · fixed national holidays)
+     ========================================================= */
+  var HIJ = null; try{ HIJ = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", { timeZone:"UTC", day:"numeric", month:"numeric" }); }catch(e){ HIJ = null; }
+  function hijri(p){ if(!HIJ) return null; try{ var o = {}; HIJ.formatToParts(new Date(Date.UTC(p.y, p.mo - 1, p.d, 12))).forEach(function(x){ if(x.type === "month" || x.type === "day") o[x.type] = parseInt(x.value, 10); }); return (o.month && o.day) ? o : null; }catch(e){ return null; } }
+  function flagFor(s, kind){ var p = parts(s); if(!p) return null; var ar = AR(), wd = new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDay(), h = hijri(p), md = pad(p.mo) + "-" + pad(p.d);
+    var what = kind === "inq" ? (ar ? "آخر موعد للاستفسارات" : "Last day for questions") : (ar ? "موعد تقديم العروض" : "Bid deadline");
+    if(h && ((h.month === 9 && h.day >= 29) || (h.month === 10 && h.day <= 4))) return { k:"eid", soft:false, t:ar ? "إجازة العيد" : "Eid holiday", tip:what + (ar ? " داخل إجازة عيد الفطر المتوقعة (تقويم أم القرى) — أنهِ التقديم قبلها" : " falls in the expected Eid al-Fitr holiday (Umm al-Qura calendar) — finish before it") };
+    if(h && h.month === 12 && h.day >= 9 && h.day <= 13) return { k:"eid", soft:false, t:ar ? "إجازة العيد" : "Eid holiday", tip:what + (ar ? " داخل إجازة عيد الأضحى المتوقعة (تقويم أم القرى) — أنهِ التقديم قبلها" : " falls in the expected Eid al-Adha holiday (Umm al-Qura calendar) — finish before it") };
+    if(md === "09-23" || md === "02-22") { var nm = md === "09-23" ? (ar ? "اليوم الوطني" : "Saudi National Day") : (ar ? "يوم التأسيس" : "Founding Day"); return { k:"hol", soft:false, t:ar ? "إجازة رسمية" : "Public holiday", tip:what + (ar ? " يصادف " : " falls on ") + nm }; }
+    if(wd === 5 || wd === 6) return { k:"wkd", soft:false, t:ar ? "عطلة نهاية الأسبوع" : "Weekend", tip:what + (ar ? " يصادف " + (wd === 5 ? "الجمعة" : "السبت") + " — قدّم قبل نهاية الخميس" : " falls on a " + (wd === 5 ? "Friday" : "Saturday") + " — submit by Thursday") };
+    if(h && ((h.month === 10 && h.day === 5) || (h.month === 12 && h.day === 14))) return { k:"post", soft:true, t:ar ? "بعد العيد مباشرة" : "Right after Eid", tip:what + (ar ? " أول يوم عمل بعد إجازة العيد — جهّز كل شيء قبل الإجازة" : " is the first working day after the Eid holiday — get everything ready before the break") };
+    if(wd === 0 && (p.h == null || p.h < 12)) return { k:"sun", soft:true, t:ar ? "صباح الأحد" : "Sunday morning", tip:what + (ar ? " صباح الأحد — أنهِ التقديم قبل نهاية الخميس" : " is on Sunday morning — finish the submission by Thursday") };
+    return null; }
+  window.v68flag = flagFor;
+  function chip(f){ return f ? '<span class="v68-wk' + (f.soft ? " soft" : "") + '" title="' + esc(f.tip) + '">' + esc(f.t) + "</span>" : ""; }
+  function decorateFlags(){ var body = document.getElementById("externalBody"); if(!body) return; var rows = arr("external");
+    [["bidDeadline", "bid"], ["inqDeadline", "inq"]].forEach(function(fk){
+      [].forEach.call(body.querySelectorAll('[data-bind^="external."][data-bind$=".' + fk[0] + '"]'), function(td){ var m = td.dataset.bind.match(/\.(\d+)\./); if(!m) return; var r = rows[+m[1]], f = r && isOpenRow(r) ? flagFor(r[fk[0]], fk[1]) : null, b = td.querySelector(".v68-wk");
+        if(!f){ if(b) b.remove(); return; } if(b && b.textContent === f.t && b.title === f.tip) return; if(b) b.remove();
+        b = document.createElement("span"); b.className = "v68-wk view-only" + (f.soft ? " soft" : ""); b.contentEditable = "false"; b.textContent = f.t; b.title = f.tip; if(typeof editing !== "undefined" && editing) b.style.display = "none"; td.appendChild(b); }); }); }
+
+  /* =========================================================
+     2) BOOKLET SPEND  (Etimad page · row.bookletBought = "YYYY-MM-DD", set by Harith with one click)
+     ========================================================= */
+  function BL(){ var ar = AR(); return {
+    title: ar ? "مصروف كراسات الشروط" : "Booklet spend",
+    sub: ar ? "كم ندفع على كراسات الشروط في اعتماد. اضغط «اشترينا الكراسة» عند شرائها — تُحفظ للجميع. الأرقام من قيمة الكراسة المنشورة في اعتماد." : "What we spend on Etimad tender booklets. Press “Mark bought” when you buy one — it's saved for everyone. Amounts are the booklet price published on Etimad.",
+    k: ar ? ["كراسات اشتريناها", "هذا الشهر", "مطلوب لـ«متابعة»", "كل الفرص القوية المفتوحة"] : ["Booklets bought", "This month", "To buy for Pursue", "All open Strong fits"],
+    ks: function(i, n){ if(i === 1) return new Date().toLocaleDateString(loc(), { month:"long", year:"numeric" }); return ar ? (n + (n === 1 ? " كراسة" : " كراسات")) : (n + (n === 1 ? " booklet" : " booklets")); },
+    cols: ar ? ["الفرصة", "التصنيف", "قيمة الكراسة", "موعد تقديم العروض", "الكراسة"] : ["Opportunity", "Fit", "Booklet", "Bid deadline", "Booklet status"],
+    mark: ar ? "اشترينا الكراسة" : "Mark bought", bought: function(d){ return (ar ? "✓ اشتُريت " : "✓ Bought ") + d; }, undo: ar ? " · تراجع" : " · undo", notYet: ar ? "لم تُشترَ" : "Not bought",
+    months: ar ? "المصروف شهريًا" : "Spend by month", free: ar ? "مجانية" : "Free", closed: ar ? "مغلقة" : "closed",
+    dec: { pursue: ar ? "متابعة" : "Pursue", watch: ar ? "مراقبة" : "Watch" }, fit: { Strong: ar ? "قوية" : "Strong", Medium: ar ? "متوسطة" : "Medium" },
+    none: ar ? "لا توجد فرص مفتوحة حاليًا." : "No open opportunities right now."
+  }; }
+  function bookletRows(){ var out = []; arr("external").forEach(function(r, i){ if(!r || r.decision === "pass") return; if(isOpenRow(r) || r.bookletBought) out.push({ r:r, i:i, sec:"external", open:isOpenRow(r) }); });
+    arr("externalExcluded").forEach(function(r, i){ if(r && r.bookletBought) out.push({ r:r, i:i, sec:"externalExcluded", open:false }); });
+    out.sort(function(a, b){ if(a.open !== b.open) return a.open ? -1 : 1; return a.open ? String(a.r.bidDeadline || "").localeCompare(String(b.r.bidDeadline || "")) : String(b.r.bookletBought || "").localeCompare(String(a.r.bookletBought || "")); }); return out; }
+  function renderBooklets(){ var page = document.getElementById("page-external"); if(!page) return; var sec = document.getElementById("bsSec");
+    if(!sec){ var anchor = document.getElementById("tbSec") || document.getElementById("wlSec"); if(!anchor) return; sec = document.createElement("section"); sec.id = "bsSec";
+      sec.innerHTML = '<div class="sechead"><h2 class="bs-title"></h2></div><div class="subhead bs-sub"></div><div class="kpi-row" id="bsKpis"></div><div id="bsMonths"></div><div class="table-scroll" id="bsWrap"></div>'; anchor.insertAdjacentElement("afterend", sec); }
+    var T = BL(), ar = AR(), all = arr("external").concat(arr("externalExcluded")), t = new Date(), ym = t.getFullYear() + "-" + pad(t.getMonth() + 1);
+    var bought = all.filter(function(r){ return r && r.bookletBought; }), sum = function(l){ return l.reduce(function(s, r){ return s + price(r); }, 0); };
+    var month = bought.filter(function(r){ return String(r.bookletBought).slice(0, 7) === ym; });
+    var toBuy = arr("external").filter(function(r){ return r && r.decision === "pursue" && !r.bookletBought && isOpenRow(r); });
+    var strong = arr("external").filter(function(r){ return r && r.fit === "Strong" && r.decision !== "pass" && !r.bookletBought && isOpenRow(r); });
+    var tiles = [[sum(bought), bought.length], [sum(month), month.length], [sum(toBuy), toBuy.length], [sum(strong), strong.length]];
+    sec.querySelector(".bs-title").textContent = T.title; sec.querySelector(".bs-sub").textContent = T.sub;
+    var kh = tiles.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value" style="font-size:18px;">' + esc(sar(v[0])) + '</div><div class="sub">' + esc(T.ks(i, v[1])) + "</div></div>"; }).join("");
+    var kp = document.getElementById("bsKpis"); if(kp.__h !== kh){ kp.__h = kh; kp.innerHTML = kh; }
+    /* last 6 months */
+    var ms = []; for(var k = 5; k >= 0; k--){ var d = new Date(t.getFullYear(), t.getMonth() - k, 1), key = d.getFullYear() + "-" + pad(d.getMonth() + 1); ms.push({ lab:d.toLocaleDateString(loc(), { month:"short" }), v:sum(bought.filter(function(r){ return String(r.bookletBought).slice(0, 7) === key; })) }); }
+    var mx = Math.max.apply(null, ms.map(function(m){ return m.v; }).concat([1]));
+    var mh = '<div style="font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper); margin-top:14px;">' + esc(T.months) + '</div><div class="bs-months">' + ms.map(function(m){ return "<div><b>" + (m.v ? esc(m.v.toLocaleString("en")) : "") + '</b><i style="height:' + Math.max(2, Math.round(62 * m.v / mx)) + 'px"></i><span>' + esc(m.lab) + "</span></div>"; }).join("") + "</div>";
+    var mo = document.getElementById("bsMonths"); if(mo.__h !== mh){ mo.__h = mh; mo.innerHTML = mh; }
+    var list = bookletRows();
+    var body = list.map(function(x){ var r = x.r, p = price(r), f = x.open ? flagFor(r.bidDeadline, "bid") : null;
+      var tags = (r.fit ? '<span class="bs-tag' + (r.fit === "Strong" ? " strong" : "") + '">' + esc(T.fit[r.fit] || r.fit) + "</span>" : "") + (r.decision && T.dec[r.decision] ? '<span class="bs-tag ' + esc(r.decision) + '">' + esc(T.dec[r.decision]) + "</span>" : "");
+      var st; if(r.bookletBought){ var bd = fmtD(r.bookletBought); st = RO() ? '<span class="bs-btn on" style="cursor:default">' + esc(T.bought(bd)) + "</span>" : '<button type="button" class="bs-btn on" data-bsx="' + x.sec + ":" + x.i + '">' + esc(T.bought(bd) + T.undo) + "</button>"; }
+      else st = RO() ? '<span class="bs-tag">' + esc(T.notYet) + "</span>" : (x.open ? '<button type="button" class="bs-btn" data-bsx="' + x.sec + ":" + x.i + '">' + esc(T.mark) + "</button>" : "");
+      return '<tr><td class="bs-name"><b>' + esc(typeof tx === "function" ? tx(r.name || r.rn) : (r.name || r.rn)) + "</b><span>" + esc(r.agency || "") + (r.rn ? " · " + esc(r.rn) : "") + "</span></td><td>" + tags + '</td><td class="bs-amt">' + esc(p ? sar(p) : (String(r.price || "").trim() ? T.free : "—")) + '</td><td class="bs-amt">' + esc(fmtD(r.bidDeadline, true)) + (x.open ? "" : " · " + esc(T.closed)) + chip(f) + "</td><td>" + st + "</td></tr>"; }).join("");
+    var th = "<tr>" + T.cols.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + "</tr>";
+    var wh = list.length ? '<table class="bs-table"><thead>' + th + "</thead><tbody>" + body + "</tbody></table>" : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var w = document.getElementById("bsWrap"); if(w.__h !== wh){ w.__h = wh; w.innerHTML = wh; } void ar; }
+  function toggleBought(key){ if(RO()) return; var m = String(key).split(":"), r = arr(m[0])[+m[1]]; if(!r) return; hist();
+    if(r.bookletBought) delete r.bookletBought; else r.bookletBought = isoDay(new Date()); save(); try{ renderAll(); }catch(e){ renderBooklets(); } }
+
+  /* =========================================================
+     3) BID CALENDAR FILE  (.ics for Outlook / Google / Apple — every open bid + inquiry deadline, reminders included)
+     ========================================================= */
+  function icsEsc(s){ return String(s == null ? "" : s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+  var ENC = new TextEncoder();
+  function fold(line){ var out = [], cur = "", n = 0; for(var ch of line){ var b = ENC.encode(ch).length; if(n + b > 73){ out.push(cur); cur = " " + ch; n = 1 + b; } else { cur += ch; n += b; } } out.push(cur); return out.join("\r\n"); }
+  function utc(p, addMin){ var d = new Date(Date.UTC(p.y, p.mo - 1, p.d, (p.h != null ? p.h : 0) - 3, p.mi || 0) + (addMin || 0) * 6e4); return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + "T" + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + "00Z"; }
+  function dayStr(p, add){ var d = new Date(Date.UTC(p.y, p.mo - 1, p.d + (add || 0))); return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()); }
+  function icsRows(){ return arr("external").filter(function(r){ return r && r.decision !== "pass" && isOpenRow(r); }); }
+  function buildIcs(){ var ar = AR(), now = new Date(), stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z";
+    var L0 = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Midwam//Saud Dashboard v68//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:" + icsEsc(ar ? "مواعيد منافسات مدوام" : "Midwam bid deadlines"), "X-WR-TIMEZONE:Asia/Riyadh"], n = 0;
+    var DEC = { pursue:ar ? "متابعة" : "Pursue", watch:ar ? "مراقبة" : "Watch" };
+    icsRows().forEach(function(r){ var nm = typeof tx === "function" ? tx(r.name || r.rn) : (r.name || r.rn), url = etU(r);
+      [["bidDeadline", "bid"], ["inqDeadline", "inq"]].forEach(function(fk){ var p = parts(r[fk[0]]); if(!p) return; var when = p.h != null ? new Date(Date.UTC(p.y, p.mo - 1, p.d, p.h - 3, p.mi)) : new Date(Date.UTC(p.y, p.mo - 1, p.d, 21)); if(when < now) return;
+        var f = flagFor(r[fk[0]], fk[1]), isBid = fk[1] === "bid";
+        var sum = (isBid ? (ar ? "⏰ آخر موعد لتقديم العروض — " : "⏰ Bid deadline — ") : (ar ? "❓ آخر يوم للاستفسارات — " : "❓ Last day for questions — ")) + nm;
+        var desc = [(r.agency || ""), (ar ? "الرقم المرجعي: " : "RN: ") + (r.rn || ""), (ar ? "التوافق: " : "Fit: ") + (r.fit || "—") + (r.decision && DEC[r.decision] ? " · " + DEC[r.decision] : ""), (ar ? "قيمة الكراسة: " : "Booklet: ") + (r.price || "—")];
+        if(f) desc.push("⚠ " + f.tip); if(url) desc.push(url); desc.push(ar ? "من لوحة مدوام (سعود)" : "From the Midwam dashboard (Saud)");
+        L0.push("BEGIN:VEVENT", "UID:midwam-" + String(r.rn || nm).replace(/[^0-9A-Za-z]/g, "") + "-" + fk[1] + "@saud-dashboard", "DTSTAMP:" + stamp);
+        if(p.h != null){ L0.push("DTSTART:" + utc(p, isBid ? -60 : -30), "DTEND:" + utc(p, 0)); } else { L0.push("DTSTART;VALUE=DATE:" + dayStr(p, 0), "DTEND;VALUE=DATE:" + dayStr(p, 1)); }
+        L0.push("SUMMARY:" + icsEsc(sum), "DESCRIPTION:" + icsEsc(desc.join("\n")), "CATEGORIES:Midwam,Etimad");
+        if(url) L0.push("URL:" + url);
+        L0.push("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(sum), "TRIGGER:-P1D", "END:VALARM");
+        if(isBid && p.h != null) L0.push("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(sum), "TRIGGER:-PT3H", "END:VALARM");
+        L0.push("END:VEVENT"); n++; }); });
+    L0.push("END:VCALENDAR"); return { text:L0.map(fold).join("\r\n") + "\r\n", n:n }; }
+  window.v68ics = buildIcs;
+  function downloadIcs(){ var o = buildIcs(), blob = new Blob([o.text], { type:"text/calendar;charset=utf-8" }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "Midwam_Bid_Deadlines_" + isoDay(new Date()) + ".ics"; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    try{ if(typeof showToast === "function") showToast(AR() ? ("نُزّل ملف التقويم — " + o.n + " موعد") : ("Calendar file downloaded — " + o.n + " deadlines")); }catch(e){} }
+  function renderIcsBar(){ var body = document.getElementById("externalBody"), sec = body && body.closest("section"); if(!sec) return; var bar = document.getElementById("icsBar");
+    if(!bar){ bar = document.createElement("div"); bar.id = "icsBar"; sec.insertAdjacentElement("afterend", bar); }
+    var ar = AR(), rows = icsRows(), cnt = 0; rows.forEach(function(r){ if(parts(r.bidDeadline)) cnt++; if(parts(r.inqDeadline)) cnt++; });
+    var h = '<div class="ics-t"><b>' + esc(ar ? "المواعيد في تقويمك" : "Deadlines in your calendar") + "</b> — " + esc(ar ? ("ملف واحد فيه مواعيد تقديم العروض والاستفسارات لكل الفرص المفتوحة (" + rows.length + " فرصة) مع تذكير قبلها بيوم. افتحه في Outlook. نزّله من جديد بعد أي تحديث — المواعيد تتحدّث مكانها ولا تتكرر.") : ("One file with the bid and inquiry deadlines of every open opportunity (" + rows.length + "), with a reminder the day before. Open it in Outlook. Download it again after updates — the entries update in place, no duplicates.")) + '</div><button type="button" data-icsdl="1">' + esc(ar ? "⬇ نزّل ملف التقويم (.ics)" : "⬇ Download calendar file (.ics)") + "</button>";
+    if(bar.__h !== h){ bar.__h = h; bar.innerHTML = h; } void cnt; }
+
+  /* =========================================================
+     4) NEW SINCE YOUR LAST VISIT — in place  (uses the v48 visit snapshot; a visit only counts once YOU use the page)
+     ========================================================= */
+  var hlOff = false, committed = false, cTimer = null;
+  function diffNow(){ try{ return window.v48 && v48.diffNow ? v48.diffNow() : null; }catch(e){ return null; } }
+  function decorateNew(){ var d = hlOff ? null : diffNow(), base = hlOff ? null : (window.v48 && v48.base ? v48.base() : null), ar = AR();
+    var newNames = {}; (d && d.tenders || []).forEach(function(n){ newNames[norm(n)] = 1; });
+    var body = document.getElementById("externalBody"), rows = arr("external");
+    if(body) [].forEach.call(body.querySelectorAll('[data-bind^="external."][data-bind$=".name"]'), function(td){ var m = td.dataset.bind.match(/\.(\d+)\.name$/); if(!m) return; var r = rows[+m[1]], on = !!(r && (newNames[norm(r.name)] || newNames[norm(r.rn)])), b = td.querySelector(".v68-nv"), tr = td.closest("tr");
+      if(tr) tr.classList.toggle("v68-hl", on); if(!on){ if(b) b.remove(); return; } if(b) return;
+      b = document.createElement("span"); b.className = "v68-nv view-only"; b.contentEditable = "false"; b.textContent = ar ? "جديد" : "NEW"; b.title = ar ? "أُضيفت منذ زيارتك الأخيرة" : "Added since your last visit"; if(typeof editing !== "undefined" && editing) b.style.display = "none"; td.appendChild(b); });
+    var evNew = {}; (d && d.events || []).forEach(function(n){ evNew[norm(n)] = 1; });
+    var news = arr("eventsNews"); [].forEach.call(document.querySelectorAll("#nwGrid .nw-card"), function(c){ var bt = c.querySelector("b"), t = bt ? norm(bt.textContent) : "", on = false;
+      if(t) news.forEach(function(n){ if((norm(n.name) === t || norm(n.nameAr) === t) && evNew[norm(n.name)]) on = true; }); c.classList.toggle("v68-hl", on); });
+    var eb = document.getElementById("eventsBody"), evs = arr("events"); if(eb) [].forEach.call(eb.querySelectorAll('[data-bind^="events."][data-bind$=".name"]'), function(td){ var m = td.dataset.bind.match(/\.(\d+)\.name$/), r = m && evs[+m[1]], tr = td.closest("tr"); if(tr) tr.classList.toggle("v68-hl", !!(r && evNew[norm(r.name)])); });
+    var bb = document.getElementById("briefBox"), cb = (ST() && ST().claudeBrief) || null, chipEl = document.getElementById("v68brief"), fresh = !!(base && cb && cb.at && cb.at !== base.brief && String(cb.at) > String(base.at || ""));
+    if(bb){ if(!fresh){ if(chipEl) chipEl.remove(); } else if(!chipEl || chipEl.parentNode !== bb){ if(chipEl) chipEl.remove(); chipEl = document.createElement("span"); chipEl.id = "v68brief"; chipEl.className = "v68-nv"; bb.insertBefore(chipEl, bb.firstChild); }
+      if(fresh && chipEl){ var lab = ar ? "ملخص جديد منذ زيارتك الأخيرة" : "New brief since your last visit"; if(chipEl.textContent !== lab) chipEl.textContent = lab; } } }
+  function onUser(e){ if(!e.isTrusted || committed || cTimer || document.visibilityState !== "visible") return; if(!window.v48 || !v48.ready || !v48.ready()) return;
+    cTimer = setTimeout(function(){ committed = true; try{ v48.commitVisit(); }catch(err){} }, 5000); }
+  ["pointerdown", "keydown", "wheel", "touchstart"].forEach(function(t){ document.addEventListener(t, onUser, { passive:true, capture:true }); });
+
+  /* =========================================================
+     5) SEARCH EVERYTHING  (the sidebar "Search or ask Saud…" box — every section, Arabic-friendly, private sections stay hidden in the team view)
+     ========================================================= */
+  function NRM(s){ return String(s == null ? "" : s).toLowerCase().replace(/[\u064B-\u0652\u0670\u0640]/g, "").replace(/[إأآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ؤ/g, "و").replace(/ئ/g, "ي").replace(/[٠-٩]/g, function(c){ return String(c.charCodeAt(0) - 1632); }).replace(/\s+/g, " ").trim(); }
+  function teamLocked(){ var h = document.documentElement; return h.classList.contains("team-mode") && h.classList.contains("ts-locked"); }
+  var LOCKED_PAGES = { internal:1, projects:1, recap:1, brand:1, marketing:1 };
+  function hayOf(r){ if(r == null) return ""; if(typeof r !== "object") return String(r); var out = []; Object.keys(r).forEach(function(k){ var v = r[k]; if(typeof v === "string" || typeof v === "number") out.push(v); else if(Array.isArray(v) && v.length && typeof v[0] === "string") out.push(v.join(" ")); }); return out.join(" · "); }
+  var GO = {};
+  function v68search(query){ var toks = NRM(query).split(" ").filter(Boolean); if(!toks.length) return []; var ar = AR(), res = [], seenRn = {}, lock = teamLocked(), gid = 0;
+    var hit = function(h){ var n = NRM(h); for(var i = 0; i < toks.length; i++) if(n.indexOf(toks[i]) < 0) return false; return true; };
+    var score = function(label){ var n = NRM(label); return toks.every(function(t){ return n.indexOf(t) >= 0; }) ? 0 : 1; };
+    try{ GLOBAL_SEARCH_SOURCES.forEach(function(src){ if(lock && LOCKED_PAGES[src.page]) return; arr(src.section).forEach(function(r, i){ if(!r || !hit(hayOf(r))) return; var lab = ""; try{ lab = src.label(r) || ""; }catch(e){} var sub = ""; try{ sub = src.sub(r) || ""; }catch(e){}
+      if(r.rn) seenRn[String(r.rn)] = 1; res.push({ section:src.section, page:src.page, index:i, kind:src.kind, label:lab || "(untitled)", sub:sub, s:score(lab) }); }); }); }catch(e){}
+    arr("events").forEach(function(r, i){ if(r && hit(hayOf(r))) res.push({ section:"events", page:"events", index:i, kind:ar ? "فعالية" : "Event", label:(ar && r.nameAr) ? r.nameAr : (r.name || ""), sub:r.start || "", s:score(r.name + " " + (r.nameAr || "")) }); });
+    arr("eventsNews").forEach(function(r, i){ if(!r || !hit(hayOf(r))) return; var id = "n" + (gid++); GO[id] = function(){ goNews(i); }; res.push({ section:"_v68", page:"events", index:id, kind:ar ? "فعالية أُعلن عنها" : "Announced event", label:(ar && r.nameAr) ? r.nameAr : (r.name || ""), sub:r.start || "", s:score(r.name + " " + (r.nameAr || "")) }); });
+    var b = ST() && ST().buyers; if(b && Array.isArray(b.raw)) b.raw.forEach(function(x){ if(!x || seenRn[String(x[0])]) return; if(!hit(x[0] + " " + x[1] + " " + x[4])) return; var id = "b" + (gid++); GO[id] = function(){ goBuyer(x[1]); };
+      res.push({ section:"_v68", page:"external", index:id, kind:ar ? "منافسة في اعتماد (أكبر المشترين)" : "Etimad tender (Top buyers)", label:x[4] || x[0], sub:x[1], s:score(x[4]) }); });
+    var cb = ST() && ST().claudeBrief; if(cb){ (ar ? (cb.ar || cb.en || []) : (cb.en || [])).forEach(function(t){ if(!hit(t)) return; var id = "r" + (gid++); GO[id] = function(){ try{ switchPage("overview"); }catch(e){} setTimeout(function(){ var el = document.getElementById("briefBox"); if(el) el.scrollIntoView({ behavior:"smooth", block:"center" }); }, 60); };
+      res.push({ section:"_v68", page:"overview", index:id, kind:ar ? "ملخص اليوم" : "Today's brief", label:String(t).slice(0, 90) + (String(t).length > 90 ? "…" : ""), sub:"", s:1 }); }); }
+    res.sort(function(a, c){ return a.s - c.s; }); return res.slice(0, 40).map(function(r){ delete r.s; return r; }); }
+  function goNews(i){ try{ switchPage("events"); }catch(e){} setTimeout(function(){ var n = arr("eventsNews")[i], cards = document.querySelectorAll("#nwGrid .nw-card"), t = n ? [norm(n.name), norm(n.nameAr)] : [];
+    [].some.call(cards, function(c){ var bt = c.querySelector("b"); if(bt && t.indexOf(norm(bt.textContent)) >= 0){ c.scrollIntoView({ behavior:"smooth", block:"center" }); c.classList.remove("flash-highlight"); void c.offsetWidth; c.classList.add("flash-highlight"); return true; } return false; }); }, 80); }
+  function goBuyer(agency){ try{ switchPage("external"); }catch(e){} setTimeout(function(){ try{ if(window.topBuyers && topBuyers.open) topBuyers.open(agency); }catch(e){} setTimeout(function(){ var k = norm(agency), row = null;
+    [].some.call(document.querySelectorAll("#tbSec tr.tb-row"), function(tr){ if(tr.dataset.tb === k){ row = tr; return true; } return false; }); if(row) row.scrollIntoView({ behavior:"smooth", block:"center" }); }, 80); }, 60); }
+  if(typeof globalSearch === "function" && !window.__v68gs){ window.__v68gs = globalSearch; window.globalSearch = v68search; }
+  if(typeof goToSearchResult === "function" && !window.__v68go){ window.__v68go = goToSearchResult; window.goToSearchResult = function(section, page, index){ if(section === "_v68"){ var f = GO[index]; if(f) f(); return; } return window.__v68go(section, page, index); }; }
+  (function(){ var inp = document.getElementById("sbSearch"); if(!inp) return; var ph = function(){ var t = AR() ? "ابحث في الكل أو اسأل سعود…" : "Search all or ask Saud…"; if(inp.placeholder !== t) inp.placeholder = t; }; ph(); setInterval(ph, 2000); })();
+
+  /* ========================================================= */
+  function all(){ try{ renderIcsBar(); }catch(e){ console.error(e); } try{ renderBooklets(); }catch(e){ console.error(e); } try{ decorateFlags(); }catch(e){ console.error(e); } try{ decorateNew(); }catch(e){ console.error(e); } }
+  document.addEventListener("click", function(e){ if(typeof CMT_MODE !== "undefined" && CMT_MODE) return; var t = e.target;
+    if(t.closest && t.closest("[data-icsdl]")){ e.preventDefault(); downloadIcs(); return; }
+    var b = t.closest && t.closest("[data-bsx]"); if(b){ e.preventDefault(); e.stopPropagation(); toggleBought(b.dataset.bsx); return; }
+    if(t.closest && t.closest("[data-slvx]")){ hlOff = true; setTimeout(all, 0); } });
+  if(typeof renderAll === "function" && !renderAll.__v68){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v68 = true; }
+  all();
+  var lastLang = ""; setInterval(function(){ try{ var lg = String(typeof LANG !== "undefined" ? LANG : ""); if(lg !== lastLang){ lastLang = lg; ["icsBar", "bsKpis", "bsMonths", "bsWrap"].forEach(function(id){ var el = document.getElementById(id); if(el) el.__h = ""; }); } all(); }catch(e){} }, 1500);
+  window.v68 = { all:all, flag:flagFor, ics:buildIcs, search:v68search };
+})();
+</script>
+
 </body>
 </html>

@@ -9561,5 +9561,99 @@ async function exportPPTX(){
 })();
 </script>
 
+<style id="v71css">
+  /* v71: Etimad page in tabs (Open · Summary · Top buyers · Win/loss · Booklet spend · Expired · News) + calmer, shorter rows */
+  #v71nav{position:sticky; top:0; z-index:30; display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:10px; margin:0 0 18px; border-radius:16px; border:1px solid var(--border); background:rgba(18,16,15,.82); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  #v71nav::-webkit-scrollbar{display:none;}
+  #v71nav button{flex:0 0 auto; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:12.5px; font-weight:600; letter-spacing:.02em; padding:9px 14px; border-radius:11px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, border-color .15s;}
+  #v71nav button:hover{color:var(--cream); background:rgba(255,255,255,.04);}
+  #v71nav button.on{color:var(--cream); background:rgba(242,101,34,.14); border-color:rgba(242,101,34,.55);}
+  #v71nav button i{font-style:normal; display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:20px; padding:0 6px; border-radius:999px; font-family:var(--mono, monospace); font-size:10.5px; background:rgba(255,255,255,.07); color:var(--sand, #D9D3CB);}
+  #v71nav button.on i{background:rgba(242,101,34,.3); color:#fff;}
+  #v71nav button.v71-x{display:none;}
+  #page-external > .v71-off{display:none !important;}
+  #page-external > .v71-panel{margin-top:0;}
+  /* calmer rows: notes clamp to 3 lines (full text on click / when the row is open) */
+  #externalBody .v71-cl{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; color:var(--muted); line-height:1.55; cursor:pointer;}
+  #externalBody .v71-cl.v71-full{-webkit-line-clamp:unset; display:block;}
+  #externalBody > tr:not(.ext-detail) > td{padding-top:14px; padding-bottom:14px;}
+  #externalBody > tr:not(.ext-detail):hover > td{background:rgba(255,255,255,.025);}
+  #externalExcludedBody > tr.v71-more{display:none;}
+  .v71-morebtn{display:flex; margin:14px auto 0; font:inherit; font-size:12px; letter-spacing:.06em; text-transform:uppercase; padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--night2); color:var(--cream); cursor:pointer;}
+  .v71-morebtn:hover{border-color:rgba(242,101,34,.55);}
+  html.theme-light #v71nav{background:rgba(255,255,255,.85); box-shadow:0 8px 24px rgba(0,0,0,.08);}
+  html.theme-light #v71nav button.on{color:#1c1c1c;}
+  html.theme-light #v71nav button:hover{color:#1c1c1c; background:rgba(0,0,0,.04);}
+  @media print{ #v71nav, .v71-morebtn{display:none !important;} }
+</style>
+<script>
+/* v71 module: Etimad page as tabs + shorter rows (Harith, 1 Nov 2026) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var ED = function(){ return typeof editing !== "undefined" && editing; };
+  var $ = function(id){ return document.getElementById(id); };
+  var KEY = "v71etab", EXP_N = 10, expAll = false, cur = "open";
+  try{ var sv = localStorage.getItem(KEY); if(sv) cur = sv; }catch(e){}
+  function LB(){ var ar = AR(); return { open: ar ? "الفرص المفتوحة" : "Open opportunities", summary: ar ? "الملخص" : "Summary", buyers: ar ? "أبرز الجهات" : "Top buyers", wl: ar ? "الفوز / الخسارة" : "Win / loss", bs: ar ? "مصروف الكراسات" : "Booklet spend", exp: ar ? "المنتهية" : "Expired", news: ar ? "الأخبار" : "News",
+    more: function(n){ return ar ? ("عرض الكل (" + n + ")") : ("Show all " + n); }, less: ar ? "عرض أقل" : "Show fewer" }; }
+  function cnt(k){ var s = (typeof state !== "undefined" && state) || {}; return Array.isArray(s[k]) ? s[k].length : 0; }
+  function sectionOf(id){ var el = $(id); return el ? el.closest("#page-external > *") : null; }
+  function byTitle(re){ var ep = $("page-external"); if(!ep) return null; var hit = null; [].some.call(ep.children, function(c){ var h = c.querySelector && c.querySelector("h2"); if(h && re.test(h.textContent)){ hit = c; return true; } return false; }); return hit; }
+  function panels(){ return [
+    { k:"open", els:[sectionOf("externalBody"), $("icsBar")], n:cnt("external") },
+    { k:"summary", els:[$("page-recap")] },
+    { k:"buyers", els:[$("tbSec")] },
+    { k:"wl", els:[$("wlSec")] },
+    { k:"bs", els:[$("bsSec")] },
+    { k:"exp", els:[sectionOf("externalExcludedBody") || byTitle(/expired|المنتهية/i)], n:cnt("externalExcluded") },
+    { k:"news", els:[sectionOf("newsBody") || byTitle(/news|الأخبار/i)], n:cnt("news") }
+  ].map(function(p){ p.els = p.els.filter(function(e){ return e && e.parentElement && e.parentElement.id === "page-external"; }); return p; }).filter(function(p){ return p.els.length; }); }
+  /* hidden by something else (team-view lock, Customize)? test with our own class off, in the same frame */
+  function hiddenByOthers(el){ var had = el.classList.contains("v71-off"); if(had) el.classList.remove("v71-off"); var d = getComputedStyle(el).display === "none"; if(had) el.classList.add("v71-off"); return d; }
+
+  function build(){
+    var ep = $("page-external"); if(!ep) return; var P = panels(); if(!P.length) return; var T = LB();
+    var nav = $("v71nav"); if(!nav){ nav = document.createElement("div"); nav.id = "v71nav"; nav.setAttribute("role", "tablist"); }
+    var stage = ep.querySelector(":scope > .v55stage"), first = P[0].els[0];
+    if(nav.parentElement !== ep || nav.nextElementSibling !== first){ if(stage && stage.nextElementSibling === first) stage.insertAdjacentElement("afterend", nav); else ep.insertBefore(nav, first); }
+    var vis = {}; P.forEach(function(p){ vis[p.k] = p.els.some(function(e){ return !hiddenByOthers(e); }); });
+    if(!vis[cur]) cur = "open";
+    var h = P.map(function(p){ return '<button type="button" role="tab" data-v71="' + p.k + '" class="' + (p.k === cur ? "on" : "") + (vis[p.k] ? "" : " v71-x") + '">' + T[p.k] + (typeof p.n === "number" ? "<i>" + p.n + "</i>" : "") + "</button>"; }).join("");
+    if(nav.__h !== h){ nav.__h = h; nav.innerHTML = h; }
+    P.forEach(function(p){ p.els.forEach(function(e){ e.classList.add("v71-panel"); var off = p.k !== cur; if(e.classList.contains("v71-off") !== off) e.classList.toggle("v71-off", off); if(!off){ if(e.classList.contains("rv") && !e.classList.contains("in")) e.classList.add("in"); } }); });
+    clampNotes(); pageExpired();
+  }
+  function clampNotes(){ var body = $("externalBody"); if(!body) return; var ed = ED();
+    [].forEach.call(body.querySelectorAll(":scope > tr:not(.ext-detail)"), function(tr){ var td = tr.children[6]; if(!td || td.dataset.bind) return; var w = td.firstElementChild && td.firstElementChild.classList.contains("v71-cl") && td.childNodes.length === 1 ? td.firstElementChild : null;
+      if(ed){ if(w){ while(w.firstChild) td.insertBefore(w.firstChild, w); w.remove(); } return; }
+      if(!w){ if(!td.textContent.trim()) return; w = document.createElement("div"); w.className = "v71-cl"; while(td.firstChild) w.appendChild(td.firstChild); td.appendChild(w); }
+      var det = tr.nextElementSibling, open = !!(det && det.classList.contains("ext-detail") && getComputedStyle(det).display !== "none");
+      var full = open || w.__pin === true; if(w.classList.contains("v71-full") !== full) w.classList.toggle("v71-full", full); }); }
+  function pageExpired(){ var body = $("externalExcludedBody"); if(!body) return; var rows = body.querySelectorAll(":scope > tr"), T = LB(), sec = body.closest("section");
+    [].forEach.call(rows, function(tr, i){ var hide = !expAll && !ED() && i >= EXP_N; if(tr.classList.contains("v71-more") !== hide) tr.classList.toggle("v71-more", hide); });
+    var btn = sec && sec.querySelector(".v71-morebtn"); if(rows.length <= EXP_N){ if(btn) btn.remove(); return; }
+    if(!btn && sec){ btn = document.createElement("button"); btn.type = "button"; btn.className = "v71-morebtn"; var tbl = body.closest("table"), host = (tbl && tbl.parentElement && tbl.parentElement !== sec) ? tbl.parentElement : tbl; (host || body).insertAdjacentElement("afterend", btn); }
+    var t = expAll ? T.less : T.more(rows.length); if(btn && btn.textContent !== t) btn.textContent = t; }
+
+  function topOfTabs(){ var ep = $("page-external"), stage = ep && ep.querySelector(":scope > .v55stage"); return stage ? stage.getBoundingClientRect().bottom + window.scrollY - 8 : (ep ? ep.getBoundingClientRect().top + window.scrollY : 0); }
+  function go(k, scroll){ if(cur === k) return; cur = k; try{ localStorage.setItem(KEY, k); }catch(e){} build(); if(scroll){ var y = topOfTabs(); if(window.scrollY > y) window.scrollTo({ top:y, behavior:"auto" }); } }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("#v71nav [data-v71]"); if(b){ e.preventDefault(); go(b.dataset.v71, true); return; }
+    var m = e.target.closest && e.target.closest(".v71-morebtn"); if(m){ e.preventDefault(); expAll = !expAll; pageExpired(); if(!expAll){ var s = m.closest("section"); if(s) s.scrollIntoView({ block:"start" }); } return; }
+    var c = e.target.closest && e.target.closest("#externalBody .v71-cl"); if(c && !ED()){ c.__pin = !c.__pin; c.classList.toggle("v71-full", c.__pin); }
+  }, true);
+  /* anything that scrolls to something inside Etimad (search, overview links, alarms, recap links) opens the right tab first */
+  var origSIV = Element.prototype.scrollIntoView;
+  Element.prototype.scrollIntoView = function(){ try{ var ep = $("page-external"); if(ep && ep.contains(this) && this !== ep){ var P = panels(); for(var i = 0; i < P.length; i++){ if(P[i].els.some(function(x){ return x.contains(this); }, this)){ if(P[i].k !== cur) go(P[i].k, false); break; } }
+        var r = this.closest && this.closest("#externalExcludedBody > tr.v71-more"); if(r){ expAll = true; pageExpired(); } } }catch(e){} return origSIV.apply(this, arguments); };
+  function all(){ try{ build(); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v71){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v71 = true; }
+  document.addEventListener("click", function(){ setTimeout(clampNotes, 0); });
+  all(); setTimeout(all, 1200); setInterval(all, 1500);
+  window.v71 = { all:all, go:go };
+})();
+</script>
+
 </body>
 </html>

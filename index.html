@@ -9456,7 +9456,7 @@ async function exportPPTX(){
     /* Marketing page gets the KNKT section, titled "Marketing" */
     var bp = $("page-brand"), mk = $("page-marketing");
     if(bp && mk) [].slice.call(mk.children).forEach(function(s){ if(s.tagName === "SECTION") bp.appendChild(s); });
-    var kt = $("secMarketingTitle"); if(kt && !ED() && kt.textContent !== T.mk) kt.textContent = T.mk;
+    var kt = $("secMarketingTitle"); if(kt && !ED() && kt.textContent !== "KNKT") kt.textContent = "KNKT";   /* v69.2: Harith — the second Marketing section is titled KNKT */
     /* Etimad gets the old quarter recap as its Summary section (kept inside its own #page-recap block so the recap code keeps working) */
     var ep = $("page-external"), rp = $("page-recap");
     if(ep && rp && rp.parentElement !== ep){ rp.classList.remove("page", "active"); var exp = null; [].some.call(ep.children, function(c){ var h = c.querySelector && c.querySelector("h2"); if(h && /expired|المنتهية|منتهية/i.test(h.textContent)){ exp = c; return true; } return false; }); if(exp) ep.insertBefore(rp, exp); else ep.appendChild(rp); }

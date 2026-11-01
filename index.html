@@ -9458,8 +9458,8 @@ async function exportPPTX(){
     if(bp && mk) [].slice.call(mk.children).forEach(function(s){ if(s.tagName === "SECTION") bp.appendChild(s); });
     var kt = $("secMarketingTitle"); if(kt && !ED() && kt.textContent !== "KNKT") kt.textContent = "KNKT";   /* v69.2: Harith — the second Marketing section is titled KNKT */
     /* Etimad gets the old quarter recap as its Summary section (kept inside its own #page-recap block so the recap code keeps working) */
-    var ep = $("page-external"), rp = $("page-recap");
-    if(ep && rp && rp.parentElement !== ep){ rp.classList.remove("page", "active"); var exp = null; [].some.call(ep.children, function(c){ var h = c.querySelector && c.querySelector("h2"); if(h && /expired|المنتهية|منتهية/i.test(h.textContent)){ exp = c; return true; } return false; }); if(exp) ep.insertBefore(rp, exp); else ep.appendChild(rp); }
+    var ep = $("page-internal"), rp = $("page-recap");
+    if(ep && rp && rp.parentElement !== ep){ rp.classList.remove("page", "active"); var stg = ep.querySelector(":scope > .v55stage"); if(stg) stg.insertAdjacentElement("afterend", rp); else ep.insertBefore(rp, ep.firstChild); }
     if(rp){ rp.classList.remove("page"); var rt = rp.querySelector(".rc-title"); if(rt && rt.textContent !== T.sum) rt.textContent = T.sum; }
     /* sidebar order + hidden buttons */
     ["recap", "marketing", "tasks"].forEach(function(p){ var b = tabBtn(p); if(b) b.classList.add("v69-hide"); });
@@ -9479,7 +9479,7 @@ async function exportPPTX(){
       if(b.dataset.v69ms !== String(i)) b.dataset.v69ms = String(i); if(b.__h !== h){ b.__h = h; b.innerHTML = h; } }); }
 
   /* old page names keep working (links, search, overview cards) */
-  var MAP = { tasks:"projects", recap:"external", marketing:"brand" };
+  var MAP = { tasks:"projects", recap:"internal", marketing:"brand" };
   if(typeof switchPage === "function" && !window.__v69sp){ window.__v69sp = switchPage; window.switchPage = function(page){ var to = MAP[page] || page; var out = window.__v69sp(to);
       if(page === "recap") setTimeout(function(){ var r = $("page-recap"); if(r) r.scrollIntoView({ behavior:"smooth", block:"start" }); }, 120);
       setTimeout(layout, 0); return out; }; }
@@ -9561,97 +9561,106 @@ async function exportPPTX(){
 })();
 </script>
 
-<style id="v71css">
-  /* v71: Etimad page in tabs (Open · Summary · Top buyers · Win/loss · Booklet spend · Expired · News) + calmer, shorter rows */
-  #v71nav{position:sticky; top:0; z-index:30; display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:10px; margin:0 0 18px; border-radius:16px; border:1px solid var(--border); background:rgba(18,16,15,.82); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 10px 30px rgba(0,0,0,.25);}
-  #v71nav::-webkit-scrollbar{display:none;}
-  #v71nav button{flex:0 0 auto; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:12.5px; font-weight:600; letter-spacing:.02em; padding:9px 14px; border-radius:11px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, border-color .15s;}
-  #v71nav button:hover{color:var(--cream); background:rgba(255,255,255,.04);}
-  #v71nav button.on{color:var(--cream); background:rgba(242,101,34,.14); border-color:rgba(242,101,34,.55);}
-  #v71nav button i{font-style:normal; display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:20px; padding:0 6px; border-radius:999px; font-family:var(--mono, monospace); font-size:10.5px; background:rgba(255,255,255,.07); color:var(--sand, #D9D3CB);}
-  #v71nav button.on i{background:rgba(242,101,34,.3); color:#fff;}
-  #v71nav button.v71-x{display:none;}
-  #page-external > .v71-off{display:none !important;}
-  #page-external > .v71-panel{margin-top:0;}
-  /* calmer rows: notes clamp to 3 lines (full text on click / when the row is open) */
-  #externalBody .v71-cl{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; color:var(--muted); line-height:1.55; cursor:pointer;}
-  #externalBody .v71-cl.v71-full{-webkit-line-clamp:unset; display:block;}
+<style id="v72css">
+  /* v72: tab bars on Etimad (Open · Top buyers · Win/loss · Booklet spend · Expired · News) and Events (Calendar · Changes · New announcements · National occasions · All events); Summary moved to Business Development */
+  .v72nav{position:sticky; top:0; z-index:30; display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none; padding:10px; margin:0 0 18px; border-radius:16px; border:1px solid var(--border); background:rgba(18,16,15,.82); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  .v72nav::-webkit-scrollbar{display:none;}
+  .v72nav button{flex:0 0 auto; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:12.5px; font-weight:600; letter-spacing:.02em; padding:9px 14px; border-radius:11px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer; white-space:nowrap; transition:background .15s, color .15s, border-color .15s;}
+  .v72nav button:hover{color:var(--cream); background:rgba(255,255,255,.04);}
+  .v72nav button.on{color:var(--cream); background:rgba(242,101,34,.14); border-color:rgba(242,101,34,.55);}
+  .v72nav button i{font-style:normal; display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:20px; padding:0 6px; border-radius:999px; font-family:var(--mono, monospace); font-size:10.5px; background:rgba(255,255,255,.07); color:var(--sand, #D9D3CB);}
+  .v72nav button.on i{background:rgba(242,101,34,.3); color:#fff;}
+  .v72nav button.v72-x{display:none;}
+  #page-external > .v72-off, #page-events > .v72-off{display:none !important;}
+  #page-external > .v72-panel, #page-events > .v72-panel{margin-top:0;}
+  /* calmer rows: Etimad notes clamp to 3 lines (full text on click / when the row is open) */
+  #externalBody .v72-cl{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; color:var(--muted); line-height:1.55; cursor:pointer;}
+  #externalBody .v72-cl.v72-full{-webkit-line-clamp:unset; display:block;}
   #externalBody > tr:not(.ext-detail) > td{padding-top:14px; padding-bottom:14px;}
   #externalBody > tr:not(.ext-detail):hover > td{background:rgba(255,255,255,.025);}
-  #externalExcludedBody > tr.v71-more{display:none;}
-  .v71-morebtn{display:flex; margin:14px auto 0; font:inherit; font-size:12px; letter-spacing:.06em; text-transform:uppercase; padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--night2); color:var(--cream); cursor:pointer;}
-  .v71-morebtn:hover{border-color:rgba(242,101,34,.55);}
-  html.theme-light #v71nav{background:rgba(255,255,255,.85); box-shadow:0 8px 24px rgba(0,0,0,.08);}
-  html.theme-light #v71nav button.on{color:#1c1c1c;}
-  html.theme-light #v71nav button:hover{color:#1c1c1c; background:rgba(0,0,0,.04);}
-  @media print{ #v71nav, .v71-morebtn{display:none !important;} }
+  #externalExcludedBody > tr.v72-more, #eventsBody > tr.v72-more{display:none;}
+  .v72-morebtn{display:flex; margin:14px auto 0; font:inherit; font-size:12px; letter-spacing:.06em; text-transform:uppercase; padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--night2); color:var(--cream); cursor:pointer;}
+  .v72-morebtn:hover{border-color:rgba(242,101,34,.55);}
+  #page-internal > #page-recap{display:block; margin-top:0;}
+  html.theme-light .v72nav{background:rgba(255,255,255,.85); box-shadow:0 8px 24px rgba(0,0,0,.08);}
+  html.theme-light .v72nav button.on{color:#1c1c1c;}
+  html.theme-light .v72nav button:hover{color:#1c1c1c; background:rgba(0,0,0,.04);}
+  @media print{ .v72nav, .v72-morebtn{display:none !important;} body.rc-printing #page-internal{display:block !important;} body.rc-printing #page-internal > :not(#page-recap){display:none !important;} }
 </style>
 <script>
-/* v71 module: Etimad page as tabs + shorter rows (Harith, 1 Nov 2026) */
+/* v72 module: tab bars for Etimad and Events + Summary in Business Development (Harith, 1 Nov 2026) */
 (function(){
   "use strict";
   var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
   var ED = function(){ return typeof editing !== "undefined" && editing; };
   var $ = function(id){ return document.getElementById(id); };
-  var KEY = "v71etab", EXP_N = 10, expAll = false, cur = "open";
-  try{ var sv = localStorage.getItem(KEY); if(sv) cur = sv; }catch(e){}
-  function LB(){ var ar = AR(); return { open: ar ? "الفرص المفتوحة" : "Open opportunities", summary: ar ? "الملخص" : "Summary", buyers: ar ? "أبرز الجهات" : "Top buyers", wl: ar ? "الفوز / الخسارة" : "Win / loss", bs: ar ? "مصروف الكراسات" : "Booklet spend", exp: ar ? "المنتهية" : "Expired", news: ar ? "الأخبار" : "News",
+  var PAGES = ["external", "events"], cur = { external:"open", events:"cal" }, more = { exp:false, all:false }, LIM = { exp:10, all:15 };
+  try{ PAGES.forEach(function(p){ var v = localStorage.getItem("v72tab_" + p); if(v) cur[p] = v; }); if(cur.external === "summary") cur.external = "open"; }catch(e){}
+  function LB(){ var ar = AR(); return {
+    open: ar ? "الفرص المفتوحة" : "Open opportunities", buyers: ar ? "أبرز الجهات" : "Top buyers", wl: ar ? "الفوز / الخسارة" : "Win / loss", bs: ar ? "مصروف الكراسات" : "Booklet spend", exp: ar ? "المنتهية" : "Expired", news: ar ? "الأخبار" : "News",
+    cal: ar ? "التقويم" : "Calendar", chg: ar ? "التغييرات" : "Changes", nw: ar ? "فعاليات جديدة" : "New announcements", occ: ar ? "المناسبات الوطنية" : "National occasions", all: ar ? "كل الفعاليات" : "All events",
     more: function(n){ return ar ? ("عرض الكل (" + n + ")") : ("Show all " + n); }, less: ar ? "عرض أقل" : "Show fewer" }; }
-  function cnt(k){ var s = (typeof state !== "undefined" && state) || {}; return Array.isArray(s[k]) ? s[k].length : 0; }
-  function sectionOf(id){ var el = $(id); return el ? el.closest("#page-external > *") : null; }
-  function byTitle(re){ var ep = $("page-external"); if(!ep) return null; var hit = null; [].some.call(ep.children, function(c){ var h = c.querySelector && c.querySelector("h2"); if(h && re.test(h.textContent)){ hit = c; return true; } return false; }); return hit; }
-  function panels(){ return [
-    { k:"open", els:[sectionOf("externalBody"), $("icsBar")], n:cnt("external") },
-    { k:"summary", els:[$("page-recap")] },
-    { k:"buyers", els:[$("tbSec")] },
-    { k:"wl", els:[$("wlSec")] },
-    { k:"bs", els:[$("bsSec")] },
-    { k:"exp", els:[sectionOf("externalExcludedBody") || byTitle(/expired|المنتهية/i)], n:cnt("externalExcluded") },
-    { k:"news", els:[sectionOf("newsBody") || byTitle(/news|الأخبار/i)], n:cnt("news") }
-  ].map(function(p){ p.els = p.els.filter(function(e){ return e && e.parentElement && e.parentElement.id === "page-external"; }); return p; }).filter(function(p){ return p.els.length; }); }
-  /* hidden by something else (team-view lock, Customize)? test with our own class off, in the same frame */
-  function hiddenByOthers(el){ var had = el.classList.contains("v71-off"); if(had) el.classList.remove("v71-off"); var d = getComputedStyle(el).display === "none"; if(had) el.classList.add("v71-off"); return d; }
+  function S(){ return (typeof state !== "undefined" && state) || {}; }
+  function cnt(k){ var s = S(); return Array.isArray(s[k]) ? s[k].length : 0; }
+  function today(){ var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function upcoming(){ var t = today(); return (S().events || []).filter(function(r){ var e = (r && (r.end || r.start)) || ""; return e && e >= t && r.status !== "cancelled"; }).length; }
+  function changes(){ return (S().events || []).filter(function(r){ return r && /^(rescheduled|postponed|tba|cancelled)$/.test(r.status || ""); }).length; }
+  function top(pid, el){ return el ? el.closest("#" + pid + " > *") : null; }
+  function panels(pid){ var P;
+    if(pid === "page-external") P = [
+      { k:"open", els:[top(pid, $("externalBody")), $("icsBar")], n:cnt("external") },
+      { k:"buyers", els:[$("tbSec")] }, { k:"wl", els:[$("wlSec")] }, { k:"bs", els:[$("bsSec")] },
+      { k:"exp", els:[top(pid, $("externalExcludedBody"))], n:cnt("externalExcluded") },
+      { k:"news", els:[top(pid, $("newsBody"))], n:cnt("news") } ];
+    else P = [
+      { k:"cal", els:[top(pid, $("evCal"))], n:upcoming() },
+      { k:"chg", els:[$("evChgSec")], n:changes() },
+      { k:"nw", els:[$("nwSec")], n:cnt("eventsNews") },
+      { k:"occ", els:[$("ocSec")] },
+      { k:"all", els:[top(pid, $("eventsBody"))], n:cnt("events") } ];
+    return P.map(function(p){ p.els = p.els.filter(function(e){ return e && e.parentElement && e.parentElement.id === pid; }); return p; }).filter(function(p){ return p.els.length; }); }
+  function hiddenByOthers(el){ var had = el.classList.contains("v72-off"); if(had) el.classList.remove("v72-off"); var d = getComputedStyle(el).display === "none"; if(had) el.classList.add("v72-off"); return d; }
 
-  function build(){
-    var ep = $("page-external"); if(!ep) return; var P = panels(); if(!P.length) return; var T = LB();
-    var nav = $("v71nav"); if(!nav){ nav = document.createElement("div"); nav.id = "v71nav"; nav.setAttribute("role", "tablist"); }
-    var stage = ep.querySelector(":scope > .v55stage"), first = P[0].els[0];
-    if(nav.parentElement !== ep || nav.nextElementSibling !== first){ if(stage && stage.nextElementSibling === first) stage.insertAdjacentElement("afterend", nav); else ep.insertBefore(nav, first); }
+  function build(pid){
+    var pg = $("page-" + pid); if(!pg) return; var P = panels("page-" + pid); if(!P.length) return; var T = LB();
+    var nav = $("v72nav-" + pid); if(!nav){ nav = document.createElement("div"); nav.id = "v72nav-" + pid; nav.className = "v72nav"; nav.setAttribute("role", "tablist"); nav.dataset.page = pid; }
+    var stage = pg.querySelector(":scope > .v55stage");
+    if(nav.parentElement !== pg || (stage ? nav.previousElementSibling !== stage : pg.firstElementChild !== nav)){ if(stage) stage.insertAdjacentElement("afterend", nav); else pg.insertBefore(nav, pg.firstChild); }
+    var all = [].slice.call(pg.children), navIdx = all.indexOf(nav); P.forEach(function(p){ p.els.forEach(function(e){ if(all.indexOf(e) < navIdx) nav.insertAdjacentElement("afterend", e); }); });
     var vis = {}; P.forEach(function(p){ vis[p.k] = p.els.some(function(e){ return !hiddenByOthers(e); }); });
-    if(!vis[cur]) cur = "open";
-    var h = P.map(function(p){ return '<button type="button" role="tab" data-v71="' + p.k + '" class="' + (p.k === cur ? "on" : "") + (vis[p.k] ? "" : " v71-x") + '">' + T[p.k] + (typeof p.n === "number" ? "<i>" + p.n + "</i>" : "") + "</button>"; }).join("");
+    if(!vis[cur[pid]] || !P.some(function(p){ return p.k === cur[pid]; })) cur[pid] = P[0].k;
+    var h = P.map(function(p){ return '<button type="button" role="tab" data-v72="' + p.k + '" class="' + (p.k === cur[pid] ? "on" : "") + (vis[p.k] ? "" : " v72-x") + '">' + T[p.k] + (typeof p.n === "number" ? "<i>" + p.n + "</i>" : "") + "</button>"; }).join("");
     if(nav.__h !== h){ nav.__h = h; nav.innerHTML = h; }
-    P.forEach(function(p){ p.els.forEach(function(e){ e.classList.add("v71-panel"); var off = p.k !== cur; if(e.classList.contains("v71-off") !== off) e.classList.toggle("v71-off", off); if(!off){ if(e.classList.contains("rv") && !e.classList.contains("in")) e.classList.add("in"); } }); });
-    clampNotes(); pageExpired();
+    P.forEach(function(p){ p.els.forEach(function(e){ e.classList.add("v72-panel"); var off = p.k !== cur[pid]; if(e.classList.contains("v72-off") !== off) e.classList.toggle("v72-off", off); if(!off && e.classList.contains("rv") && !e.classList.contains("in")) e.classList.add("in"); }); });
   }
   function clampNotes(){ var body = $("externalBody"); if(!body) return; var ed = ED();
-    [].forEach.call(body.querySelectorAll(":scope > tr:not(.ext-detail)"), function(tr){ var td = tr.children[6]; if(!td || td.dataset.bind) return; var w = td.firstElementChild && td.firstElementChild.classList.contains("v71-cl") && td.childNodes.length === 1 ? td.firstElementChild : null;
+    [].forEach.call(body.querySelectorAll(":scope > tr:not(.ext-detail)"), function(tr){ var td = tr.children[6]; if(!td || td.dataset.bind) return; var w = td.firstElementChild && td.firstElementChild.classList.contains("v72-cl") && td.childNodes.length === 1 ? td.firstElementChild : null;
       if(ed){ if(w){ while(w.firstChild) td.insertBefore(w.firstChild, w); w.remove(); } return; }
-      if(!w){ if(!td.textContent.trim()) return; w = document.createElement("div"); w.className = "v71-cl"; while(td.firstChild) w.appendChild(td.firstChild); td.appendChild(w); }
+      if(!w){ if(!td.textContent.trim()) return; w = document.createElement("div"); w.className = "v72-cl"; while(td.firstChild) w.appendChild(td.firstChild); td.appendChild(w); }
       var det = tr.nextElementSibling, open = !!(det && det.classList.contains("ext-detail") && getComputedStyle(det).display !== "none");
-      var full = open || w.__pin === true; if(w.classList.contains("v71-full") !== full) w.classList.toggle("v71-full", full); }); }
-  function pageExpired(){ var body = $("externalExcludedBody"); if(!body) return; var rows = body.querySelectorAll(":scope > tr"), T = LB(), sec = body.closest("section");
-    [].forEach.call(rows, function(tr, i){ var hide = !expAll && !ED() && i >= EXP_N; if(tr.classList.contains("v71-more") !== hide) tr.classList.toggle("v71-more", hide); });
-    var btn = sec && sec.querySelector(".v71-morebtn"); if(rows.length <= EXP_N){ if(btn) btn.remove(); return; }
-    if(!btn && sec){ btn = document.createElement("button"); btn.type = "button"; btn.className = "v71-morebtn"; var tbl = body.closest("table"), host = (tbl && tbl.parentElement && tbl.parentElement !== sec) ? tbl.parentElement : tbl; (host || body).insertAdjacentElement("afterend", btn); }
-    var t = expAll ? T.less : T.more(rows.length); if(btn && btn.textContent !== t) btn.textContent = t; }
-
-  function topOfTabs(){ var ep = $("page-external"), stage = ep && ep.querySelector(":scope > .v55stage"); return stage ? stage.getBoundingClientRect().bottom + window.scrollY - 8 : (ep ? ep.getBoundingClientRect().top + window.scrollY : 0); }
-  function go(k, scroll){ if(cur === k) return; cur = k; try{ localStorage.setItem(KEY, k); }catch(e){} build(); if(scroll){ var y = topOfTabs(); if(window.scrollY > y) window.scrollTo({ top:y, behavior:"auto" }); } }
+      var full = open || w.__pin === true; if(w.classList.contains("v72-full") !== full) w.classList.toggle("v72-full", full); }); }
+  function paginate(key, bodyId){ var body = $(bodyId); if(!body) return; var rows = body.querySelectorAll(":scope > tr"), T = LB(), sec = body.closest("section"), n = LIM[key];
+    [].forEach.call(rows, function(tr, i){ var hide = !more[key] && !ED() && i >= n; if(tr.classList.contains("v72-more") !== hide) tr.classList.toggle("v72-more", hide); });
+    var btn = sec && sec.querySelector('.v72-morebtn[data-k="' + key + '"]'); if(rows.length <= n || ED()){ if(btn) btn.remove(); return; }
+    if(!btn && sec){ btn = document.createElement("button"); btn.type = "button"; btn.className = "v72-morebtn"; btn.dataset.k = key; var tbl = body.closest("table"), host = (tbl && tbl.parentElement && tbl.parentElement !== sec) ? tbl.parentElement : tbl; (host || body).insertAdjacentElement("afterend", btn); }
+    var t = more[key] ? T.less : T.more(rows.length); if(btn && btn.textContent !== t) btn.textContent = t; }
+  function navTop(pid){ var pg = $("page-" + pid), stage = pg && pg.querySelector(":scope > .v55stage"); return stage ? stage.getBoundingClientRect().bottom + window.scrollY - 8 : (pg ? pg.getBoundingClientRect().top + window.scrollY : 0); }
+  function go(pid, k, scroll){ if(cur[pid] === k) return; cur[pid] = k; try{ localStorage.setItem("v72tab_" + pid, k); }catch(e){} build(pid); if(scroll){ var y = navTop(pid); if(window.scrollY > y) window.scrollTo({ top:y, behavior:"auto" }); } }
   document.addEventListener("click", function(e){
-    var b = e.target.closest && e.target.closest("#v71nav [data-v71]"); if(b){ e.preventDefault(); go(b.dataset.v71, true); return; }
-    var m = e.target.closest && e.target.closest(".v71-morebtn"); if(m){ e.preventDefault(); expAll = !expAll; pageExpired(); if(!expAll){ var s = m.closest("section"); if(s) s.scrollIntoView({ block:"start" }); } return; }
-    var c = e.target.closest && e.target.closest("#externalBody .v71-cl"); if(c && !ED()){ c.__pin = !c.__pin; c.classList.toggle("v71-full", c.__pin); }
+    var b = e.target.closest && e.target.closest(".v72nav [data-v72]"); if(b){ e.preventDefault(); go(b.closest(".v72nav").dataset.page, b.dataset.v72, true); return; }
+    var m = e.target.closest && e.target.closest(".v72-morebtn"); if(m){ e.preventDefault(); var k = m.dataset.k; more[k] = !more[k]; paginate(k, k === "exp" ? "externalExcludedBody" : "eventsBody"); if(!more[k]){ var s = m.closest("section"); if(s) s.scrollIntoView({ block:"start" }); } return; }
+    var c = e.target.closest && e.target.closest("#externalBody .v72-cl"); if(c && !ED()){ c.__pin = !c.__pin; c.classList.toggle("v72-full", c.__pin); }
   }, true);
-  /* anything that scrolls to something inside Etimad (search, overview links, alarms, recap links) opens the right tab first */
+  /* anything that scrolls to something inside Etimad or Events (search, overview links, alarms) opens the right tab first */
   var origSIV = Element.prototype.scrollIntoView;
-  Element.prototype.scrollIntoView = function(){ try{ var ep = $("page-external"); if(ep && ep.contains(this) && this !== ep){ var P = panels(); for(var i = 0; i < P.length; i++){ if(P[i].els.some(function(x){ return x.contains(this); }, this)){ if(P[i].k !== cur) go(P[i].k, false); break; } }
-        var r = this.closest && this.closest("#externalExcludedBody > tr.v71-more"); if(r){ expAll = true; pageExpired(); } } }catch(e){} return origSIV.apply(this, arguments); };
-  function all(){ try{ build(); }catch(e){ console.error(e); } }
-  if(typeof renderAll === "function" && !renderAll.__v71){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v71 = true; }
+  Element.prototype.scrollIntoView = function(){ try{ var el = this; PAGES.forEach(function(pid){ var pg = $("page-" + pid); if(!pg || !pg.contains(el) || el === pg) return; var P = panels("page-" + pid); for(var i = 0; i < P.length; i++){ if(P[i].els.some(function(x){ return x.contains(el); })){ if(P[i].k !== cur[pid]) go(pid, P[i].k, false); break; } } });
+      if(el.closest && el.closest("#externalExcludedBody > tr.v72-more")){ more.exp = true; paginate("exp", "externalExcludedBody"); }
+      if(el.closest && el.closest("#eventsBody > tr.v72-more")){ more.all = true; paginate("all", "eventsBody"); } }catch(e){} return origSIV.apply(this, arguments); };
+  function all(){ PAGES.forEach(function(p){ try{ build(p); }catch(e){ console.error(e); } }); try{ clampNotes(); }catch(e){} try{ paginate("exp", "externalExcludedBody"); paginate("all", "eventsBody"); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v72){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v72 = true; }
   document.addEventListener("click", function(){ setTimeout(clampNotes, 0); });
   all(); setTimeout(all, 1200); setInterval(all, 1500);
-  window.v71 = { all:all, go:go };
+  window.v72 = { all:all, go:go };
 })();
 </script>
 

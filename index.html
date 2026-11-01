@@ -7463,7 +7463,7 @@ async function exportPPTX(){
       + (rel.n ? '<span class="ev-tag opp" data-evkw="' + esc(rel.kw) + '">' + rel.n + esc(T.onEtimad) + "</span>" : "") + (/^https?:\/\//i.test(r.url || "") ? '<a class="ev-tag web ev-web" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(T.web) + " ↗</a>" : "") + "</span></div>"; }
   function renderEvents(){
     if(!evShell()) return; evLabels(true); var T = EL(), list = evs(), t = today0(), ar = AR();
-    var upcoming = list.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var e = pd(x.r.end) || pd(x.r.start); return e && e >= t; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); });
+    var upcoming = list.map(function(r, i){ return { r:r, i:i }; }).filter(function(x){ var e = pd(x.r.end) || pd(x.r.start); return e && e >= t && x.r.status !== "cancelled"; }).sort(function(a, b){ return pd(a.r.start) - pd(b.r.start); });
     var in90 = upcoming.filter(function(x){ var s = pd(x.r.start); return s > t && (s - t) / 864e5 <= 90; }).length;
     var win = upcoming.filter(function(x){ return evStatus(x.r).k === "win"; }).length, live = upcoming.filter(function(x){ return evStatus(x.r).k === "live"; }).length;
     var relN = 0; upcoming.forEach(function(x){ relN += related(x.r).n; });
@@ -9491,6 +9491,73 @@ async function exportPPTX(){
   if(typeof closeMission === "function" && !window.__v69cm){ window.__v69cm = closeMission; window.closeMission = function(){ var o = window.__v69cm.apply(this, arguments); setTimeout(decorateMissions, 0); return o; }; }
   all(); setTimeout(all, 1500); setInterval(all, 1500);
   window.v69 = { layout:layout, missions:decorateMissions };
+})();
+</script>
+
+<style id="v70css">
+  /* v70: events status — rescheduled / postponed / dates TBA / cancelled, checked twice a day from official sources */
+  .v70-chip{display:inline-flex; align-items:center; padding:1px 8px; border-radius:999px; font-size:10.5px; font-weight:600; white-space:nowrap; margin-inline-start:6px; vertical-align:middle; border:1px solid; cursor:help;}
+  .v70-chip.rescheduled{color:#ffc857; border-color:rgba(255,200,87,.5); background:rgba(255,200,87,.1);}
+  .v70-chip.postponed, .v70-chip.tba{color:#b9a7ff; border-color:rgba(185,167,255,.5); background:rgba(185,167,255,.1);}
+  .v70-chip.cancelled{color:#ff8a80; border-color:rgba(255,122,112,.5); background:rgba(255,122,112,.1);}
+  .v70-chip.ok{color:#3ccb7f; border-color:rgba(60,203,127,.45); background:rgba(60,203,127,.08);}
+  #evChgSec .v70-list{display:flex; flex-direction:column; gap:8px;}
+  #evChgSec .v70-row{display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 2fr) auto; gap:12px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--night2); font-size:12.5px;}
+  #evChgSec .v70-row b{color:var(--cream); font-size:13px;}
+  #evChgSec .v70-row .v70-d{font-family:var(--mono, monospace); font-size:11.5px; color:var(--sand, #D9D3CB);}
+  #evChgSec .v70-row .v70-d s{color:var(--muted);}
+  #evChgSec .v70-row .v70-n{color:var(--muted); line-height:1.5;}
+  #evChgSec .v70-row a{font-size:11.5px; padding:4px 10px; border-radius:999px; border:1px solid rgba(185,167,255,.45); color:#d9cfff; text-decoration:none; white-space:nowrap;}
+  #evChgSec .v70-meta{font-size:12px; color:var(--muted); margin:2px 0 12px;}
+  #evChgSec .v70-meta b{color:#3ccb7f;}
+  @media (max-width:760px){ #evChgSec .v70-row{grid-template-columns:1fr;} }
+  html.theme-light .v70-chip.rescheduled{color:#9a6a00;} html.theme-light .v70-chip.postponed, html.theme-light .v70-chip.tba{color:#5b45c9;} html.theme-light .v70-chip.cancelled{color:#c0392b;} html.theme-light .v70-chip.ok{color:#1e8a52;}
+  html.theme-light #evChgSec .v70-row a{color:#5b45c9;}
+</style>
+<script>
+/* v70 module: events status from official sources (Harith / Head of BD, 1 Nov 2026).
+   Row fields: status ("ok"|"rescheduled"|"postponed"|"tba"|"cancelled"), prevStart, prevEnd, statusNote, statusNoteAr, statusUrl, verifiedAt.
+   state.eventsCheck = {at, by, n, changes, note} — written by Claude's 12:00 and 15:00 checks. */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var ST = function(){ return (typeof state !== "undefined" && state) ? state : null; };
+  var arr = function(k){ var s = ST(); return (s && Array.isArray(s[k])) ? s[k] : []; };
+  try{ ["status", "prevStart", "prevEnd", "statusUrl", "verifiedAt"].forEach(function(f){ TR_SKIP_FIELDS.add(f); }); }catch(e){}
+  try{ TR_SKIP_KEYS.add("eventsCheck"); }catch(e){}
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function fd(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return ""; return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(loc(), { day:"numeric", month:"short", year:"numeric" }); }
+  function rng(a, b){ if(!a) return ""; return (b && b !== a) ? fd(a) + " – " + fd(b) : fd(a); }
+  function L(){ var ar = AR(); return {
+    st: { rescheduled: ar ? "موعد جديد" : "Rescheduled", postponed: ar ? "مؤجلة" : "Postponed", tba: ar ? "الموعد لم يُعلن" : "Dates TBA", cancelled: ar ? "أُلغيت" : "Cancelled", ok: ar ? "مؤكدة" : "Confirmed" },
+    title: ar ? "تغييرات من المصادر الرسمية" : "Changes from official sources",
+    sub: ar ? "فعاليات تغيّر موعدها أو تأجلت أو أُلغيت — كل سطر من موقع الفعالية الرسمي أو حساباتها الرسمية. يراجعها Claude يوميًا الساعة 12:00 و3:00 مساءً." : "Events that moved, were postponed or were cancelled — every line comes from the event's official website or official accounts. Claude re-checks them every day at 12:00 and 3:00 PM.",
+    last: ar ? "آخر مراجعة: " : "Last check: ", none: ar ? "لا تغييرات حاليًا." : "No changes right now.", src: ar ? "المصدر الرسمي ↗" : "Official source ↗",
+    was: ar ? "كانت: " : "was ", tbd: ar ? "يُعلن لاحقًا" : "to be announced", cancelled: ar ? "أُلغيت" : "cancelled", checked: function(n){ return ar ? (n + " فعالية تمت مراجعتها") : (n + " events checked"); }
+  }; }
+  function chipFor(r){ var s = r && r.status; if(!s) return null; var T = L(); if(!T.st[s]) return null; var tip = (AR() && r.statusNoteAr) ? r.statusNoteAr : (r.statusNote || ""); if(r.prevStart && s === "rescheduled") tip = (T.was + rng(r.prevStart, r.prevEnd)) + (tip ? " · " + tip : ""); return { k:s, t:T.st[s], tip:tip }; }
+  function decorate(){ var rows = arr("events");
+    [].forEach.call(document.querySelectorAll("#evCal .ev-item[data-evi]"), function(card){ var r = rows[+card.dataset.evi], c = chipFor(r), tags = card.querySelector(".ev-tags"), b = card.querySelector(".v70-chip"); if(!tags) return;
+      if(!c || c.k === "ok"){ if(b) b.remove(); return; } if(b && b.textContent === c.t && b.title === c.tip) return; if(b) b.remove(); b = document.createElement("span"); b.className = "v70-chip " + c.k; b.textContent = c.t; b.title = c.tip; tags.insertBefore(b, tags.firstChild); });
+    var body = document.getElementById("eventsBody"); if(body) [].forEach.call(body.querySelectorAll('[data-bind^="events."][data-bind$=".name"]'), function(td){ var m = td.dataset.bind.match(/\.(\d+)\.name$/); if(!m) return; var r = rows[+m[1]], c = chipFor(r), b = td.querySelector(".v70-chip");
+      if(!c){ if(b) b.remove(); return; } if(b && b.textContent === c.t && b.title === c.tip) return; if(b) b.remove(); b = document.createElement("span"); b.className = "v70-chip view-only " + c.k; b.contentEditable = "false"; b.textContent = c.t; b.title = c.tip; if(typeof editing !== "undefined" && editing) b.style.display = "none"; td.appendChild(b);
+      var tr = td.closest("tr"); if(tr) tr.style.opacity = (r && (r.status === "cancelled")) ? ".55" : ""; }); }
+  function renderSection(){ var page = document.getElementById("page-events"); if(!page) return; var sec = document.getElementById("evChgSec");
+    if(!sec){ var cal = document.getElementById("evCal"), anchor = cal && cal.closest("section"); if(!anchor) return; sec = document.createElement("section"); sec.id = "evChgSec"; sec.innerHTML = '<div class="sechead"><h2 class="v70-t"></h2></div><div class="subhead v70-s"></div><div class="v70-meta"></div><div class="v70-list"></div>'; anchor.insertAdjacentElement("afterend", sec); }
+    var T = L(), ar = AR(), ck = (ST() && ST().eventsCheck) || null, rows = arr("events").filter(function(r){ return r && /^(rescheduled|postponed|tba|cancelled)$/.test(r.status || ""); });
+    rows.sort(function(a, b){ var o = { cancelled:0, postponed:1, tba:2, rescheduled:3 }; return (o[a.status] - o[b.status]) || String(a.start || a.prevStart || "").localeCompare(String(b.start || b.prevStart || "")); });
+    sec.querySelector(".v70-t").textContent = T.title; sec.querySelector(".v70-s").textContent = T.sub;
+    var meta = ck && ck.at ? T.last + "<b>" + esc(new Date(ck.at).toLocaleString(loc(), { weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit", hour12:false })) + "</b>" + (ck.n ? " · " + esc(T.checked(ck.n)) : "") + (ck.note ? " · " + esc(ar && ck.noteAr ? ck.noteAr : ck.note) : "") : "";
+    var mEl = sec.querySelector(".v70-meta"); if(mEl.__h !== meta){ mEl.__h = meta; mEl.innerHTML = meta; }
+    var h = rows.length ? rows.map(function(r){ var c = chipFor(r), nm = (ar && r.nameAr) ? r.nameAr : r.name, now = r.status === "rescheduled" ? rng(r.start, r.end) : (r.status === "cancelled" ? T.cancelled : T.tbd);
+      var was = (r.prevStart ? "<s>" + esc(rng(r.prevStart, r.prevEnd)) + "</s> → " : ""), note = (ar && r.statusNoteAr) ? r.statusNoteAr : (r.statusNote || "");
+      return '<div class="v70-row"><div><b>' + esc(nm) + '</b><span class="v70-chip ' + c.k + '">' + esc(c.t) + '</span></div><div class="v70-d">' + was + esc(now) + '</div><div class="v70-n">' + esc(note) + "</div>" + (/^https?:\/\//i.test(r.statusUrl || "") ? '<a href="' + esc(r.statusUrl) + '" target="_blank" rel="noopener">' + esc(T.src) + "</a>" : "<span></span>") + "</div>"; }).join("") : '<div class="rc-empty">' + esc(T.none) + "</div>";
+    var list = sec.querySelector(".v70-list"); if(list.__h !== h){ list.__h = h; list.innerHTML = h; } }
+  function all(){ try{ renderSection(); }catch(e){ console.error(e); } try{ decorate(); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v70){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v70 = true; }
+  all(); setInterval(all, 1500);
+  window.v70 = { all:all };
 })();
 </script>
 

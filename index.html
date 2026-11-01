@@ -8299,7 +8299,7 @@ async function exportPPTX(){
   var LOCK = ["recap", "internal", "projects", "brand", "marketing"];
   function locked(){ var h = document.documentElement; return TEAM && h.classList.contains("team-mode") && h.classList.contains("ts-locked"); }
   function prune(){ if(!locked()) return; try{ if(typeof PAGE_ORDER !== "undefined") LOCK.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(i >= 0) PAGE_ORDER.splice(i, 1); }); }catch(e){} }
-  if(typeof switchPage === "function" && !switchPage.__v51){ var baseSP = switchPage; switchPage = function(p){ var a = [].slice.call(arguments); if(locked() && LOCK.indexOf(p) >= 0) a[0] = "overview"; closePop(); return baseSP.apply(this, a); }; switchPage.__v51 = true; }
+  if(typeof switchPage === "function" && !switchPage.__v51){ var baseSP = switchPage; switchPage = function(p){ var a = [].slice.call(arguments); if(locked() && (LOCK.indexOf(p) >= 0 || p === "technical") && p !== "projects") a[0] = "overview";   /* v69.1: PMO shows milestones & tasks to the team; Technical stays private */ closePop(); return baseSP.apply(this, a); }; switchPage.__v51 = true; }
   if(typeof renderAll === "function" && !renderAll.__v51){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ prune(); mark(); }catch(e){} return out; }; renderAll.__v51 = true; }
 
   /* ---------- 2) press a number → the records behind it ---------- */

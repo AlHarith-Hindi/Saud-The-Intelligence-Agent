@@ -9398,5 +9398,101 @@ async function exportPPTX(){
 })();
 </script>
 
+<style id="v69css">
+  /* v69: sidebar regroup — Business Development (Internal Performance) · PMO (quarter recap placeholder + projects + milestones/tasks) · Technical (prototypes) · Marketing (+ KNKT as "Marketing") · Etimad Summary (old quarter recap) · missions inside the bid-decision bar */
+  .tab-btn.v69-hide{display:none !important;}
+  #missionStrip{display:none !important;}
+  #page-external > #page-recap{display:block; margin-top:0;}
+  #page-external > #page-recap > section{margin-top:0;}
+  .v69-ph{padding:22px 18px; border-radius:14px; border:1px dashed var(--border); color:var(--muted); font-size:13px; line-height:1.6; text-align:center;}
+  .v69-ph b{display:block; color:var(--cream); font-size:14px; margin-bottom:4px;}
+  .bd-ms{margin-inline-start:auto; display:inline-flex; align-items:center; gap:8px; font:inherit; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; padding:8px 14px; border-radius:10px; border:1px solid rgba(242,101,34,.55); background:rgba(242,101,34,.10); color:var(--cream); cursor:pointer; white-space:nowrap;}
+  .bd-ms:hover{background:rgba(242,101,34,.2);}
+  .bd-ms .bd-ms-p{display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:20px; padding:0 6px; border-radius:999px; background:rgba(0,0,0,.3); font-family:var(--mono, monospace); font-size:10.5px; color:var(--copper);}
+  html.theme-light .bd-ms{color:#1c1c1c;}
+  /* team view (locked): PMO stays visible for milestones & tasks only; Technical stays private like the old prototypes */
+  html.team-mode.ts-locked body .tab-btn[data-page="projects"]:not(.v69-hide){display:flex !important;}
+  html.team-mode.ts-locked body #page-projects.active{display:block !important;}
+  html.team-mode.ts-locked #page-projects > .v69-proj, html.team-mode.ts-locked #pmoRecapSec{display:none !important;}
+  html.team-mode.ts-locked .tab-btn[data-page="technical"], html.team-mode.ts-locked #page-technical{display:none !important;}
+  @media print{
+    body.rc-printing #page-external{display:block !important;}
+    body.rc-printing #page-external > :not(#page-recap){display:none !important;}
+  }
+</style>
+<script>
+/* v69 module: sidebar regroup + missions in the bid-decision bar (Harith, 1 Nov 2026) */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var ED = function(){ return typeof editing !== "undefined" && editing; };
+  var $ = function(id){ return document.getElementById(id); };
+  var LB = function(){ var ar = AR(); return {
+    bd: ar ? "تطوير الأعمال" : "Business Development", pmo: "PMO", tech: ar ? "التقنية" : "Technical", mk: ar ? "التسويق" : "Marketing", sum: ar ? "الملخص" : "Summary",
+    rcT: ar ? "ملخص الربع" : "Quarter recap", rcS: ar ? "ملخص المشاريع والمراحل والتسليم لهذا الربع — قريبًا." : "This quarter's projects, milestones and delivery at a glance — coming soon.",
+    rcB: ar ? "مساحة مؤقتة" : "Placeholder", start: ar ? "ابدأ المهمة" : "Start mission", cont: ar ? "تابع المهمة" : "Continue mission"
+  }; };
+  window.__v69rcTitle = function(){ return LB().sum; };
+  var ICON_TECH = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><rect x="10" y="10" width="4" height="4"/></svg>';
+  function tabBtn(p){ return document.querySelector('.tab-btn[data-page="' + p + '"]'); }
+  function setLabel(btn, txt){ if(!btn) return; var s = btn.querySelector("span[data-bind]") || btn.querySelector("span"); if(s && s.textContent !== txt) s.textContent = txt; }
+
+  function layout(){
+    var T = LB(), nav = $("tabsNav"), main = $("page-overview") && $("page-overview").parentElement; if(!nav || !main) return;
+    /* Technical page + button */
+    var tp = $("page-technical"); if(!tp){ tp = document.createElement("div"); tp.className = "page"; tp.id = "page-technical"; main.appendChild(tp); }
+    var tb = tabBtn("technical"); if(!tb){ tb = document.createElement("button"); tb.className = "tab-btn"; tb.dataset.page = "technical"; tb.setAttribute("onclick", "switchPage('technical')"); tb.innerHTML = ICON_TECH + "<span></span>"; nav.appendChild(tb); }
+    setLabel(tb, T.tech);
+    /* PMO = the projects page: recap placeholder + projects + (milestones, recurring tasks, to-do) — prototypes go to Technical */
+    var pp = $("page-projects");
+    if(pp){
+      var proto = $("prototypesBody") && $("prototypesBody").closest("section"); if(proto && proto.parentElement !== tp) tp.appendChild(proto);
+      var projS = $("projectsBody") && $("projectsBody").closest("section"); if(projS) projS.classList.add("v69-proj");
+      var rc = $("pmoRecapSec"); if(!rc){ rc = document.createElement("section"); rc.id = "pmoRecapSec"; rc.innerHTML = '<div class="sechead"><h2 class="v69-rcT"></h2></div><div class="v69-ph"><b class="v69-rcB"></b><span class="v69-rcS"></span></div>'; pp.insertBefore(rc, pp.firstChild); }
+      rc.querySelector(".v69-rcT").textContent = T.rcT; rc.querySelector(".v69-rcB").textContent = T.rcB; rc.querySelector(".v69-rcS").textContent = T.rcS;
+      var tk = $("page-tasks"); if(tk) [].slice.call(tk.children).forEach(function(s){ if(s.tagName === "SECTION") pp.appendChild(s); });
+    }
+    setLabel(tabBtn("projects"), T.pmo); setLabel(tabBtn("internal"), T.bd); setLabel(tabBtn("brand"), T.mk);
+    /* Marketing page gets the KNKT section, titled "Marketing" */
+    var bp = $("page-brand"), mk = $("page-marketing");
+    if(bp && mk) [].slice.call(mk.children).forEach(function(s){ if(s.tagName === "SECTION") bp.appendChild(s); });
+    var kt = $("secMarketingTitle"); if(kt && !ED() && kt.textContent !== T.mk) kt.textContent = T.mk;
+    /* Etimad gets the old quarter recap as its Summary section (kept inside its own #page-recap block so the recap code keeps working) */
+    var ep = $("page-external"), rp = $("page-recap");
+    if(ep && rp && rp.parentElement !== ep){ rp.classList.remove("page", "active"); var exp = null; [].some.call(ep.children, function(c){ var h = c.querySelector && c.querySelector("h2"); if(h && /expired|المنتهية|منتهية/i.test(h.textContent)){ exp = c; return true; } return false; }); if(exp) ep.insertBefore(rp, exp); else ep.appendChild(rp); }
+    if(rp){ rp.classList.remove("page"); var rt = rp.querySelector(".rc-title"); if(rt && rt.textContent !== T.sum) rt.textContent = T.sum; }
+    /* sidebar order + hidden buttons */
+    ["recap", "marketing", "tasks"].forEach(function(p){ var b = tabBtn(p); if(b) b.classList.add("v69-hide"); });
+    var order = ["overview", "program", "external", "events", "internal", "projects", "technical", "brand", "customize", "notes"], prev = null;
+    order.forEach(function(p){ var b = tabBtn(p); if(!b) return; if(prev){ if(prev.nextElementSibling !== b) prev.insertAdjacentElement("afterend", b); } prev = b; });
+    try{ if(typeof PAGE_ORDER !== "undefined" && Array.isArray(PAGE_ORDER)){ var want = ["overview", "program", "external", "events", "internal", "projects", "technical", "brand"]; if(PAGE_ORDER.join() !== want.join()) PAGE_ORDER.splice.apply(PAGE_ORDER, [0, PAGE_ORDER.length].concat(want)); } }catch(e){}
+    var act = document.querySelector(".tab-btn.active"), pt = $("pageTitle");
+    if(act && pt){ var s = act.querySelector("span[data-bind]") || act.querySelector("span"); if(s && pt.textContent !== s.textContent.trim() && /^(internal|projects|technical|brand)$/.test(act.dataset.page)) pt.textContent = s.textContent.trim(); }
+  }
+
+  /* missions: one button at the end of each opportunity's bid-decision bar */
+  function decorateMissions(){ var body = $("externalBody"); if(!body || typeof openMission !== "function") return; var T = LB(), rows = (typeof state !== "undefined" && state && state.external) || [];
+    [].forEach.call(body.querySelectorAll("tr.ext-detail .bd-bar"), function(bar){ var tr = bar.closest("tr"), m = tr && (tr.id || "").match(/^extDetail(\d+)$/); if(!m) return; var i = +m[1], r = rows[i]; if(!r) return;
+      var pct = 0, started = false; try{ pct = missionPct(r); started = !!missionOf(r, false); }catch(e){}
+      var lab = (started ? T.cont : T.start), h = '🚀 <span>' + lab + '</span><b class="bd-ms-p">' + pct + "%</b>", b = bar.querySelector(".bd-ms");
+      if(!b){ b = document.createElement("button"); b.type = "button"; b.className = "bd-ms"; bar.appendChild(b); }
+      if(b.dataset.v69ms !== String(i)) b.dataset.v69ms = String(i); if(b.__h !== h){ b.__h = h; b.innerHTML = h; } }); }
+
+  /* old page names keep working (links, search, overview cards) */
+  var MAP = { tasks:"projects", recap:"external", marketing:"brand" };
+  if(typeof switchPage === "function" && !window.__v69sp){ window.__v69sp = switchPage; window.switchPage = function(page){ var to = MAP[page] || page; var out = window.__v69sp(to);
+      if(page === "recap") setTimeout(function(){ var r = $("page-recap"); if(r) r.scrollIntoView({ behavior:"smooth", block:"start" }); }, 120);
+      setTimeout(layout, 0); return out; }; }
+  if(typeof window.goToSearchResult === "function" && !window.__v69go){ window.__v69go = window.goToSearchResult; window.goToSearchResult = function(section, page, index){ if(section === "prototypes") page = "technical"; return window.__v69go(section, page, index); }; }
+
+  document.addEventListener("click", function(e){ var b = e.target.closest && e.target.closest("[data-v69ms]"); if(!b) return; e.preventDefault(); e.stopPropagation(); if(typeof CMT_MODE !== "undefined" && CMT_MODE) return; try{ openMission(+b.dataset.v69ms); }catch(err){ console.error(err); } }, true);
+  function all(){ try{ layout(); }catch(e){ console.error(e); } try{ decorateMissions(); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v69){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v69 = true; }
+  if(typeof closeMission === "function" && !window.__v69cm){ window.__v69cm = closeMission; window.closeMission = function(){ var o = window.__v69cm.apply(this, arguments); setTimeout(decorateMissions, 0); return o; }; }
+  all(); setTimeout(all, 1500); setInterval(all, 1500);
+  window.v69 = { layout:layout, missions:decorateMissions };
+})();
+</script>
+
 </body>
 </html>

@@ -3,21 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script id="diagHook">
-/* diag (temporary, only with ?diag=1): posts progress markers to other tabs over BroadcastChannel "saud-diag" to find a page freeze */
-(function(){ if(!/[?&]diag=1/.test(location.search)) return; var bc = new BroadcastChannel("saud-diag"), n = 0, seen = {};
-  function P(m){ try{ bc.postMessage((++n) + " " + String(m).slice(0, 160)); }catch(e){} } window.__P = P; P("start");
-  function lab(f){ return (f && (f.name || String(f).slice(0, 90).replace(/\s+/g, " "))) || "?"; }
-  function W(f, l){ if(typeof f !== "function") return f; return function(){ var c = (seen[l] = (seen[l] || 0) + 1); var q = c <= 3 || c % 50 === 0; if(q) P("> " + l + " #" + c); try{ return f.apply(this, arguments); } finally { if(q) P("< " + l); } }; }
-  var si = window.setInterval; window.setInterval = function(f, t){ return si.call(window, W(f, "int:" + lab(f)), t); };
-  var st = window.setTimeout; window.setTimeout = function(f, t){ return st.call(window, W(f, "to:" + lab(f)), t); };
-  var MO = window.MutationObserver; if(MO){ var M2 = function(cb){ return new MO(W(cb, "mo:" + lab(cb))); }; M2.prototype = MO.prototype; window.MutationObserver = M2; }
-  var F = window.fetch; window.fetch = function(u, o){ var s = String(u && u.url || u).replace(/[?#].*$/, "").slice(-70); P("fetch> " + s); return F.apply(this, arguments).then(function(r){ P("fetch< " + s + " " + r.status); return r; }); };
-  var thenO = Promise.prototype.then;
-  document.addEventListener("DOMContentLoaded", function(){ P("DCL"); try{ Object.keys(window).forEach(function(k){ if(/^(render|renderAll|apply|load|migrate|merge|switchPage|saveTo|tryAuto)/.test(k) && typeof window[k] === "function" && !window[k].__d){ var g = W(window[k], "fn:" + k); g.__d = 1; try{ window[k] = g; }catch(e){} } }); P("wrapped"); }catch(e){ P("wrapErr " + e); } });
-  window.addEventListener("load", function(){ P("load"); }); window.addEventListener("error", function(e){ P("err " + (e.message || "")); });
-})();
-</script>
 <script>
 /* v47: phone app removed (Harith) — unregister the old service worker and clear its cache */
 (function(){ try{ if("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }).catch(function(){}); if(window.caches) caches.keys().then(function(ks){ ks.forEach(function(k){ if(/^midwam-app/.test(k)) caches.delete(k); }); }).catch(function(){}); }catch(e){} })();

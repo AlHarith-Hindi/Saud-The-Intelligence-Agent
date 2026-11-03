@@ -9664,5 +9664,113 @@ async function exportPPTX(){
 })();
 </script>
 
+<style id="v73css">
+  /* v73: Weekly digest on the Overview — the week (Sun–Sat, Riyadh) at a glance, built from the dashboard's own data */
+  #wdSec .wd-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:2px 0 14px;}
+  #wdSec .wd-range{font-size:12.5px; color:var(--muted);}
+  #wdSec .wd-tog{display:inline-flex; gap:4px; padding:4px; border-radius:12px; border:1px solid var(--border); background:var(--night2); margin-inline-start:auto;}
+  #wdSec .wd-tog button{font:inherit; font-size:12px; font-weight:600; padding:6px 12px; border-radius:9px; border:1px solid transparent; background:transparent; color:var(--muted); cursor:pointer;}
+  #wdSec .wd-tog button.on{color:var(--cream); background:rgba(242,101,34,.14); border-color:rgba(242,101,34,.55);}
+  #wdSec .wd-tot{display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:10px; margin-bottom:12px;}
+  #wdSec .wd-t{padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--night2);}
+  #wdSec .wd-t b{display:block; font-size:22px; color:var(--cream); font-family:var(--mono, monospace);}
+  #wdSec .wd-t span{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+  #wdSec .wd-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;}
+  #wdSec .wd-card{padding:14px 16px; border-radius:14px; border:1px solid var(--border); background:var(--night2); min-width:0;}
+  #wdSec .wd-card h4{margin:0 0 10px; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--copper);}
+  #wdSec .wd-card ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  #wdSec .wd-card li{display:flex; gap:8px; align-items:baseline; font-size:12.5px; line-height:1.45; color:var(--cream); min-width:0;}
+  #wdSec .wd-card li .wd-n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;}
+  #wdSec .wd-card li .wd-d{flex:0 0 auto; font-family:var(--mono, monospace); font-size:11px; color:var(--muted); white-space:nowrap;}
+  #wdSec .wd-chip{flex:0 0 auto; font-size:10px; font-weight:700; padding:1px 7px; border-radius:999px; border:1px solid; text-transform:uppercase; letter-spacing:.04em;}
+  #wdSec .wd-chip.s{color:#3ccb7f; border-color:rgba(60,203,127,.45);} #wdSec .wd-chip.m{color:#ffc857; border-color:rgba(255,200,87,.45);}
+  #wdSec .wd-chip.p{color:#3ccb7f; border-color:rgba(60,203,127,.45);} #wdSec .wd-chip.w{color:#b9a7ff; border-color:rgba(185,167,255,.45);} #wdSec .wd-chip.x{color:#ff8a80; border-color:rgba(255,122,112,.45);}
+  #wdSec .wd-empty{font-size:12.5px; color:var(--muted);}
+  @media (max-width:760px){ #wdSec .wd-tot{grid-template-columns:repeat(2, minmax(0, 1fr));} }
+  html.theme-light #wdSec .wd-tog button.on{color:#1c1c1c;}
+</style>
+<script>
+/* v73 module: Weekly digest (Harith, 3 Nov 2026). Weeks run Sunday–Saturday (Riyadh). Everything is computed from the dashboard's data — nothing is written to the data file. */
+(function(){
+  "use strict";
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(s){ s = s == null ? "" : String(s); return s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  var ST = function(){ return (typeof state !== "undefined" && state) || {}; };
+  var A = function(k){ var s = ST(); return Array.isArray(s[k]) ? s[k] : []; };
+  var TXT = function(s){ try{ return typeof TX === "function" ? TX(s) : s; }catch(e){ return s; } };
+  var which = 0; /* 0 = this week, 1 = last week */
+  try{ var w = localStorage.getItem("v73week"); if(w === "1") which = 1; }catch(e){}
+  function riyadhNow(){ var d = new Date(); return new Date(d.getTime() + (d.getTimezoneOffset() + 180) * 60000); }
+  function ymd(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function weekRange(back){ var now = riyadhNow(), start = addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -now.getDay() - 7 * back); return { from:ymd(start), to:ymd(addDays(start, 6)), start:start }; }
+  function day(s){ return String(s || "").slice(0, 10); }
+  function inR(s, r){ var d = day(s); return d && d >= r.from && d <= r.to; }
+  function loc(){ return AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB"; }
+  function fd(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return ""; return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }); }
+  function fitC(f){ return /^strong/i.test(f || "") ? "s" : /^medium/i.test(f || "") ? "m" : ""; }
+  function L(){ var ar = AR(); return {
+    title: ar ? "الملخص الأسبوعي" : "Weekly digest", thisW: ar ? "هذا الأسبوع" : "This week", lastW: ar ? "الأسبوع الماضي" : "Last week",
+    tNew: ar ? "جديد في اعتماد" : "New on Etimad", tDec: ar ? "قراراتك" : "Your decisions", tClose: ar ? "تغلق خلال 7 أيام" : "Closing in 7 days", tClosed: ar ? "أُغلقت" : "Closed", tChg: ar ? "تغييرات ونتائج" : "Changes & results", tEv: ar ? "الفعاليات القادمة" : "Events ahead",
+    nNew: ar ? "فرص جديدة" : "New fits", nDec: ar ? "قرارات" : "Decisions", nClose: ar ? "تغلق قريبًا" : "Closing soon", nChg: ar ? "تغييرات" : "Changes", nEv: ar ? "فعاليات" : "Events",
+    none: ar ? "لا شيء" : "Nothing this week", pursue: ar ? "متابعة" : "Pursue", watch: ar ? "مراقبة" : "Watch", pass: ar ? "تجاوز" : "Pass", undecided: ar ? "بلا قرار" : "No decision",
+    strong: ar ? "قوية" : "Strong", medium: ar ? "متوسطة" : "Medium", moved: ar ? "تغيّر الموعد" : "Date moved", won: ar ? "فزنا" : "Won", nobid: ar ? "لم نتقدم" : "Didn't bid", lost: ar ? "خسرنا" : "Lost", winner: ar ? "الفائز: " : "Winner: ",
+    window: ar ? "نافذة المنافسات تبدأ" : "Tender window opens", starts: ar ? "تبدأ" : "Starts", evChg: ar ? "تغيّر في التقويم" : "Calendar change"
+  }; }
+  function nm(r){ return TXT(r.name || r.rn || ""); }
+  function li(chip, cls, name, date){ return "<li>" + (chip ? '<span class="wd-chip ' + cls + '">' + esc(chip) + "</span>" : "") + '<span class="wd-n">' + esc(name) + "</span>" + (date ? '<span class="wd-d">' + esc(date) + "</span>" : "") + "</li>"; }
+  function list(items){ return items.length ? "<ul>" + items.slice(0, 8).join("") + "</ul>" + (items.length > 8 ? '<div class="wd-empty">+' + (items.length - 8) + "</div>" : "") : '<div class="wd-empty">' + esc(L().none) + "</div>"; }
+
+  function build(){
+    var T = L(), r = weekRange(which), ext = A("external"), exc = A("externalExcluded"), all = ext.concat(exc), pub = {};
+    ((ST().buyers && ST().buyers.raw) || []).forEach(function(x){ if(x && x[0]) pub[String(x[0])] = x[2]; });
+    var added = function(x){ return pub[String(x.rn)] || x.inqStart || ""; };
+    /* 1. new fits published in the week */
+    var nw = all.filter(function(x){ return /^(strong|medium)/i.test(x.fit || "") && inR(added(x), r); }).sort(function(a, b){ return String(a.bidDeadline).localeCompare(String(b.bidDeadline)); });
+    var nwL = nw.map(function(x){ return li(/^strong/i.test(x.fit) ? T.strong : T.medium, fitC(x.fit), nm(x), fd(x.bidDeadline)); });
+    /* 2. decisions made in the week */
+    var dc = all.filter(function(x){ return x.decision && inR(x.decidedAt, r); });
+    var dcL = dc.map(function(x){ var d = x.decision; return li(d === "pursue" ? T.pursue : d === "watch" ? T.watch : T.pass, d === "pursue" ? "p" : d === "watch" ? "w" : "x", nm(x), fd(x.decidedAt)); });
+    /* 3. this week: closing in the next 7 days · last week: closed that week */
+    var now = ymd(riyadhNow()), in7 = ymd(addDays(riyadhNow(), 7)), clL;
+    if(which === 0){ clL = ext.filter(function(x){ var d = day(x.bidDeadline); return x.decision !== "pass" && d >= now && d <= in7; }).sort(function(a, b){ return String(a.bidDeadline).localeCompare(String(b.bidDeadline)); })
+        .map(function(x){ var d = x.decision; return li(d === "pursue" ? T.pursue : d === "watch" ? T.watch : T.undecided, d === "pursue" ? "p" : d === "watch" ? "w" : fitC(x.fit), nm(x), fd(x.bidDeadline)); }); }
+    else { clL = exc.filter(function(x){ return /^(strong|medium)/i.test(x.fit || "") && inR(x.bidDeadline || x.deadline, r); }).map(function(x){ var d = x.decision; return li(d === "pursue" ? T.pursue : d === "watch" ? T.watch : d === "pass" ? T.pass : T.undecided, d === "pursue" ? "p" : d === "watch" ? "w" : "x", nm(x), fd(x.bidDeadline || x.deadline)); }); }
+    /* 4. Etimad date changes + award results / outcomes in the week */
+    var chL = [];
+    all.forEach(function(x){ (x.changes || []).forEach(function(c){ if(inR(c.at, r) && c.field !== "addendum") chL.push(li(T.moved, "m", nm(x), fd(c.to))); }); if(x.outcome && inR(x.outcomeAt, r)) chL.push(li(x.outcome === "won" ? T.won : x.outcome === "lost" ? T.lost : T.nobid, x.outcome === "won" ? "p" : "x", nm(x) + (x.winner ? " · " + T.winner + x.winner : ""), fd(x.outcomeAt))); });
+    /* 5. events: starting or tender window opening within 14 days of the week start (this week) / changed on the calendar that week */
+    var ev = A("events"), e0 = which === 0 ? now : r.from, e14 = ymd(addDays(which === 0 ? riyadhNow() : r.start, 14)), evL = [];
+    ev.forEach(function(e){ if(!e || e.status === "cancelled") return; var ar = AR(), n = (ar && e.nameAr) ? e.nameAr : e.name;
+      if(day(e.watchFrom) >= e0 && day(e.watchFrom) <= e14) evL.push(li(T.window, "w", n, fd(e.watchFrom)));
+      else if(day(e.start) >= e0 && day(e.start) <= e14) evL.push(li(T.starts, "s", n, fd(e.start)));
+      if(/^(rescheduled|postponed|tba|cancelled)$/.test(e.status || "") && inR(e.verifiedAt, r) && which === 1) evL.push(li(T.evChg, "m", n, fd(e.start || e.prevStart))); });
+    var tot = [[nw.length, T.nNew], [dc.length, T.nDec], [clL.length, which === 0 ? T.nClose : T.tClosed], [chL.length, T.nChg], [evL.length, T.nEv]];
+    return { r:r, T:T, html:
+      '<div class="wd-tot">' + tot.map(function(t){ return '<div class="wd-t"><b>' + t[0] + "</b><span>" + esc(t[1]) + "</span></div>"; }).join("") + "</div>" +
+      '<div class="wd-grid">' +
+        '<div class="wd-card"><h4>' + esc(T.tNew) + "</h4>" + list(nwL) + "</div>" +
+        '<div class="wd-card"><h4>' + esc(T.tDec) + "</h4>" + list(dcL) + "</div>" +
+        '<div class="wd-card"><h4>' + esc(which === 0 ? T.tClose : T.tClosed) + "</h4>" + list(clL) + "</div>" +
+        '<div class="wd-card"><h4>' + esc(T.tChg) + "</h4>" + list(chL) + "</div>" +
+        '<div class="wd-card"><h4>' + esc(T.tEv) + "</h4>" + list(evL) + "</div>" +
+      "</div>" };
+  }
+  function render(){ var ov = $("page-overview"); if(!ov) return; var sec = $("wdSec");
+    if(!sec){ sec = document.createElement("section"); sec.id = "wdSec"; sec.innerHTML = '<div class="sechead"><h2 class="wd-title"></h2></div><div class="wd-head"><span class="wd-range"></span><div class="wd-tog"><button type="button" data-wd="0"></button><button type="button" data-wd="1"></button></div></div><div class="wd-body"></div>';
+      var anchor = $("statRow") || $("briefBox"); if(anchor && anchor.parentElement === ov) anchor.insertAdjacentElement("afterend", sec); else ov.appendChild(sec); }
+    var b = build(), T = b.T; sec.querySelector(".wd-title").textContent = T.title;
+    var rng = fd(b.r.from) + " – " + fd(b.r.to); var rr = sec.querySelector(".wd-range"); if(rr.textContent !== rng) rr.textContent = rng;
+    [].forEach.call(sec.querySelectorAll("[data-wd]"), function(x){ var on = +x.dataset.wd === which; x.classList.toggle("on", on); var t = +x.dataset.wd ? T.lastW : T.thisW; if(x.textContent !== t) x.textContent = t; });
+    var body = sec.querySelector(".wd-body"); if(body.__h !== b.html){ body.__h = b.html; body.innerHTML = b.html; } }
+  document.addEventListener("click", function(e){ var b = e.target.closest && e.target.closest("#wdSec [data-wd]"); if(!b) return; e.preventDefault(); which = +b.dataset.wd; try{ localStorage.setItem("v73week", String(which)); }catch(err){} render(); });
+  function all(){ try{ render(); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v73){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v73 = true; }
+  all(); setInterval(all, 5000);
+  window.v73 = { all:all, build:build };
+})();
+</script>
+
 </body>
 </html>

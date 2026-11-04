@@ -9887,9 +9887,8 @@ async function exportPPTX(){
     var keep = '<div class="v75keep">' + (ar ? "تابع النزول" : "Keep scrolling") + "<i></i></div>";
     var skip = '<button type="button" class="v75skip">' + (ar ? "تخطَّ ↓" : "Skip ↓") + "</button>";
     /* A: sentence */
-    var words = ar
-      ? [[String(nOpen), 1]].concat((nOpen === 1 ? "منافسة مفتوحة في اعتماد." : "منافسات مفتوحة في اعتماد.").split(" ").map(function(w){ return [w]; }), [[String(nEv), 1]], (nEv === 1 ? "فعالية قادمة. وخطوتك التالية تبدأ من هنا." : "فعاليات قادمة. وخطوتك التالية تبدأ من هنا.").split(" ").map(function(w){ return [w]; }))
-      : [[String(nOpen), 1]].concat(("open tender" + (nOpen === 1 ? "" : "s") + " on Etimad.").split(" ").map(function(w){ return [w]; }), [[String(nEv), 1]], ("event" + (nEv === 1 ? "" : "s") + " ahead. Your next move starts here.").split(" ").map(function(w){ return [w]; }));
+    var mk = function(t){ return t.split(" ").map(function(w){ var hi = w.charAt(0) === "*"; return [hi ? w.slice(1) : w, hi ? 1 : 0]; }); };
+    var words = ar ? mk("*فريق *واحد. كل منافسة. كل فعالية. كل موعد. *خطوة *واحدة *للأمام.") : mk("*One *team. Every tender. Every event. Every deadline. *One *next *move.");
     var sHtml = "<p>" + words.map(function(w){ return '<span class="wd' + (w[1] ? " n" : "") + '">' + esc(w[0]) + "</span>"; }).join(" ") + "</p>";
     var fitC = function(f){ return /^strong/i.test(f || "") ? "var(--good, #22b573)" : /^medium/i.test(f || "") ? "var(--warning, #e8a33d)" : "var(--copper)"; };
     var cards = T.map(function(r){ var d = days(r.bidDeadline), dec = r.decision === "pursue" ? (ar ? "متابعة" : "Pursue") : r.decision === "watch" ? (ar ? "مراقبة" : "Watch") : (ar ? "بلا قرار" : "Decide");
@@ -9905,7 +9904,7 @@ async function exportPPTX(){
     var ft = (ar ? "كتبه Claude" : "Written by Claude") + (at ? " · " + at.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) : "");
     var cHtml = B.length ? '<div class="v75sc" id="v75c" style="height:' + (B.length * 55 + 70) + 'vh"><div class="v75pin"><div class="v75lab">' + (ar ? "موجز اليوم" : "Today's brief") + '</div><div class="stk">' + B.map(function(t, i){ return '<div class="bc"><div class="tp"><span>' + (ar ? "موجز اليوم" : "Today's brief") + '</span><span>' + (i + 1) + " / " + B.length + '</span></div><div class="tx' + (String(t).length > 170 ? ' lg' : '') + '">' + esc(t) + '</div><div class="ft">' + esc(ft) + "</div></div>"; }).join("") + "</div>" + keep + "</div></div>" : "";
     root.innerHTML = (T.length || nEv ? aHtml : "") + bHtml + cHtml;
-    W = [].slice.call(root.querySelectorAll("#v75a .wd")).map(function(el, i){ return { el:el, dx:(seeded(i) - .5) * 90, dy:(seeded(i + 40) - .5) * 160, r:(seeded(i + 80) - .5) * 56 }; });
+    W = [].slice.call(root.querySelectorAll("#v75a .wd")).map(function(el, i){ return { el:el, dx:(seeded(i) - .5) * 60, dy:(seeded(i + 40) - .5) * 90, r:(seeded(i + 80) - .5) * 30 }; });
     RAIL = [].slice.call(root.querySelectorAll("#v75a .tc"));
     LINES = [].slice.call(root.querySelectorAll("#v75b .ln"));
     CARDS = [].slice.call(root.querySelectorAll("#v75c .bc"));

@@ -9819,6 +9819,7 @@ async function exportPPTX(){
   #v75c .bc::before{content:""; position:absolute; inset:0 0 auto 0; height:3px; border-radius:22px 22px 0 0; background:var(--copper);}
   #v75c .bc .tp{display:flex; justify-content:space-between; font-family:var(--mono, monospace); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--copper);}
   #v75c .bc .tx{margin:auto 0; font-size:clamp(17px, 1.75vw, 26px); line-height:1.42; color:#E9E4DA;}
+  #v75c .bc .tx.lg{font-size:clamp(14.5px, 1.2vw, 18.5px); line-height:1.5;}
   #v75c .bc .ft{font-size:11.5px; color:#8E8A85;}
 
   /* light theme: keep the dashboard's own light colours */
@@ -9865,10 +9866,10 @@ async function exportPPTX(){
   /* ---------- data ---------- */
   function tenders(){ var n = stamp(rnow());
     return A("external").filter(function(r){ return r && r.decision !== "pass" && String(r.bidDeadline || "").replace("T", " ").slice(0, 16) >= n; })
-      .sort(function(a, b){ return String(a.bidDeadline).localeCompare(String(b.bidDeadline)); }).slice(0, 10); }
+      .sort(function(a, b){ return String(a.bidDeadline).localeCompare(String(b.bidDeadline)); }); }
   function events(){ var t = ymd(rnow());
     return A("events").filter(function(e){ return e && e.name && e.status !== "cancelled" && String(e.start || "") >= t; })
-      .sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); }).slice(0, 12); }
+      .sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); }); }
   function brief(){ var b = ST().claudeBrief; if(!b) return []; var l = AR() && Array.isArray(b.ar) && b.ar.length ? b.ar : b.en; return Array.isArray(l) ? l.slice(0, 7) : []; }
 
   /* ---------- build ---------- */
@@ -9876,7 +9877,7 @@ async function exportPPTX(){
   function seeded(i){ var x = Math.sin(i * 12.9898 + 4.1) * 43758.5453; return x - Math.floor(x); }
   function build(){
     var ov = $("page-overview"); if(!ov) return;
-    var T = tenders(), E = events(), B = brief(), ar = AR(), nOpen = T.length, nEv = E.length;
+    var TA = tenders(), EA = events(), T = TA.slice(0, 10), E = EA.slice(0, 12), B = brief(), ar = AR(), nOpen = TA.length, nEv = EA.length;
     var sig = JSON.stringify([ar, T.map(function(r){ return [r.rn, r.bidDeadline, r.fit, r.decision]; }), E.map(function(e){ return [e.name, e.start]; }), B]);
     var root = $("v75story");
     if(!root){ root = document.createElement("div"); root.id = "v75story"; var st = ov.querySelector(":scope > .v55stage"); if(st) st.insertAdjacentElement("afterend", root); else ov.insertBefore(root, ov.firstChild);
@@ -9902,7 +9903,7 @@ async function exportPPTX(){
     /* C: brief deck */
     var b = ST().claudeBrief || {}, at = b.at ? new Date(b.at) : null;
     var ft = (ar ? "كتبه Claude" : "Written by Claude") + (at ? " · " + at.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) : "");
-    var cHtml = B.length ? '<div class="v75sc" id="v75c" style="height:' + (B.length * 55 + 70) + 'vh"><div class="v75pin"><div class="v75lab">' + (ar ? "موجز اليوم" : "Today's brief") + '</div><div class="stk">' + B.map(function(t, i){ return '<div class="bc"><div class="tp"><span>' + (ar ? "موجز اليوم" : "Today's brief") + '</span><span>' + (i + 1) + " / " + B.length + '</span></div><div class="tx">' + esc(t) + '</div><div class="ft">' + esc(ft) + "</div></div>"; }).join("") + "</div>" + keep + "</div></div>" : "";
+    var cHtml = B.length ? '<div class="v75sc" id="v75c" style="height:' + (B.length * 55 + 70) + 'vh"><div class="v75pin"><div class="v75lab">' + (ar ? "موجز اليوم" : "Today's brief") + '</div><div class="stk">' + B.map(function(t, i){ return '<div class="bc"><div class="tp"><span>' + (ar ? "موجز اليوم" : "Today's brief") + '</span><span>' + (i + 1) + " / " + B.length + '</span></div><div class="tx' + (String(t).length > 170 ? ' lg' : '') + '">' + esc(t) + '</div><div class="ft">' + esc(ft) + "</div></div>"; }).join("") + "</div>" + keep + "</div></div>" : "";
     root.innerHTML = (T.length || nEv ? aHtml : "") + bHtml + cHtml;
     W = [].slice.call(root.querySelectorAll("#v75a .wd")).map(function(el, i){ return { el:el, dx:(seeded(i) - .5) * 90, dy:(seeded(i + 40) - .5) * 160, r:(seeded(i + 80) - .5) * 56 }; });
     RAIL = [].slice.call(root.querySelectorAll("#v75a .tc"));

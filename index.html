@@ -10061,7 +10061,7 @@ async function exportPPTX(){
     kp.innerHTML = vals.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value">' + esc(v) + '</div><div class="sub">' + esc(ks[i]) + "</div></div>"; }).join("");
     var qq = norm(q).toLowerCase();
     var C = d.C.filter(function(c){ return c.wins > 0 || qq; }).filter(function(c){ return !qq || c.key.toLowerCase().indexOf(qq) >= 0 || c.list.some(function(x){ return norm(x.agency).toLowerCase().indexOf(qq) >= 0; }); })
-      .sort(function(a, b){ return (b.aw - a.aw) || (b.wins - a.wins) || (b.bids - a.bids); });
+      .sort(function(a, b){ return (b.wins - a.wins) || (b.aw - a.aw) || (b.bids - a.bids); });
     var Tn = d.T.filter(function(t){ return !qq || norm(t.agency).toLowerCase().indexOf(qq) >= 0 || norm(t.name).toLowerCase().indexOf(qq) >= 0 || t.b.concat(t.w).some(function(b){ return norm(b[0]).toLowerCase().indexOf(qq) >= 0; }); });
     var cs = allC || qq ? C : C.slice(0, 12), ts = allT || qq ? Tn : Tn.slice(0, 12);
     var h = "<h3>" + esc(T.top) + "</h3>";

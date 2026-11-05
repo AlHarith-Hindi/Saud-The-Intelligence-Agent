@@ -9597,7 +9597,7 @@ async function exportPPTX(){
   var PAGES = ["external", "events"], cur = { external:"open", events:"cal" }, more = { exp:false, all:false }, LIM = { exp:10, all:15 };
   try{ PAGES.forEach(function(p){ var v = localStorage.getItem("v72tab_" + p); if(v) cur[p] = v; }); if(cur.external === "summary") cur.external = "open"; }catch(e){}
   function LB(){ var ar = AR(); return {
-    open: ar ? "الفرص المفتوحة" : "Open opportunities", buyers: ar ? "أبرز الجهات" : "Top buyers", wl: ar ? "الفوز / الخسارة" : "Win / loss", bs: ar ? "مصروف الكراسات" : "Booklet spend", exp: ar ? "المنتهية" : "Expired", news: ar ? "الأخبار" : "News",
+    open: ar ? "الفرص المفتوحة" : "Open opportunities", buyers: ar ? "أبرز الجهات" : "Top buyers", who: ar ? "من يفوز" : "Who wins", wl: ar ? "الفوز / الخسارة" : "Win / loss", bs: ar ? "مصروف الكراسات" : "Booklet spend", exp: ar ? "المنتهية" : "Expired", news: ar ? "الأخبار" : "News",
     cal: ar ? "التقويم" : "Calendar", chg: ar ? "التغييرات" : "Changes", nw: ar ? "فعاليات جديدة" : "New announcements", occ: ar ? "المناسبات الوطنية" : "National occasions", all: ar ? "كل الفعاليات" : "All events",
     more: function(n){ return ar ? ("عرض الكل (" + n + ")") : ("Show all " + n); }, less: ar ? "عرض أقل" : "Show fewer" }; }
   function S(){ return (typeof state !== "undefined" && state) || {}; }
@@ -9609,7 +9609,7 @@ async function exportPPTX(){
   function panels(pid){ var P;
     if(pid === "page-external") P = [
       { k:"open", els:[top(pid, $("externalBody")), $("icsBar")], n:cnt("external") },
-      { k:"buyers", els:[$("tbSec")] }, { k:"wl", els:[$("wlSec")] }, { k:"bs", els:[$("bsSec")] },
+      { k:"buyers", els:[$("tbSec")] }, { k:"who", els:[$("whoSec")] }, { k:"wl", els:[$("wlSec")] }, { k:"bs", els:[$("bsSec")] },
       { k:"exp", els:[top(pid, $("externalExcludedBody"))], n:cnt("externalExcluded") },
       { k:"news", els:[top(pid, $("newsBody"))], n:cnt("news") } ];
     else P = [
@@ -9954,6 +9954,141 @@ async function exportPPTX(){
   if(typeof switchPage === "function" && !switchPage.__v75){ var baseSP = switchPage; switchPage = function(){ var out = baseSP.apply(this, arguments); setTimeout(all, 80); return out; }; switchPage.__v75 = true; }
   all(); setInterval(all, 6000);
   window.v75 = { all:all, tick:tick };
+})();
+</script>
+
+<style id="v76css">
+  /* v76: Who wins — public Etimad award results for exhibition & conference tenders (Harith, 5 Nov 2026) */
+  #whoSec .who-note{font-size:12.5px; color:var(--muted); margin:2px 0 14px;}
+  #whoSec .who-kpis{display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:10px; margin-bottom:16px;}
+  #whoSec .who-kpis .stat-tile .value{font-size:20px;}
+  #whoSec .who-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:6px 0 10px;}
+  #whoSec .who-bar input{flex:1; min-width:220px; font:inherit; font-size:13px; padding:9px 12px; border-radius:10px; border:1px solid var(--border); background:var(--night2); color:var(--cream);}
+  #whoSec .who-bar input:focus{outline:none; border-color:var(--copper);}
+  #whoSec h3{margin:18px 0 8px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--copper); font-weight:600;}
+  #whoSec table{width:100%; border-collapse:collapse; font-size:13px;}
+  #whoSec th{text-align:start; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; padding:8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  #whoSec td{padding:9px 8px; border-bottom:1px solid var(--border); vertical-align:top;}
+  #whoSec tr.who-row{cursor:pointer;} #whoSec tr.who-row:hover td{background:rgba(242,101,34,.05);}
+  #whoSec .n{font-family:var(--mono, monospace); white-space:nowrap;}
+  #whoSec .rk{font-family:var(--mono, monospace); color:var(--muted); width:28px;}
+  #whoSec .co b{color:var(--cream); font-weight:600;} #whoSec .co span{display:block; font-size:11px; color:var(--muted); margin-top:2px;}
+  #whoSec .rate{display:inline-block; min-width:44px; padding:2px 8px; border-radius:999px; font-size:11px; text-align:center; border:1px solid var(--border); color:var(--sand, #D9D3CB);}
+  #whoSec .rate.hi{border-color:rgba(60,203,127,.5); color:#3ccb7f;}
+  #whoSec tr.who-det td{background:rgba(0,0,0,.18);}
+  #whoSec .who-list{display:flex; flex-direction:column; gap:6px; padding:4px 0;}
+  #whoSec .who-it{display:grid; grid-template-columns:86px minmax(0, 1fr) 110px 110px 22px; gap:10px; align-items:baseline; font-size:12.5px;}
+  #whoSec .who-it em{font-style:normal; font-family:var(--mono, monospace); font-size:11px; color:var(--muted);}
+  #whoSec .who-it .t{color:var(--cream); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #whoSec .tag{display:inline-block; padding:1px 8px; border-radius:999px; font-size:10.5px; border:1px solid var(--border); color:var(--muted); white-space:nowrap;}
+  #whoSec .tag.win{border-color:rgba(60,203,127,.5); color:#3ccb7f;} #whoSec .tag.rej{border-color:rgba(255,122,112,.45); color:#ff8a80;}
+  #whoSec .mid b, #whoSec .mid{color:var(--copper) !important;}
+  #whoSec .who-more{margin-top:10px;}
+  #whoSec .who-lnk{color:var(--copper); text-decoration:none; font-size:12px;} #whoSec .who-lnk:hover{text-decoration:underline;}
+  #whoSec .who-empty{font-size:13px; color:var(--muted); padding:12px 0;}
+  @media (max-width:900px){ #whoSec .who-kpis{grid-template-columns:repeat(2, minmax(0, 1fr));} #whoSec .who-it{grid-template-columns:70px minmax(0, 1fr) 90px;} #whoSec .who-it > :nth-child(4), #whoSec .who-it > :nth-child(5){display:none;} }
+</style>
+<script>
+/* v76 module: Who wins (Harith, 5 Nov 2026). Reads state.awards (filled by the daily Etimad run from Etimad's public award-results pages) and state.buyers.raw. Nothing here writes to the data file. */
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var ST = function(){ return (typeof state !== "undefined" && state) || {}; };
+  var esc = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  function norm(n){ return String(n || "").replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/شركه شخص واحد|شركة شخص واحد/g, "").replace(/[()\-–_.,'"«»]/g, " ").replace(/\s+/g, " ").trim(); }
+  function isUs(n){ return /مدوام|midwam/i.test(String(n || "")); }
+  function sar(v){ var n = +v; if(!isFinite(n) || n <= 0) return "—"; var s = n >= 1e6 ? (Math.round(n / 1e5) / 10) + "M" : n >= 1e4 ? Math.round(n / 1e3) + "K" : Math.round(n).toLocaleString("en"); return AR() ? s + " ر.س" : "SAR " + s; }
+  function fd(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return "—"; return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(AR() ? "ar-u-ca-gregory-nu-latn" : "en-GB", { day:"numeric", month:"short" }); }
+  function median(a){ var b = a.slice().sort(function(x, y){ return x - y; }), n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : null; }
+  function link(rn){ try{ if(typeof window.etimadUrl === "function"){ var u = window.etimadUrl({ rn:rn }); if(u) return u; } }catch(e){} return ""; }
+  function L(){ var ar = AR(); return {
+    title: ar ? "من يفوز في اعتماد" : "Who wins on Etimad",
+    note: function(d){ return ar ? ("نتائج الترسية المنشورة علنًا لمنافسات المعارض والمؤتمرات في اعتماد منذ " + fd(d.from) + " — تُحدَّث مع الجولة اليومية. آخر تحديث: " + fd(d.at) + ".") : ("Etimad's public award results for exhibition & conference tenders since " + fd(d.from) + " — updated with the daily run. Last update: " + fd(d.at) + "."); },
+    k: ar ? ["نتائج منشورة", "قيمة الترسية", "شركات منافسة", "متوسط المتقدمين", "الفائز مقابل الوسيط"] : ["Results published", "Total awarded", "Companies seen", "Avg bidders", "Winner vs median bid"],
+    ks: function(d){ return ar ? ["من " + d.closed + " منافسة منتهية", "مجموع الترسيات", "تقدّمت لهذه المنافسات", "لكل منافسة", "الفائز أرخص من الوسيط عادةً"] : ["of " + d.closed + " closed tenders", "sum of awards", "bid on these tenders", "per tender", "typical winner vs median offer"]; },
+    search: ar ? "ابحث باسم شركة أو جهة…" : "Search a company or agency…",
+    top: ar ? "أكثر الشركات فوزًا" : "Top winners", recent: ar ? "أحدث النتائج" : "Latest results",
+    cTop: ar ? ["#", "الشركة", "مرات الفوز", "قيمة الترسية", "العروض", "نسبة الفوز"] : ["#", "Company", "Wins", "Awarded", "Bids", "Win rate"],
+    cRec: ar ? ["المنافسة", "الفائز", "قيمة الترسية", "المتقدمون", "نطاق العروض"] : ["Tender", "Winner", "Award", "Bidders", "Bid range"],
+    wins: ar ? "فاز" : "Won", lost: ar ? "خسر" : "Lost", rej: ar ? "غير مطابق فنيًا" : "Failed technical", pend: ar ? "بانتظار الترسية" : "Awaiting award",
+    winner: ar ? "الفائز: " : "Winner: ", usually: ar ? "أكثر الجهات: " : "Mostly: ",
+    more: function(n){ return ar ? "عرض الكل (" + n + ")" : "Show all " + n; }, less: ar ? "عرض أقل" : "Show fewer",
+    empty: ar ? "لا توجد نتائج ترسية بعد — ستظهر هنا بعد الجولة اليومية." : "No award results yet — they appear here after the daily run.",
+    none: ar ? "لا شيء يطابق البحث." : "Nothing matches the search.", bids: ar ? "المتقدمون" : "Bidders", us: ar ? "مدوام" : "Midwam" }; }
+
+  function data(){ var s = ST(), A = s.awards, raw = (s.buyers && s.buyers.raw) || []; if(!A || !A.rows) return null;
+    var info = {}; raw.forEach(function(x){ if(x && x[0]) info[String(x[0])] = { rn:String(x[0]), agency:x[1] || "", date:x[2] || "", name:x[4] || "", bid:String(x[5] || "") }; });
+    var today = new Date(), t = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+    var closed = raw.filter(function(x){ var b = String(x[5] || "").slice(0, 10); return b && b < t; }).length;
+    var T = [], co = {}, total = 0, bidN = [], disc = [];
+    Object.keys(A.rows).forEach(function(rn){ var r = A.rows[rn]; if(!r || r.s !== "a" || !Array.isArray(r.w) || !r.w.length) return; var i = info[rn] || { rn:rn, agency:"", name:rn, bid:"" };
+      var bidders = Array.isArray(r.b) ? r.b : [], aw = r.w.reduce(function(s, w){ return s + (+w[2] || 0); }, 0); total += aw;
+      var offers = bidders.filter(function(b){ return b[2] !== 0; }).map(function(b){ return +b[1]; }).filter(function(v){ return v > 0; });
+      if(bidders.length) bidN.push(bidders.length);
+      if(r.w.length === 1 && offers.length >= 2 && aw > 0){ var md = median(offers); if(md > 0) disc.push((aw - md) / md); }
+      var wk = {}; r.w.forEach(function(w){ wk[norm(w[0])] = true; });
+      var seen = {};
+      bidders.concat(r.w.map(function(w){ return [w[0], w[1], 1]; })).forEach(function(b){ var k = norm(b[0]); if(!k || seen[k]) return; seen[k] = true;
+        var c = co[k] || (co[k] = { key:k, names:{}, wins:0, bids:0, aw:0, ag:{}, list:[] }); c.names[b[0]] = (c.names[b[0]] || 0) + 1; c.bids++;
+        var won = !!wk[k], mine = 0; if(won){ c.wins++; r.w.forEach(function(w){ if(norm(w[0]) === k) mine += +w[2] || 0; }); c.aw += mine; if(i.agency) c.ag[i.agency] = (c.ag[i.agency] || 0) + 1; }
+        var bb = bidders.filter(function(x){ return norm(x[0]) === k; })[0];
+        c.list.push({ rn:rn, name:i.name, agency:i.agency, bid:i.bid, offer:bb ? +bb[1] : (won ? +(r.w.filter(function(w){ return norm(w[0]) === k; })[0] || [])[1] : null), won:won, rej:!!(bb && bb[2] === 0), winner:r.w.map(function(w){ return w[0]; }).join("، ") }); });
+      T.push({ rn:rn, name:i.name, agency:i.agency, bid:i.bid, w:r.w, b:bidders, aw:aw, lo:offers.length ? Math.min.apply(null, offers) : null, hi:offers.length ? Math.max.apply(null, offers) : null }); });
+    var C = Object.keys(co).map(function(k){ var c = co[k]; c.name = Object.keys(c.names).sort(function(a, b){ return c.names[b] - c.names[a]; })[0]; c.list.sort(function(a, b){ return String(b.bid).localeCompare(String(a.bid)); }); return c; });
+    T.sort(function(a, b){ return String(b.bid).localeCompare(String(a.bid)); });
+    var pend = Object.keys(A.rows).filter(function(rn){ return A.rows[rn] && A.rows[rn].s === "p"; }).length;
+    return { at:A.at, from:(s.buyers && s.buyers.from) || "", closed:closed, T:T, C:C, total:total, avgB:bidN.length ? bidN.reduce(function(a, b){ return a + b; }, 0) / bidN.length : null, disc:disc.length ? median(disc) : null, pend:pend }; }
+
+  var q = "", openC = {}, openT = {}, allC = false, allT = false;
+  function ensure(){ var pg = $("page-external"); if(!pg) return null; var sec = $("whoSec"); if(sec) return sec;
+    sec = document.createElement("section"); sec.id = "whoSec"; sec.className = "rv in";
+    sec.innerHTML = '<div class="sechead"><h2 class="who-title"></h2></div><div class="who-note"></div><div class="who-kpis"></div><div class="who-bar"><input type="search" class="who-q" autocomplete="off"></div><div class="who-body"></div>';
+    var anchor = $("tbSec"); if(anchor && anchor.parentElement === pg) anchor.insertAdjacentElement("afterend", sec); else pg.appendChild(sec);
+    sec.querySelector(".who-q").addEventListener("input", function(e){ q = e.target.value; render(true); });
+    sec.addEventListener("click", function(e){ var r = e.target.closest && e.target.closest("[data-whoc]"); if(r){ var k = r.dataset.whoc; openC[k] = !openC[k]; render(true); return; }
+      var t = e.target.closest && e.target.closest("[data-whot]"); if(t && !(e.target.closest("a"))){ var k2 = t.dataset.whot; openT[k2] = !openT[k2]; render(true); return; }
+      var m = e.target.closest && e.target.closest("[data-whomore]"); if(m){ if(m.dataset.whomore === "c") allC = !allC; else allT = !allT; render(true); } });
+    return sec; }
+  var LAST = "";
+  function render(force){ var sec = ensure(); if(!sec) return; var T = L(), d = data(), ar = AR();
+    var sig = JSON.stringify([ar, q, openC, openT, allC, allT, d && [d.at, d.T.length, d.closed, d.pend]]); if(!force && sig === LAST) return; LAST = sig;
+    sec.querySelector(".who-title").textContent = T.title; var inp = sec.querySelector(".who-q"); if(inp.placeholder !== T.search) inp.placeholder = T.search;
+    var body = sec.querySelector(".who-body"), kp = sec.querySelector(".who-kpis"), nt = sec.querySelector(".who-note");
+    if(!d || !d.T.length){ nt.textContent = ""; kp.innerHTML = ""; body.innerHTML = '<div class="who-empty">' + esc(T.empty) + "</div>"; return; }
+    nt.textContent = T.note(d);
+    var ks = T.ks(d), vals = [d.T.length, sar(d.total), d.C.length, d.avgB == null ? "—" : d.avgB.toFixed(1), d.disc == null ? "—" : (d.disc <= 0 ? "−" : "+") + Math.abs(Math.round(d.disc * 100)) + "%"];
+    kp.innerHTML = vals.map(function(v, i){ return '<div class="stat-tile"><div class="label">' + esc(T.k[i]) + '</div><div class="value">' + esc(v) + '</div><div class="sub">' + esc(ks[i]) + "</div></div>"; }).join("");
+    var qq = norm(q).toLowerCase();
+    var C = d.C.filter(function(c){ return c.wins > 0 || qq; }).filter(function(c){ return !qq || c.key.toLowerCase().indexOf(qq) >= 0 || c.list.some(function(x){ return norm(x.agency).toLowerCase().indexOf(qq) >= 0; }); })
+      .sort(function(a, b){ return (b.aw - a.aw) || (b.wins - a.wins) || (b.bids - a.bids); });
+    var Tn = d.T.filter(function(t){ return !qq || norm(t.agency).toLowerCase().indexOf(qq) >= 0 || norm(t.name).toLowerCase().indexOf(qq) >= 0 || t.b.concat(t.w).some(function(b){ return norm(b[0]).toLowerCase().indexOf(qq) >= 0; }); });
+    var cs = allC || qq ? C : C.slice(0, 12), ts = allT || qq ? Tn : Tn.slice(0, 12);
+    var h = "<h3>" + esc(T.top) + "</h3>";
+    if(!C.length) h += '<div class="who-empty">' + esc(T.none) + "</div>";
+    else { h += '<div class="table-scroll"><table><thead><tr>' + T.cTop.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + "</tr></thead><tbody>";
+      h += cs.map(function(c, i){ var rate = c.bids ? c.wins / c.bids : 0, ag = Object.keys(c.ag).sort(function(a, b){ return c.ag[b] - c.ag[a]; }).slice(0, 2), us = isUs(c.name);
+        var row = '<tr class="who-row' + (us ? " mid" : "") + '" data-whoc="' + esc(c.key) + '"><td class="rk">' + (i + 1) + '</td><td class="co"><b>' + esc(c.name) + "</b>" + (ag.length ? "<span>" + esc(T.usually + ag.join(" · ")) + "</span>" : "") + '</td><td class="n">' + c.wins + '</td><td class="n">' + esc(sar(c.aw)) + '</td><td class="n">' + c.bids + '</td><td><span class="rate' + (rate >= .5 && c.bids >= 2 ? " hi" : "") + '">' + Math.round(rate * 100) + "%</span></td></tr>";
+        if(openC[c.key]) row += '<tr class="who-det"><td></td><td colspan="5"><div class="who-list">' + c.list.map(function(x){ var u = link(x.rn);
+          return '<div class="who-it"><em>' + esc(fd(x.bid)) + '</em><span class="t" title="' + esc(x.name) + '">' + esc(x.name) + " · " + esc(x.agency) + '</span><em>' + esc(sar(x.offer)) + "</em><span>" + (x.won ? '<span class="tag win">' + esc(T.wins) + "</span>" : x.rej ? '<span class="tag rej">' + esc(T.rej) + "</span>" : '<span class="tag" title="' + esc(T.winner + x.winner) + '">' + esc(T.lost) + "</span>") + "</span>" + (u ? '<a class="et-link" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a>' : "<span></span>") + "</div>"; }).join("") + "</div></td></tr>";
+        return row; }).join("") + "</tbody></table></div>";
+      if(!qq && C.length > 12) h += '<div class="who-more"><button type="button" class="editbtn secondary" data-whomore="c">' + esc(allC ? T.less : T.more(C.length)) + "</button></div>"; }
+    h += "<h3>" + esc(T.recent) + "</h3>";
+    if(!Tn.length) h += '<div class="who-empty">' + esc(T.none) + "</div>";
+    else { h += '<div class="table-scroll"><table><thead><tr>' + T.cRec.map(function(c){ return "<th>" + esc(c) + "</th>"; }).join("") + "</tr></thead><tbody>";
+      h += ts.map(function(t){ var wn = t.w.map(function(w){ return w[0]; }), us = wn.some(isUs);
+        var row = '<tr class="who-row" data-whot="' + esc(t.rn) + '"><td class="co"><b>' + esc(t.name || t.rn) + "</b><span>" + esc(t.agency) + " · " + esc(fd(t.bid)) + '</span></td><td class="co' + (us ? " mid" : "") + '"><b>' + esc(wn.join("، ")) + '</b></td><td class="n">' + esc(sar(t.aw)) + '</td><td class="n">' + (t.b.length || "—") + '</td><td class="n">' + (t.lo != null ? esc(sar(t.lo)) + (t.hi !== t.lo ? " – " + esc(sar(t.hi)) : "") : "—") + "</td></tr>";
+        if(openT[t.rn]){ var wk = {}; t.w.forEach(function(w){ wk[norm(w[0])] = true; }); var u = link(t.rn);
+          row += '<tr class="who-det"><td colspan="5"><div class="who-list">' + t.b.slice().sort(function(a, b){ return (+a[1] || 9e15) - (+b[1] || 9e15); }).map(function(b){ var won = !!wk[norm(b[0])];
+            return '<div class="who-it"><em>' + (won ? "★" : "") + '</em><span class="t' + (isUs(b[0]) ? " mid" : "") + '">' + esc(b[0]) + "</span><em>" + esc(sar(b[1])) + "</em><span>" + (won ? '<span class="tag win">' + esc(T.wins) + "</span>" : b[2] === 0 ? '<span class="tag rej">' + esc(T.rej) + "</span>" : "") + "</span><span></span></div>"; }).join("")
+            + (u ? '<div class="who-it"><em></em><span class="t"><a class="who-lnk" href="' + esc(u) + '" target="_blank" rel="noopener">Etimad ↗</a></span><em></em><span></span><span></span></div>' : "") + "</div></td></tr>"; }
+        return row; }).join("") + "</tbody></table></div>";
+      if(!qq && Tn.length > 12) h += '<div class="who-more"><button type="button" class="editbtn secondary" data-whomore="t">' + esc(allT ? T.less : T.more(Tn.length)) + "</button></div>"; }
+    body.innerHTML = h; }
+  function all(){ try{ render(false); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v76){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v76 = true; }
+  all(); setInterval(all, 4000);
+  window.v76 = { data:data, render:render, norm:norm };
 })();
 </script>
 

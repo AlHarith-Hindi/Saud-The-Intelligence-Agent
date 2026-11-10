@@ -9898,12 +9898,12 @@ async function exportPPTX(){
     if(ar) cards.reverse();
     var aHtml = '<div class="v75sc" id="v75a"><div class="v75pin">' + skip + '<div class="snt">' + sHtml + '</div><div class="rail">' + cards.join("") + "</div>" + keep + "</div></div>";
     /* B: events wheel */
-    var bHtml = E.length ? '<div class="v75sc" id="v75b"><div class="v75pin"><div class="v75lab">' + (ar ? "الفعاليات القادمة · <b>" : "Events ahead · <b>") + E.length + '</b></div><div class="whl">' + E.map(function(e){ return '<div class="ln">' + esc(ar && e.nameAr ? e.nameAr : e.name) + "</div>"; }).join("") + '</div><div class="meta"></div>' + keep + "</div></div>" : "";
+    var bHtml = E.length ? '<div class="v75sc" id="v75b"><div class="v75pin">' + skip + '<div class="v75lab">' + (ar ? "الفعاليات القادمة · <b>" : "Events ahead · <b>") + E.length + '</b></div><div class="whl">' + E.map(function(e){ return '<div class="ln" role="button" data-v77ev="' + esc(e.name) + '">' + esc(ar && e.nameAr ? e.nameAr : e.name) + "</div>"; }).join("") + '</div><div class="meta"></div>' + keep + "</div></div>" : "";
     /* C: brief deck */
     var b = ST().claudeBrief || {}, at = b.at ? new Date(b.at) : null;
     var ft = (ar ? "كتبه Claude" : "Written by Claude") + (at ? " · " + at.toLocaleDateString(loc(), { weekday:"short", day:"numeric", month:"short" }) : "");
     var cHtml = B.length ? '<div class="v75sc" id="v75c" style="height:' + (B.length * 55 + 70) + 'vh"><div class="v75pin"><div class="v75lab">' + (ar ? "موجز اليوم" : "Today's brief") + '</div><div class="stk">' + B.map(function(t, i){ return '<div class="bc"><div class="tp"><span>' + (ar ? "موجز اليوم" : "Today's brief") + '</span><span>' + (i + 1) + " / " + B.length + '</span></div><div class="tx' + (String(t).length > 170 ? ' lg' : '') + '">' + esc(t) + '</div><div class="ft">' + esc(ft) + "</div></div>"; }).join("") + "</div>" + keep + "</div></div>" : "";
-    root.innerHTML = (T.length || nEv ? aHtml : "") + bHtml + cHtml;
+    root.innerHTML = bHtml;   /* v77 (Harith, 10 Nov 2026): the team line + tender cards and the brief deck are removed; only the events wheel stays */
     W = [].slice.call(root.querySelectorAll("#v75a .wd")).map(function(el, i){ return { el:el, dx:(seeded(i) - .5) * 60, dy:(seeded(i + 40) - .5) * 90, r:(seeded(i + 80) - .5) * 30 }; });
     RAIL = [].slice.call(root.querySelectorAll("#v75a .tc"));
     LINES = [].slice.call(root.querySelectorAll("#v75b .ln"));
@@ -10089,6 +10089,246 @@ async function exportPPTX(){
   if(typeof renderAll === "function" && !renderAll.__v76){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v76 = true; }
   all(); setInterval(all, 4000);
   window.v76 = { data:data, render:render, norm:norm };
+})();
+</script>
+
+<style id="v77css">
+  /* v77: price guide on every open tender, "last checked" badge, share card; Overview scroll story reduced to the events wheel with names that open the event (Harith, 10 Nov 2026) */
+  #v77fresh{position:relative; display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border-radius:999px; border:1px solid var(--border); background:var(--night2); color:var(--sand, #D9D3CB); font:inherit; font-size:12px; white-space:nowrap; cursor:pointer;}
+  #v77fresh .d{width:8px; height:8px; border-radius:50%; background:#3ccb7f; flex:none;}
+  #v77fresh.warn{border-color:rgba(255,200,87,.5);} #v77fresh.warn .d{background:#ffc857;}
+  #v77fresh.bad{border-color:rgba(255,122,112,.6); color:#ffb4ad;} #v77fresh.bad .d{background:#ff7a70;}
+  #v77freshPop{position:absolute; top:calc(100% + 8px); inset-inline-end:0; z-index:9500; min-width:270px; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--night2); box-shadow:0 14px 34px rgba(0,0,0,.45); text-align:start; white-space:normal; cursor:default;}
+  #v77freshPop div{display:flex; justify-content:space-between; gap:16px; font-size:12.5px; padding:4px 0; color:var(--cream);}
+  #v77freshPop div span:last-child{color:var(--sand, #D9D3CB); font-family:var(--mono, monospace); font-size:11.5px;}
+  #v77freshPop div.old span:last-child{color:#ff8a80;}
+  #v77freshPop p{margin:8px 0 0; font-size:11px; color:var(--muted);}
+  .v77sh-wrap{display:inline-flex; align-items:center; gap:6px;}
+  .v77sh{display:inline-flex; align-items:center; gap:6px; font:inherit; font-family:var(--mono, monospace); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; padding:8px 12px; border-radius:11px; border:1px solid rgba(242,101,34,.5); background:transparent; color:var(--cream); cursor:pointer; white-space:nowrap;}
+  .v77sh:hover{background:rgba(242,101,34,.12);} .v77sh.alt{padding:8px 10px; border-color:var(--border); color:var(--sand, #D9D3CB);}
+  .v77pg{margin-top:12px; padding:12px 14px; border-radius:12px; border:1px solid rgba(242,101,34,.3); background:rgba(242,101,34,.05);}
+  .v77pg .pg-h{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 12px; margin-bottom:6px;}
+  .v77pg .pg-h b{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--copper);}
+  .v77pg .pg-h span{font-size:11px; color:var(--muted);}
+  .v77pg .pg-t{margin-top:8px; font-size:13px; font-weight:600; color:var(--cream);}
+  .v77pg .pg-chips{display:flex; flex-wrap:wrap; gap:6px; margin:7px 0 8px;}
+  .v77pg .pg-chips span{padding:3px 10px; border-radius:999px; border:1px solid var(--border); font-size:11.5px; color:var(--sand, #D9D3CB); white-space:nowrap;}
+  .v77pg .pg-chips span b{color:var(--cream); font-weight:600;}
+  .v77pg .pg-list{display:flex; flex-direction:column; gap:5px;}
+  .v77pg .pg-it{display:grid; grid-template-columns:62px minmax(0, 1fr) 96px 92px 20px; gap:10px; align-items:baseline; font-size:12.5px;}
+  .v77pg .pg-it em{font-style:normal; font-family:var(--mono, monospace); font-size:11px; color:var(--muted); white-space:nowrap;}
+  .v77pg .pg-it em.a{color:var(--cream);}
+  .v77pg .pg-it .t{min-width:0; color:var(--cream); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .v77pg .pg-it .t i{display:block; font-style:normal; font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis;}
+  .v77pg .pg-it a{color:var(--copper); text-decoration:none;}
+  .v77pg .pg-note{margin-top:8px; font-size:12px; color:var(--sand, #D9D3CB); line-height:1.6;}
+  .v77pg .pg-foot{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .v77pg .pg-btn{font:inherit; font-size:11.5px; padding:6px 12px; border-radius:9px; border:1px solid var(--border); background:transparent; color:var(--sand, #D9D3CB); cursor:pointer;}
+  .v77pg .pg-btn:hover{border-color:var(--copper); color:var(--cream);}
+  body.is-editing .v77pg, body.is-editing .v77sh-wrap, body.editing-on .v77pg, body.editing-on .v77sh-wrap{display:none;}
+  /* events wheel: press a name to open that event on the Events page */
+  #v75b .ln[data-v77ev]{cursor:pointer;} #v75b .ln[data-v77ev]:hover{color:var(--copper);}
+  .v77flash{outline:2px solid var(--copper) !important; outline-offset:3px; box-shadow:0 0 0 8px rgba(242,101,34,.18) !important; transition:outline-color .3s, box-shadow .3s;}
+  #v77shBox{position:fixed; inset:0; z-index:9800; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.6);}
+  #v77shBox > div{width:min(560px, 100%); padding:16px; border-radius:14px; border:1px solid var(--border); background:var(--night2);}
+  #v77shBox textarea{width:100%; height:260px; font:inherit; font-size:13px; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(0,0,0,.25); color:var(--cream); resize:vertical;}
+  #v77shBox p{margin:0 0 10px; font-size:13px; color:var(--sand, #D9D3CB);} #v77shBox button{margin-top:10px;}
+  @media (max-width:900px){ .v77pg .pg-it{grid-template-columns:54px minmax(0, 1fr) 84px;} .v77pg .pg-it > :nth-child(4), .v77pg .pg-it > :nth-child(5){display:none;} #v77fresh{align-self:flex-start;} #v77freshPop{inset-inline-end:auto; inset-inline-start:0;} }
+  @media print{ #v77fresh, .v77sh-wrap{display:none !important;} }
+</style>
+<script>
+/* v77 module (Harith, 10 Nov 2026): (1) price guide in each open tender's details, built from state.awards + state.buyers.raw (the Who wins data);
+   (6) "last checked" badge in the top bar from state.etimadCheck / awards / buyers / claudeBrief / eventsCheck stamps; (7) share card: copy a ready summary of a tender.
+   Nothing here writes to the data file. */
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
+  var ST = function(){ return (typeof state !== "undefined" && state) || {}; };
+  var esc = function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
+  function nt(s){ return String(s || "").replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ی/g, "ي").replace(/ک/g, "ك"); }
+  function nk(s){ return nt(s).replace(/[()\-–_.,'"«»]/g, " ").replace(/\s+/g, "").toLowerCase(); }
+  function median(a){ var b = a.slice().sort(function(x, y){ return x - y; }), n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : null; }
+  function sar(v, ar){ var n = +v; if(!isFinite(n) || n <= 0) return "—"; var s = n >= 1e6 ? (Math.round(n / 1e5) / 10) + "M" : n >= 1e4 ? Math.round(n / 1e3) + "K" : Math.round(n).toLocaleString("en"); return ar ? s + " ر.س" : "SAR " + s; }
+  function parts(s){ var m = String(s || "").match(/(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/); if(!m) return null; return { d:new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])), hm:m[4] ? ("0" + m[4]).slice(-2) + ":" + m[5] : "" }; }
+  function dShort(d, ar){ return d.toLocaleDateString(ar ? "ar-u-ca-gregory-nu-latn" : "en-GB", { day:"numeric", month:"short", timeZone:"UTC" }); }
+  function dLong(s, ar){ var p = parts(s); if(!p) return ""; return p.d.toLocaleDateString(ar ? "ar-u-ca-gregory-nu-latn" : "en-GB", { weekday:ar ? "long" : "short", day:"numeric", month:ar ? "long" : "short", year:"numeric", timeZone:"UTC" }) + (p.hm ? (ar ? "، " : ", ") + p.hm : ""); }
+  function pct(g){ var n = Math.round(Math.abs(g) * 100); return (g <= 0 ? "−" : "+") + n + "%"; }
+
+  /* ---------- tender kinds (for "similar tenders") ---------- */
+  var KIND = [
+    ["grad", /تخرج|تخريج/, "graduation ceremonies", "حفلات التخرج"],
+    ["natl", /اليوم الوطني|يوم التاسيس|يوم العلم/, "national-day events", "فعاليات الأيام الوطنية"],
+    ["pav", /جناح|بوث/, "pavilions and booths", "الأجنحة"],
+    ["conf", /مؤتمر|ملتقي|منتدي|ندوه|(^|\s)(ال)?قمه(\s|$)/, "conferences and forums", "المؤتمرات والملتقيات"],
+    ["fest", /مهرجان/, "festivals and seasons", "المهرجانات والمواسم"],
+    ["exh", /معرض|معارض/, "exhibitions", "المعارض"],
+    ["cer", /حفل|احتفال|تكريم/, "ceremonies", "الحفلات"],
+    ["evt", /فعالي|مناسبات/, "events programmes", "برامج الفعاليات"]
+  ];
+  function kindOf(title){ var t = nt(title); for(var i = 0; i < KIND.length; i++){ if(KIND[i][1].test(t)) return KIND[i]; }
+    if(/موسم/.test(t) && !/حج|عمره/.test(t)) return KIND[4]; return null; }
+
+  /* ---------- model: awarded tenders with their stats (cached until the data changes) ---------- */
+  var CACHE = { sig:"", M:null };
+  function model(){ var s = ST(); if(!window.v76 || !s.awards || !s.awards.rows) return null; var raw = (s.buyers && s.buyers.raw) || [];
+    var sig = [s.awards.at, raw.length, Object.keys(s.awards.rows).length].join("|"); if(CACHE.sig === sig) return CACHE.M;
+    var d = null; try{ d = window.v76.data(); }catch(e){ d = null; } if(!d){ CACHE = { sig:sig, M:null }; return null; }
+    var byRn = {}; raw.forEach(function(x){ if(x && x[0]) byRn[String(x[0])] = x; });
+    var T = d.T.map(function(t){ var offers = (t.b || []).filter(function(b){ return b[2] !== 0; }).map(function(b){ return +b[1]; }).filter(function(v){ return v > 0; }), md = offers.length >= 2 ? median(offers) : null;
+      return { rn:String(t.rn), name:t.name || "", agency:t.agency || "", ak:nk(t.agency), bid:t.bid, win:(t.w || []).map(function(w){ return w[0]; }).join("، "), aw:t.aw, n:(t.b || []).length, gap:((t.w || []).length === 1 && md && t.aw > 0) ? (t.aw - md) / md : null, kind:(kindOf(t.name) || [""])[0] }; });
+    var pend = {}; Object.keys(s.awards.rows).forEach(function(rn){ var r = s.awards.rows[rn], x = byRn[rn]; if(r && r.s === "p" && x){ var k = nk(x[1]); if(k) pend[k] = (pend[k] || 0) + 1; } });
+    CACHE = { sig:sig, M:{ T:T, byRn:byRn, pend:pend, at:d.at, avgB:d.avgB, disc:d.disc, total:d.T.length } }; return CACHE.M; }
+  function sumOf(Lst){ if(!Lst.length) return null; var n = Lst.map(function(t){ return t.n; }).filter(function(v){ return v > 0; }), g = Lst.map(function(t){ return t.gap; }).filter(function(v){ return v != null; }), a = Lst.map(function(t){ return t.aw; }).filter(function(v){ return v > 0; });
+    return { count:Lst.length, bidders:n.length ? median(n) : null, gap:g.length ? median(g) : null, lo:a.length ? Math.min.apply(null, a) : null, hi:a.length ? Math.max.apply(null, a) : null }; }
+  function guide(r){ var M = model(); if(!M || !r) return null; var rn = String(r.rn || ""), x = M.byRn[rn], k = nk((x && x[1]) || ""), k2 = nk(r.agency || "");
+    var same = M.T.filter(function(t){ return t.rn !== rn && t.ak && (t.ak === k || t.ak === k2); });
+    var kd = kindOf(r.name || ""), sim = kd ? M.T.filter(function(t){ return t.rn !== rn && t.kind === kd[0] && same.indexOf(t) < 0; }) : [];
+    var pend = (k ? (M.pend[k] || 0) : 0) + (k2 && k2 !== k ? (M.pend[k2] || 0) : 0);
+    return { same:same, sum:sumOf(same), kind:kd, sim:sim, simSum:sumOf(sim), pend:pend, M:M, agency:(x && x[1]) || r.agency || "" }; }
+
+  /* ---------- labels ---------- */
+  function TX(ar){ return {
+    pg: ar ? "دليل الأسعار" : "Price guide",
+    src: function(at){ var p = parts(at); return (ar ? "من نتائج الترسية المنشورة علنًا في اعتماد" : "from Etimad's public award results") + (p ? (ar ? " · آخر تحديث " : " · updated ") + dShort(p.d, ar) : ""); },
+    same: function(n){ return ar ? ("هذه الجهة سابقًا (" + n + (n === 1 ? " نتيجة" : " نتائج") + ")") : ("This buyer before (" + n + (n === 1 ? " result" : " results") + ")"); },
+    sim: function(kd, n){ return ar ? ("منافسات مشابهة لدى جهات أخرى — " + kd[3] + " (" + n + (n === 1 ? " نتيجة" : " نتائج") + ")") : ("Similar tenders from other buyers — " + kd[2] + " (" + n + (n === 1 ? " result" : " results") + ")"); },
+    bidders: ar ? "المتقدمون" : "Bidders", gap: ar ? "الفائز مقابل وسيط العروض" : "Winner vs median offer", award: ar ? "الترسية" : "Award", awards: ar ? "الترسيات" : "Awards",
+    winner: ar ? "الفائز: " : "Winner: ", nb: function(n){ return ar ? (n + " متقدم") : (n + (n === 1 ? " bidder" : " bidders")); },
+    pend: function(n){ return ar ? (n === 1 ? "منافسة واحدة منتهية لهذه الجهة ما زالت بانتظار إعلان الترسية." : n + " منافسات منتهية لهذه الجهة ما زالت بانتظار إعلان الترسية.") : (n + (n === 1 ? " closed tender of this buyer is" : " closed tenders of this buyer are") + " still waiting for results."); },
+    noSame: ar ? "لا توجد نتائج ترسية منشورة لهذه الجهة حتى الآن." : "No award results published for this buyer yet.",
+    market: function(M){ if(!M.total) return ""; var a = M.avgB == null ? null : M.avgB.toFixed(1), g = M.disc == null ? null : Math.round(Math.abs(M.disc) * 100);
+      return ar ? ("في جميع نتائج المعارض والمؤتمرات (" + M.total + "): " + (a ? "نحو " + a + " متقدمين لكل منافسة" : "") + (a && g != null ? "، و" : "") + (g != null ? "الفائز عادةً " + (M.disc <= 0 ? "أقل" : "أعلى") + " من وسيط العروض بنحو " + g + "%" : "") + ".")
+        : ("Across all exhibition and conference results (" + M.total + "): " + (a ? "about " + a + " bidders per tender" : "") + (a && g != null ? "; " : "") + (g != null ? "the winner is typically " + g + "% " + (M.disc <= 0 ? "below" : "above") + " the median offer" : "") + "."); },
+    more: function(n){ return ar ? "عرض الكل (" + n + ")" : "Show all " + n; }, less: ar ? "عرض أقل" : "Show fewer", who: ar ? "افتح «من يفوز» ←" : "Open Who wins →",
+    copy: ar ? "نسخ الملخص" : "Copy summary", copied: ar ? "✓ تم النسخ" : "✓ Copied", other: ar ? "EN" : "ع", otherTip: ar ? "نسخ الملخص بالإنجليزية" : "Copy the summary in Arabic",
+    manual: ar ? "تعذّر النسخ تلقائيًا — انسخ النص من هنا:" : "Couldn't copy automatically — copy the text from here:", close: ar ? "إغلاق" : "Close"
+  }; }
+
+  /* ---------- price guide box ---------- */
+  var openAll = {};
+  function chips(S, T, ar){ var c = [];
+    if(S.bidders != null) c.push(T.bidders + ": <b>" + (Math.round(S.bidders * 10) / 10) + "</b>");
+    if(S.gap != null) c.push(T.gap + ': <b dir="ltr">' + pct(S.gap) + "</b>");
+    if(S.lo != null) c.push((S.lo === S.hi ? T.award : T.awards) + ": <b>" + esc(sar(S.lo, ar)) + (S.hi !== S.lo ? " – " + esc(sar(S.hi, ar)) : "") + "</b>");
+    return c.length ? '<div class="pg-chips">' + c.map(function(x){ return "<span>" + x + "</span>"; }).join("") + "</div>" : ""; }
+  function items(Lst, T, ar, withAgency){ return '<div class="pg-list">' + Lst.map(function(t){ var p = parts(t.bid), u = ""; try{ u = typeof window.etimadUrl === "function" ? (window.etimadUrl({ rn:t.rn }) || "") : ""; }catch(e){}
+      return '<div class="pg-it"><em>' + esc(p ? dShort(p.d, ar) : "—") + '</em><span class="t" title="' + esc(t.name) + '">' + esc(t.name) + "<i>" + esc((withAgency && t.agency ? t.agency + " · " : "") + T.winner + t.win) + '</i></span><em class="a">' + esc(sar(t.aw, ar)) + "</em><em>" + (t.n ? esc(T.nb(t.n)) : "—") + "</em>" + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener" title="Etimad">↗</a>' : "<span></span>") + "</div>"; }).join("") + "</div>"; }
+  function byDate(a, b){ return String(b.bid).localeCompare(String(a.bid)); }
+  function guideHtml(r, i){ var G = guide(r); if(!G) return ""; var ar = AR(), T = TX(ar), key = String(r.rn || i), h = '<div class="pg-h"><b>' + esc(T.pg) + "</b><span>" + esc(T.src(G.M.at)) + "</span></div>";
+    if(G.same.length){ var S = G.same.slice().sort(byDate), all = !!openAll[key], show = all ? S : S.slice(0, 4);
+      h += '<div class="pg-t">' + esc(T.same(S.length)) + "</div>" + chips(G.sum, T, ar) + items(show, T, ar, false);
+      if(S.length > 4) h += '<div class="pg-foot"><button type="button" class="pg-btn" data-v77more="' + esc(key) + '">' + esc(all ? T.less : T.more(S.length)) + "</button></div>"; }
+    else h += '<div class="pg-note">' + esc(T.noSame) + "</div>";
+    if(G.pend) h += '<div class="pg-note">' + esc(T.pend(G.pend)) + "</div>";
+    if(G.sim.length){ h += '<div class="pg-t">' + esc(T.sim(G.kind, G.sim.length)) + "</div>" + chips(G.simSum, T, ar) + items(G.sim.slice().sort(byDate).slice(0, 3), T, ar, true); }
+    if(!G.same.length && !G.sim.length){ var mk = T.market(G.M); if(mk) h += '<div class="pg-note">' + esc(mk) + "</div>"; }
+    h += '<div class="pg-foot"><button type="button" class="pg-btn" data-v77who="' + i + '">' + esc(T.who) + "</button></div>";
+    return h; }
+
+  /* ---------- share card ---------- */
+  function oneLine(S, T, ar){ var b = []; b.push(S.count + (ar ? (S.count === 1 ? " نتيجة" : " نتائج") : (S.count === 1 ? " result" : " results")));
+    if(S.bidders != null) b.push((ar ? "المتقدمون " : "bidders ") + (Math.round(S.bidders * 10) / 10));
+    if(S.gap != null){ var g = Math.round(Math.abs(S.gap) * 100); b.push(ar ? ("الفائز " + (S.gap <= 0 ? "أقل" : "أعلى") + " من وسيط العروض بـ " + g + "%") : ("winner " + g + "% " + (S.gap <= 0 ? "below" : "above") + " the median offer")); }
+    if(S.lo != null) b.push((ar ? "الترسية " : "awards ") + sar(S.lo, ar) + (S.hi !== S.lo ? " – " + sar(S.hi, ar) : ""));
+    return b.join(" · "); }
+  function shareText(r, ar){ var same = AR() === ar, T = TX(ar), L1 = [], t = function(v){ if(v == null || v === "") return ""; try{ return same && typeof tx === "function" ? String(tx(v)) : String(v); }catch(e){ return String(v); } };
+    var add = function(k, v){ if(v) L1.push(k + ": " + v); };
+    L1.push(String(r.name || r.rn || ""));
+    if(!ar){ var en = t(r.name); if(en && en !== r.name) L1.push(en); }
+    add(ar ? "الجهة" : "Buyer", String(r.agency || ""));
+    var fit = { Strong:ar ? "قوية" : "Strong", Medium:ar ? "متوسطة" : "Medium", Weak:ar ? "ضعيفة" : "Weak" }[r.fit] || r.fit || "", dp = /شراء مباشر/.test(String(r.type || ""));
+    add(ar ? "الملاءمة" : "Fit", [fit, r.type ? String(r.type) + (dp && !ar ? " (direct purchase — invited suppliers only)" : dp ? " (للموردين المدعوين فقط)" : "") : ""].filter(Boolean).join(" · "));
+    var bp = parts(r.bidDeadline), bid = dLong(r.bidDeadline, ar);
+    if(bp && bid){ var wd = bp.d.getUTCDay(); if(wd === 5 || wd === 6){ var th = new Date(bp.d.getTime() - (wd === 5 ? 1 : 2) * 864e5); bid += ar ? " (عطلة نهاية الأسبوع — التقديم قبل نهاية الخميس " + dShort(th, true) + ")" : " (weekend — submit by Thu " + dShort(th, false) + ")"; } }
+    add(ar ? "آخر موعد لتقديم العروض" : "Bids close", bid);
+    add(ar ? "آخر موعد للاستفسارات" : "Questions until", dLong(r.inqDeadline, ar));
+    add(ar ? "فتح العروض" : "Offers opening", dLong(r.offersOpening, ar));
+    add(ar ? "الترسية المتوقعة" : "Expected award", dLong(r.award, ar));
+    add(ar ? "بدء المشروع" : "Project start", dLong(r.projStart, ar));
+    add(ar ? "مكان التنفيذ" : "Place", t(r.place));
+    add(ar ? "قيمة الكراسة" : "Booklet", t(r.price));
+    add(ar ? "النطاق" : "Scope", t(r.details) || t(r.notes));
+    if(r.decision){ var dn = { pursue:ar ? "نتقدّم" : "Pursue", watch:ar ? "نراقب" : "Watch", pass:ar ? "نتخطّى" : "Pass" }[r.decision]; if(dn) add(ar ? "القرار" : "Decision", dn + (r.owner ? " · " + (ar ? "المسؤول: " : "Owner: ") + t(r.owner) : "")); }
+    var G = guide(r); if(G && G.sum) add(ar ? "نتائج سابقة لهذه الجهة" : "This buyer before", oneLine(G.sum, T, ar));
+    else if(G && G.simSum) add(ar ? ("منافسات مشابهة (" + G.kind[3] + ")") : ("Similar tenders (" + G.kind[2] + ")"), oneLine(G.simSum, T, ar));
+    add(ar ? "رقم المنافسة" : "RN", String(r.rn || ""));
+    var u = ""; try{ u = typeof window.etimadUrl === "function" ? (window.etimadUrl(r) || "") : ""; }catch(e){} if(u) L1.push((ar ? "اعتماد: " : "Etimad: ") + u);
+    return L1.join("\n"); }
+  function manualBox(text){ var T = TX(AR()), b = $("v77shBox"); if(b) b.remove(); b = document.createElement("div"); b.id = "v77shBox";
+    b.innerHTML = "<div><p>" + esc(T.manual) + '</p><textarea readonly></textarea><div><button type="button" class="editbtn secondary">' + esc(T.close) + "</button></div></div>";
+    document.body.appendChild(b); var ta = b.querySelector("textarea"); ta.value = text; try{ ta.focus(); ta.select(); }catch(e){}
+    b.addEventListener("click", function(e){ if(e.target === b || (e.target.closest && e.target.closest("button"))) b.remove(); }); }
+  function copyText(text, done){ var fb = function(){ var ok = false; try{ var ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); }catch(e){ ok = false; } done(ok); };
+    try{ if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){ navigator.clipboard.writeText(text).then(function(){ done(true); }, fb); return; } }catch(e){} fb(); }
+  function share(btn){ var tr = btn.closest("tr"), m = tr && (tr.id || "").match(/^extDetail(\d+)$/); if(!m) return; var r = (ST().external || [])[+m[1]]; if(!r) return;
+    var ar = btn.dataset.lang === "ar", text = shareText(r, ar), T = TX(AR());
+    var ok = function(){ var keep = btn.innerHTML; btn.textContent = T.copied; setTimeout(function(){ if(btn.isConnected) btn.innerHTML = keep; }, 1600); };
+    var doCopy = function(){ copyText(text, function(good){ if(good) ok(); else manualBox(text); }); };
+    try{ if(navigator.share && window.matchMedia && window.matchMedia("(pointer:coarse)").matches){ navigator.share({ text:text }).then(function(){}, function(e){ if(!e || e.name !== "AbortError") doCopy(); }); return; } }catch(e){}
+    doCopy(); }
+  function shareHtml(T, ar){ return '<button type="button" class="v77sh" data-v77sh="1" data-lang="' + (ar ? "ar" : "en") + '">⧉ ' + esc(T.copy) + '</button><button type="button" class="v77sh alt" data-v77sh="1" data-lang="' + (ar ? "en" : "ar") + '" title="' + esc(T.otherTip) + '">' + esc(T.other) + "</button>"; }
+
+  function decorate(){ var body = $("externalBody"); if(!body) return; var rows = ST().external || [], ar = AR(), T = TX(ar), hS = shareHtml(T, ar);
+    [].forEach.call(body.querySelectorAll("tr.ext-detail"), function(tr){ var m = (tr.id || "").match(/^extDetail(\d+)$/); if(!m) return; var i = +m[1], r = rows[i], td = tr.querySelector("td"); if(!td || !r) return;
+      var bar = td.querySelector(".bd-bar"), sh = td.querySelector(".v77sh-wrap");
+      if(!sh){ sh = document.createElement("span"); sh.className = "v77sh-wrap"; }
+      var want = bar || td; if(sh.parentNode !== want){ var ms = bar && bar.querySelector(".bd-ms"); if(ms) bar.insertBefore(sh, ms); else want.appendChild(sh); }
+      if(sh.__h !== hS){ sh.__h = hS; sh.innerHTML = hS; }
+      var box = td.querySelector(".v77pg"), h = ""; try{ h = guideHtml(r, i); }catch(e){ h = ""; }
+      if(!h){ if(box) box.remove(); return; }
+      if(!box){ box = document.createElement("div"); box.className = "v77pg"; td.appendChild(box); } if(box.__h !== h){ box.__h = h; box.innerHTML = h; } }); }
+  document.addEventListener("click", function(e){ if(!e.target.closest) return;
+    var b = e.target.closest("[data-v77sh]"); if(b){ e.stopPropagation(); e.preventDefault(); share(b); return; }
+    var mo = e.target.closest("[data-v77more]"); if(mo){ e.stopPropagation(); var k = mo.dataset.v77more; openAll[k] = !openAll[k]; decorate(); return; }
+    var w = e.target.closest("[data-v77who]"); if(w){ e.stopPropagation(); var r = (ST().external || [])[+w.dataset.v77who], G = r && guide(r);
+      try{ var inp = document.querySelector("#whoSec .who-q"); if(inp){ inp.value = G && G.same.length ? G.agency : ""; inp.dispatchEvent(new Event("input", { bubbles:true })); } }catch(e2){}
+      try{ if(window.v72 && typeof window.v72.go === "function") window.v72.go("external", "who", true); }catch(e3){}
+      setTimeout(function(){ try{ var sec = $("whoSec"); if(sec) sec.scrollIntoView({ block:"start" }); }catch(e4){} }, 60); return; }
+    if(e.target.closest(".v77pg a")) e.stopPropagation();
+    var ln = e.target.closest("#v75b [data-v77ev]"); if(ln){ var op = 1; try{ op = parseFloat(getComputedStyle(ln).opacity); }catch(e5){} if(op < .2) return; e.stopPropagation(); showEvent(ln.dataset.v77ev); }
+  }, true);
+
+  /* ---------- events wheel: open the pressed event on the Events page ---------- */
+  function showEvent(name){ var ev = ST().events || [], i = -1; ev.some(function(x, k){ if(x && x.name === name){ i = k; return true; } return false; });
+    try{ if(typeof switchPage === "function") switchPage("events"); }catch(e){} if(i < 0) return;
+    setTimeout(function(){ try{ if(window.v72 && typeof window.v72.go === "function") window.v72.go("events", "cal", false); }catch(e){}
+      setTimeout(function(){ var el = document.querySelector('#evCal .ev-item[data-evi="' + i + '"]');
+        if(!el || !el.offsetParent){ var c = document.querySelector('#eventsBody [data-bind="events.' + i + '.name"]'); el = c && c.closest("tr"); }
+        if(!el) return; try{ el.scrollIntoView({ behavior:"smooth", block:"center" }); }catch(e){}
+        el.classList.add("v77flash"); setTimeout(function(){ el.classList.remove("v77flash"); }, 3200); }, 80); }, 420); }
+
+  /* ---------- "last checked" badge ---------- */
+  var RZ = 3 * 3600e3;   /* Riyadh = UTC+3, no daylight saving */
+  function rDay(t){ return new Date(t + RZ).toISOString().slice(0, 10); }
+  function rHm(t){ return new Date(t + RZ).toISOString().slice(11, 16); }
+  function daysAgo(t, now){ return Math.round((Date.parse(rDay(now) + "T00:00:00Z") - Date.parse(rDay(t) + "T00:00:00Z")) / 864e5); }
+  function stamps(){ var s = ST(), a = [], P = function(x){ var t = Date.parse(x || ""); return isFinite(t) ? t : null; };
+    [s.etimadCheck && s.etimadCheck.at, s.awards && s.awards.at, s.buyers && s.buyers.at].forEach(function(x){ var t = P(x); if(t != null) a.push(t); });
+    return { et:a.length ? Math.max.apply(null, a) : null, br:P(s.claudeBrief && s.claudeBrief.at), ev:P(s.eventsCheck && s.eventsCheck.at) }; }
+  function when(t, now, ar){ if(t == null) return { txt:ar ? "لا يوجد سجل" : "no record", d:null }; var d = daysAgo(t, now);
+    if(d <= 0) return { txt:(ar ? "اليوم " : "today ") + rHm(t), d:0 };
+    if(d === 1) return { txt:(ar ? "أمس " : "yesterday ") + rHm(t), d:1 };
+    return { txt:(ar ? (d === 2 ? "قبل يومين" : d <= 10 ? "قبل " + d + " أيام" : "قبل " + d + " يومًا") : d + " days ago") + " · " + dShort(new Date(Date.parse(rDay(t) + "T00:00:00Z")), ar), d:d }; }
+  var popOpen = false, LASTF = "";
+  function fresh(){ var host = document.querySelector(".topbar-actions"); if(!host) return; var el = $("v77fresh");
+    if(!el){ el = document.createElement("button"); el.type = "button"; el.id = "v77fresh"; host.insertBefore(el, host.firstChild);
+      el.addEventListener("click", function(e){ e.stopPropagation(); if(e.target.closest && e.target.closest("#v77freshPop")) return; popOpen = !popOpen; LASTF = ""; fresh(); });
+      document.addEventListener("click", function(){ if(popOpen){ popOpen = false; LASTF = ""; fresh(); } }); }
+    var now = Date.now(), ar = AR(), S = stamps(), E = when(S.et, now, ar), B = when(S.br, now, ar), V = when(S.ev, now, ar), hr = +rHm(now).slice(0, 2);
+    var cls = E.d == null ? "warn" : E.d === 0 || (E.d === 1 && hr < 10) ? "" : E.d === 1 ? "warn" : "bad";
+    var main = E.d == null ? (ar ? "اعتماد: لا يوجد فحص مسجّل" : "Etimad: no check recorded")
+      : E.d >= 2 ? (ar ? (E.d === 2 ? "لم يُفحص اعتماد منذ يومين" : E.d <= 10 ? "لم يُفحص اعتماد منذ " + E.d + " أيام" : "لم يُفحص اعتماد منذ " + E.d + " يومًا") : "Etimad not checked for " + E.d + " days")
+      : (ar ? "تم فحص اعتماد " : "Etimad checked ") + E.txt;
+    var sig = [cls, main, B.txt, V.txt, popOpen, ar].join("|"); if(sig === LASTF) return; LASTF = sig;
+    var old = function(w){ return w.d == null || w.d >= 2 ? ' class="old"' : ""; };
+    el.className = cls; el.title = ar ? "متى فُحصت البيانات آخر مرة" : "When the data was last checked";
+    el.innerHTML = '<span class="d"></span><span>' + esc(main) + "</span>" + (popOpen ? '<div id="v77freshPop"><div' + old(E) + "><span>" + esc(ar ? "فحص اعتماد" : "Etimad check") + "</span><span>" + esc(E.txt) + "</span></div><div" + old(B) + "><span>" + esc(ar ? "الملخص اليومي" : "Daily brief") + "</span><span>" + esc(B.txt) + "</span></div><div" + old(V) + "><span>" + esc(ar ? "فحص الفعاليات" : "Events check") + "</span><span>" + esc(V.txt) + "</span></div><p>" + esc(ar ? "الأوقات بتوقيت الرياض. إذا مرّ يومان دون فحص فقد تكون القائمة غير محدّثة." : "Riyadh time. If two days pass with no check, the list may be out of date.") + "</p></div>" : ""); }
+
+  function all(){ try{ fresh(); }catch(e){ console.error(e); } try{ decorate(); }catch(e){ console.error(e); } }
+  if(typeof renderAll === "function" && !renderAll.__v77){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); all(); return out; }; renderAll.__v77 = true; }
+  all(); setInterval(all, 4000);
+  window.v77 = { guide:guide, shareText:shareText, stamps:stamps, kindOf:kindOf, showEvent:showEvent, all:all };
 })();
 </script>
 

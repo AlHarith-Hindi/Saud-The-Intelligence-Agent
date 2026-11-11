@@ -10180,7 +10180,7 @@ async function exportPPTX(){
     var pend = {}; Object.keys(s.awards.rows).forEach(function(rn){ var r = s.awards.rows[rn], x = byRn[rn]; if(r && r.s === "p" && x){ var k = nk(x[1]); if(k) pend[k] = (pend[k] || 0) + 1; } });
     CACHE = { sig:sig, M:{ T:T, byRn:byRn, pend:pend, at:d.at, avgB:d.avgB, disc:d.disc, total:d.T.length } }; return CACHE.M; }
   function sumOf(Lst){ if(!Lst.length) return null; var n = Lst.map(function(t){ return t.n; }).filter(function(v){ return v > 0; }), g = Lst.map(function(t){ return t.gap; }).filter(function(v){ return v != null; }), a = Lst.map(function(t){ return t.aw; }).filter(function(v){ return v > 0; });
-    return { count:Lst.length, bidders:n.length ? median(n) : null, gap:g.length ? median(g) : null, lo:a.length ? Math.min.apply(null, a) : null, hi:a.length ? Math.max.apply(null, a) : null }; }
+    return { count:Lst.length, bidders:n.length ? median(n) : null, gap:g.length ? median(g) : null, lo:a.length ? Math.min.apply(null, a) : null, hi:a.length ? Math.max.apply(null, a) : null, mid:a.length ? median(a) : null }; }
   function guide(r){ var M = model(); if(!M || !r) return null; var rn = String(r.rn || ""), x = M.byRn[rn], k = nk((x && x[1]) || ""), k2 = nk(r.agency || "");
     var same = M.T.filter(function(t){ return t.rn !== rn && t.ak && (t.ak === k || t.ak === k2); });
     var kd = kindOf(r.name || ""), sim = kd ? M.T.filter(function(t){ return t.rn !== rn && t.kind === kd[0] && same.indexOf(t) < 0; }) : [];
@@ -10193,7 +10193,7 @@ async function exportPPTX(){
     src: function(at){ var p = parts(at); return (ar ? "من نتائج الترسية المنشورة علنًا في اعتماد" : "from Etimad's public award results") + (p ? (ar ? " · آخر تحديث " : " · updated ") + dShort(p.d, ar) : ""); },
     same: function(n){ return ar ? ("هذه الجهة سابقًا (" + n + (n === 1 ? " نتيجة" : " نتائج") + ")") : ("This buyer before (" + n + (n === 1 ? " result" : " results") + ")"); },
     sim: function(kd, n){ return ar ? ("منافسات مشابهة لدى جهات أخرى — " + kd[3] + " (" + n + (n === 1 ? " نتيجة" : " نتائج") + ")") : ("Similar tenders from other buyers — " + kd[2] + " (" + n + (n === 1 ? " result" : " results") + ")"); },
-    bidders: ar ? "المتقدمون" : "Bidders", gap: ar ? "الفائز مقابل وسيط العروض" : "Winner vs median offer", award: ar ? "الترسية" : "Award", awards: ar ? "الترسيات" : "Awards",
+    bidders: ar ? "المتقدمون" : "Bidders", gap: ar ? "الفائز مقابل وسيط العروض" : "Winner vs median offer", award: ar ? "الترسية" : "Award", awards: ar ? "الترسيات" : "Awards", mid: ar ? "الترسية الوسيطة" : "Median award",
     winner: ar ? "الفائز: " : "Winner: ", nb: function(n){ return ar ? (n + " متقدم") : (n + (n === 1 ? " bidder" : " bidders")); },
     pend: function(n){ return ar ? (n === 1 ? "منافسة واحدة منتهية لهذه الجهة ما زالت بانتظار إعلان الترسية." : n + " منافسات منتهية لهذه الجهة ما زالت بانتظار إعلان الترسية.") : (n + (n === 1 ? " closed tender of this buyer is" : " closed tenders of this buyer are") + " still waiting for results."); },
     noSame: ar ? "لا توجد نتائج ترسية منشورة لهذه الجهة حتى الآن." : "No award results published for this buyer yet.",
@@ -10211,6 +10211,7 @@ async function exportPPTX(){
     if(S.bidders != null) c.push(T.bidders + ": <b>" + (Math.round(S.bidders * 10) / 10) + "</b>");
     if(S.gap != null) c.push(T.gap + ': <b dir="ltr">' + pct(S.gap) + "</b>");
     if(S.lo != null) c.push((S.lo === S.hi ? T.award : T.awards) + ": <b>" + esc(sar(S.lo, ar)) + (S.hi !== S.lo ? " – " + esc(sar(S.hi, ar)) : "") + "</b>");
+    if(S.mid != null && S.count >= 3) c.push(T.mid + ": <b>" + esc(sar(S.mid, ar)) + "</b>");   /* v77.1: median award when 3+ results */
     return c.length ? '<div class="pg-chips">' + c.map(function(x){ return "<span>" + x + "</span>"; }).join("") + "</div>" : ""; }
   function items(Lst, T, ar, withAgency){ return '<div class="pg-list">' + Lst.map(function(t){ var p = parts(t.bid), u = ""; try{ u = typeof window.etimadUrl === "function" ? (window.etimadUrl({ rn:t.rn }) || "") : ""; }catch(e){}
       return '<div class="pg-it"><em>' + esc(p ? dShort(p.d, ar) : "—") + '</em><span class="t" title="' + esc(t.name) + '">' + esc(t.name) + "<i>" + esc((withAgency && t.agency ? t.agency + " · " : "") + T.winner + t.win) + '</i></span><em class="a">' + esc(sar(t.aw, ar)) + "</em><em>" + (t.n ? esc(T.nb(t.n)) : "—") + "</em>" + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener" title="Etimad">↗</a>' : "<span></span>") + "</div>"; }).join("") + "</div>"; }
@@ -10231,6 +10232,7 @@ async function exportPPTX(){
     if(S.bidders != null) b.push((ar ? "المتقدمون " : "bidders ") + (Math.round(S.bidders * 10) / 10));
     if(S.gap != null){ var g = Math.round(Math.abs(S.gap) * 100); b.push(ar ? ("الفائز " + (S.gap <= 0 ? "أقل" : "أعلى") + " من وسيط العروض بـ " + g + "%") : ("winner " + g + "% " + (S.gap <= 0 ? "below" : "above") + " the median offer")); }
     if(S.lo != null) b.push((ar ? "الترسية " : "awards ") + sar(S.lo, ar) + (S.hi !== S.lo ? " – " + sar(S.hi, ar) : ""));
+    if(S.mid != null && S.count >= 3) b.push((ar ? "الوسيط " : "median ") + sar(S.mid, ar));
     return b.join(" · "); }
   function shareText(r, ar){ var same = AR() === ar, T = TX(ar), L1 = [], t = function(v){ if(v == null || v === "") return ""; try{ return same && typeof tx === "function" ? String(tx(v)) : String(v); }catch(e){ return String(v); } };
     var add = function(k, v){ if(v) L1.push(k + ": " + v); };

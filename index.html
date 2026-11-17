@@ -7561,8 +7561,8 @@ async function exportPPTX(){
   var AR = function(){ return typeof LANG !== "undefined" && LANG === "ar"; };
   var esc = function(s){ s = s == null ? "" : String(s); return typeof escapeHtml === "function" ? escapeHtml(s) : s.replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); };
   var toast = function(m){ try{ if(typeof showToast === "function") showToast(m); }catch(e){} };
-  var SEC_KEYS = ["internal", "projects", "prototypes", "marketing", "brand"];   /* v51: + KNKT (marketing) and Marketing (brand) */
-  var SEC_SECTIONS = { internal:1, projects:1, prototypes:1, marketing:1, brand:1 };
+  var SEC_KEYS = ["internal", "projects", "prototypes", "marketing", "brand", "tasks", "milestones", "todos"];   /* v78: + PMO (recurring tasks, milestones, to-dos) */   /* v51: + KNKT (marketing) and Marketing (brand) */
+  var SEC_SECTIONS = { internal:1, projects:1, prototypes:1, marketing:1, brand:1, tasks:1, milestones:1, todos:1 };
   var SEC_PAGES = ["recap", "internal", "projects", "brand", "marketing"];   /* v51: + Quarter recap, Marketing, KNKT */
   var ITER = 250000;
 
@@ -7606,7 +7606,7 @@ async function exportPPTX(){
       : has ? (ar ? "🔒 محميّة بكلمة مرور منذ " : "🔒 Password set ") + new Date(c.sec.setAt).toLocaleDateString(ar ? "ar-u-nu-latn" : "en-GB", { day:"numeric", month:"short" }) + (ar ? " — من يملكها يفتح الأقسام الخاصة." : " — people with it can open the private sections.")
       : (ar ? "مخفيّة تمامًا عن نسخة الفريق الآن (لا توجد كلمة مرور)." : "Fully hidden from the team view right now (no password set).");
     var html = '<div class="cu-t">' + (ar ? "أقسام خاصة في نسخة الفريق" : "Private sections in the team view") + '</div><div class="cu-d">'
-      + (ar ? "«ملخص الربع» و«التسويق» و«KNKT» و«الأداء الداخلي» و«المشاريع والنماذج» لا تظهر في القائمة الجانبية لنسخة الفريق إلا بعد إدخال كلمة المرور (نفس الرابط). بياناتها مشفّرة بكلمة المرور نفسها." : "Quarter recap, Marketing, KNKT, Internal Performance and Projects & Prototypes stay off the team view's sidebar until someone enters the password (same link). Their data is encrypted with that password.")
+      + (ar ? "«تطوير الأعمال» (مع الملخص) و«PMO» و«التقنية» و«التسويق» لا تظهر في القائمة الجانبية لنسخة الفريق إلا بعد إدخال كلمة المرور (نفس الرابط). بياناتها مشفّرة بكلمة المرور نفسها." : "Business Development (with the Summary), PMO, Technical and Marketing stay off the team view's sidebar until someone enters the password (same link). Their data is encrypted with that password.")
       + '</div><div class="tm-st' + (has ? " ok" : "") + '">' + esc(st) + "</div>"
       + (c ? '<div class="ts-row"><input type="password" id="tsPw1" autocomplete="new-password" placeholder="' + (ar ? "كلمة مرور جديدة" : "New password") + '"><input type="password" id="tsPw2" autocomplete="new-password" placeholder="' + (ar ? "أعد كتابتها" : "Repeat it") + '"></div>'
         + '<div class="cu-actions" style="margin:10px 0 0"><button class="editbtn" type="button" data-ts="set">' + (has ? (ar ? "تغيير كلمة المرور" : "Change password") : (ar ? "حفظ كلمة المرور" : "Save password")) + "</button>"
@@ -7634,7 +7634,7 @@ async function exportPPTX(){
     var t = unlocked ? (AR() ? "🔓 قفل" : "🔓 Lock") : "🔒"; if(b.textContent !== t) b.textContent = t;
     b.title = unlocked ? (AR() ? "إخفاء الأقسام الخاصة" : "Hide the private sections") : (AR() ? "أقسام إضافية بكلمة مرور" : "More sections (password)"); }
   function modal(){ var m = document.getElementById("tsModal"); if(!m){ m = document.createElement("div"); m.id = "tsModal"; document.body.appendChild(m); } var ar = AR();
-    m.innerHTML = '<div class="ts-card"><h3>' + (ar ? "أقسام إضافية" : "More sections") + "</h3><p>" + (ar ? "أدخل كلمة المرور لفتح «ملخص الربع» و«التسويق» و«KNKT» و«الأداء الداخلي» و«المشاريع والنماذج»." : "Enter the password to open Quarter recap, Marketing, KNKT, Internal Performance and Projects & Prototypes.") + '</p><input type="password" id="tsIn" autocomplete="off"><div class="ts-msg" id="tsMsg"></div><div class="ts-acts"><button type="button" data-tsm="x">' + (ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="ts-go" data-tsm="go">' + (ar ? "فتح" : "Unlock") + "</button></div></div>";
+    m.innerHTML = '<div class="ts-card"><h3>' + (ar ? "أقسام إضافية" : "More sections") + "</h3><p>" + (ar ? "أدخل كلمة المرور لفتح «تطوير الأعمال» (مع الملخص) و«PMO» و«التقنية» و«التسويق»." : "Enter the password to open Business Development (with the Summary), PMO, Technical and Marketing.") + '</p><input type="password" id="tsIn" autocomplete="off"><div class="ts-msg" id="tsMsg"></div><div class="ts-acts"><button type="button" data-tsm="x">' + (ar ? "إلغاء" : "Cancel") + '</button><button type="button" class="ts-go" data-tsm="go">' + (ar ? "فتح" : "Unlock") + "</button></div></div>";
     m.hidden = false; setTimeout(function(){ var i = document.getElementById("tsIn"); if(i) i.focus(); }, 30); }
   async function tryUnlock(){ var i = document.getElementById("tsIn"), msg = document.getElementById("tsMsg"), card = document.querySelector("#tsModal .ts-card"); if(!i || !lastSec) return;
     var pw = i.value; if(!pw) return; if(msg) msg.textContent = AR() ? "جارٍ التحقق…" : "Checking…";
@@ -8299,7 +8299,7 @@ async function exportPPTX(){
   var LOCK = ["recap", "internal", "projects", "brand", "marketing"];
   function locked(){ var h = document.documentElement; return TEAM && h.classList.contains("team-mode") && h.classList.contains("ts-locked"); }
   function prune(){ if(!locked()) return; try{ if(typeof PAGE_ORDER !== "undefined") LOCK.forEach(function(p){ var i = PAGE_ORDER.indexOf(p); if(i >= 0) PAGE_ORDER.splice(i, 1); }); }catch(e){} }
-  if(typeof switchPage === "function" && !switchPage.__v51){ var baseSP = switchPage; switchPage = function(p){ var a = [].slice.call(arguments); if(locked() && (LOCK.indexOf(p) >= 0 || p === "technical") && p !== "projects") a[0] = "overview";   /* v69.1: PMO shows milestones & tasks to the team; Technical stays private */ closePop(); return baseSP.apply(this, a); }; switchPage.__v51 = true; }
+  if(typeof switchPage === "function" && !switchPage.__v51){ var baseSP = switchPage; switchPage = function(p){ var a = [].slice.call(arguments); if(locked() && (LOCK.indexOf(p) >= 0 || p === "technical" || p === "tasks")) a[0] = "overview";   /* v78: PMO is password-only again (Harith); Technical stays private */ closePop(); return baseSP.apply(this, a); }; switchPage.__v51 = true; }
   if(typeof renderAll === "function" && !renderAll.__v51){ var baseRA = renderAll; renderAll = function(){ var out = baseRA.apply(this, arguments); try{ prune(); mark(); }catch(e){} return out; }; renderAll.__v51 = true; }
 
   /* ---------- 2) press a number → the records behind it ---------- */
@@ -9039,7 +9039,11 @@ async function exportPPTX(){
 
   /* ---------- 5) v57: the 10-second intro on every visit and refresh (Harith) ---------- */
   (function intro(){
-    if(/[?&](nointro|noload)\b/.test(location.search) || !document.body) return;
+    var skipI = /[?&](nointro|noload)\b/.test(location.search);
+    /* v78: remove nointro / noload / nc from the address bar after load, so refreshing or re-entering plays the intro (Harith) */
+    setTimeout(function(){ try{ var q = location.search.replace(/^\?/, "").split("&").filter(function(p){ return p && !/^(nointro|noload|nc)(=|$)/.test(p); }).join("&");
+      var nu = location.pathname + (q ? "?" + q : "") + location.hash; if(nu !== location.pathname + location.search + location.hash) window.history.replaceState(window.history.state, "", nu); }catch(e){} }, 4000);
+    if(skipI || !document.body) return;
     var quiet = RED || calm(), ar = AR();
     var el = document.createElement("div"); el.id = "v57intro"; el.setAttribute("role", "presentation");
     var line1 = "Experience", line2 = "the spin";
@@ -9362,7 +9366,7 @@ async function exportPPTX(){
      ========================================================= */
   function NRM(s){ return String(s == null ? "" : s).toLowerCase().replace(/[\u064B-\u0652\u0670\u0640]/g, "").replace(/[إأآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ؤ/g, "و").replace(/ئ/g, "ي").replace(/[٠-٩]/g, function(c){ return String(c.charCodeAt(0) - 1632); }).replace(/\s+/g, " ").trim(); }
   function teamLocked(){ var h = document.documentElement; return h.classList.contains("team-mode") && h.classList.contains("ts-locked"); }
-  var LOCKED_PAGES = { internal:1, projects:1, recap:1, brand:1, marketing:1 };
+  var LOCKED_PAGES = { internal:1, projects:1, recap:1, brand:1, marketing:1, tasks:1, technical:1 };
   function hayOf(r){ if(r == null) return ""; if(typeof r !== "object") return String(r); var out = []; Object.keys(r).forEach(function(k){ var v = r[k]; if(typeof v === "string" || typeof v === "number") out.push(v); else if(Array.isArray(v) && v.length && typeof v[0] === "string") out.push(v.join(" ")); }); return out.join(" · "); }
   var GO = {};
   function v68search(query){ var toks = NRM(query).split(" ").filter(Boolean); if(!toks.length) return []; var ar = AR(), res = [], seenRn = {}, lock = teamLocked(), gid = 0;
@@ -9411,9 +9415,7 @@ async function exportPPTX(){
   .bd-ms .bd-ms-p{display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:20px; padding:0 6px; border-radius:999px; background:rgba(0,0,0,.3); font-family:var(--mono, monospace); font-size:10.5px; color:var(--copper);}
   html.theme-light .bd-ms{color:#1c1c1c;}
   /* team view (locked): PMO stays visible for milestones & tasks only; Technical stays private like the old prototypes */
-  html.team-mode.ts-locked body .tab-btn[data-page="projects"]:not(.v69-hide){display:flex !important;}
-  html.team-mode.ts-locked body #page-projects.active{display:block !important;}
-  html.team-mode.ts-locked #page-projects > .v69-proj, html.team-mode.ts-locked #pmoRecapSec{display:none !important;}
+  /* v78: PMO is hidden in the locked team view again (Harith) — the v69.1 overrides were removed */
   html.team-mode.ts-locked .tab-btn[data-page="technical"], html.team-mode.ts-locked #page-technical{display:none !important;}
   @media print{
     body.rc-printing #page-external{display:block !important;}
